@@ -4,26 +4,74 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+import attacks
+import models
+from tqdm.notebook import tqdm
+import numpy as np
 
-def data_loader():
+def create_task( input, model,probas, name):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    data = []
+    label = []
+    status = []
+    for i in tqdm( range( len(input) ) ): #
+        is_corrupt = np.random.choice( [1, 0], p=probas)
+        X,y = input[i]
+        X = X.reshape( (1,1,28,28) ).to(device)
+        y = torch.Tensor([ y ]).type(torch.LongTensor).to(device)
+        if is_corrupt==1:
+            delta = attacks.pgd_linf(model, X , y).to(device)
+            X = X + delta
+        data.append(  X[0] )
+        label.append(y)
+        status.append([is_corrupt])
+    data = torch.stack(data)
+    label = torch.stack(label)
+    status = torch.Tensor(status)
+    
+    dataset = TensorDataset( data,label,status )
+    
+    if name == 'train':
+        
+        online = dataset[30000:]
+        online = TensorDataset( online[0], online[1],online[2] )
+        torch.save(online,'./{}_online.pt'.format(name) )
+    
+        offline = dataset[:30000]
+        offline = TensorDataset( offline[0], offline[1],offline[2] )
+        torch.save(offline,'./{}_offline.pt'.format(name) )
+        
+    else:
+        
+        torch.save(offline,'./{}.pt'.format(name) )
 
-    mnist_train = datasets.MNIST("../data", train=True, download=True, transform=transforms.ToTensor())
-    mnist_val = datasets.MNIST("../data", train=False, download=True, transform=transforms.ToTensor())
+def create_train_val():
+    
+    target = models.load_target()
 
-    train_ratio = 0.4
-    train_size = int(len(mnist_train) * train_ratio)
-    dump_size = len(mnist_train) - train_size
-    mnist_train = torch.utils.data.random_split(mnist_train, [train_size, dump_size])[0]
+    mnist_train = datasets.MNIST("../data", train=True, download=True, transform=transforms.ToTensor() )
+    create_task(mnist_train,target,[0.5,0.5], 'train')
+
+    mnist_val = datasets.MNIST("../data", train=False, download=True, transform=transforms.ToTensor() )
+    create_task(mnist_val,target,[0.5,0.5], 'val')
+
+
+def task_loader():
+    
+    target = models.load_target()
+
+    train_data = torch.load('./train.pt')
+    train_ratio = 0.5
+    train_size = int(len(train_data) * train_ratio)
+    dump_size = len(train_data) - train_size
+    train_data = torch.utils.data.random_split(train_data, [train_size, dump_size])[0]
 
     batch_size = 128
 
-    dataloaders = {
-        'train': DataLoader(mnist_train, batch_size = batch_size, shuffle=True, num_workers=4),
-        'val': DataLoader(mnist_val, batch_size = 100, shuffle=False, num_workers = 4)
-    }
+    dataloaders = {'train': DataLoader( train_data , batch_size = batch_size, shuffle=True),
+               'val': DataLoader( torch.load('./val.pt'), batch_size = batch_size, shuffle=True)  }
 
-    dataset_sizes = {'train': 0.85, 'val': 0.15}
-    print(len(mnist_train))
-    print(len(mnist_val))
+    dataset_sizes = {'train': 0.70, 'val': 0.30}
 
-    return dataloaders,dataset_sizes
+    return dataloaders,dataset_sizes   
+ 

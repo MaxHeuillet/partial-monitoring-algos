@@ -15,17 +15,18 @@ def fgsm(model, X, y, epsilon=0.1):
 
 def pgd_linf(model, X, y, epsilon=0.1, alpha=0.01, num_iter=5, randomize=False):
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     """ Construct FGSM adversarial examples on the examples X"""
     if randomize:
-        delta = torch.rand_like(X, requires_grad=True)
+        delta = torch.rand_like(X, requires_grad=True).to(device)
         delta.data = delta.data * 2 * epsilon - epsilon
     else:
-        delta = torch.zeros_like(X, requires_grad=True)
+        delta = torch.zeros_like(X, requires_grad=True).to(device)
+
 
     for t in range(num_iter):
-        loss = nn.CrossEntropyLoss()(model(X + delta), y)
+        loss = nn.CrossEntropyLoss()( model(X + delta), y)
         loss.backward()
         delta.data = (delta + alpha*delta.grad.detach().sign()).clamp(-epsilon,epsilon)
         delta.grad.zero_()
     return delta.detach()
-
