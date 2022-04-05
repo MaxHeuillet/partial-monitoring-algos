@@ -4,6 +4,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+from torch.utils.data import DataLoader, TensorDataset
+
 import attacks
 import models
 from tqdm.notebook import tqdm
@@ -43,7 +45,7 @@ def create_task( input, model,probas, name):
         
     else:
         
-        torch.save(offline,'./{}.pt'.format(name) )
+        torch.save(dataset,'./{}.pt'.format(name) )
 
 def create_train_val():
     
@@ -56,22 +58,18 @@ def create_train_val():
     create_task(mnist_val,target,[0.5,0.5], 'val')
 
 
-def task_loader():
+def task_loader(name):
     
     target = models.load_target()
 
-    train_data = torch.load('./train.pt')
-    train_ratio = 0.5
-    train_size = int(len(train_data) * train_ratio)
-    dump_size = len(train_data) - train_size
-    train_data = torch.utils.data.random_split(train_data, [train_size, dump_size])[0]
+    train_data = torch.load('./train_{}.pt'.format(name) )
 
     batch_size = 128
 
     dataloaders = {'train': DataLoader( train_data , batch_size = batch_size, shuffle=True),
                'val': DataLoader( torch.load('./val.pt'), batch_size = batch_size, shuffle=True)  }
 
-    dataset_sizes = {'train': 0.70, 'val': 0.30}
+    dataset_sizes = {'train': 0.75, 'val': 0.25}
 
     return dataloaders,dataset_sizes   
  
