@@ -11,6 +11,7 @@ class Flatten(nn.Module):
 
 def load_target():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    
     model = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1), nn.ReLU(),
                           nn.Conv2d(32, 32, 3, padding=1, stride=2), nn.ReLU(),
                           nn.Conv2d(32, 64, 3, padding=1), nn.ReLU(),
