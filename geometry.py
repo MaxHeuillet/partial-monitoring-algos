@@ -33,15 +33,9 @@ def signal_vecs(i, FeedbackMatrix):
     return [signal_vec(i, v, FeedbackMatrix) for v in set(FeedbackMatrix[i,...])]
 
 
-
-
 def observer_vector(L, H, i, j, mathcal_K_plus):
     Lij = L[i,...] - L[j,...]
-    x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
-    lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
-    x = iter( np.round(x) )
-    return [ np.array( list(islice( x, i)) ).reshape(-1,1) for i in lenght] 
-
+    A = np.stack( global_signal(H) )FeedbackMatrix
     
 # Fjv: the row binary signal matrix for F_{i,j}=v (pseudo-action i/v)
 # Fdash_list : a list of row feedback vectors
@@ -75,9 +69,6 @@ def scale_to_integers(Dom):
         return Dom/np.abs(m)
     return Dom
 
-        
-
-
 # return domination Cell polytope for action i
 def DominationPolytope(i,LossMatrix):
     N, M = LossMatrix.shape
@@ -103,6 +94,29 @@ def DominationPolytope(i,LossMatrix):
             cs.insert( sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0 )
             
     return ppl.C_Polyhedron(cs)
+
+def get_polytope(halfspace, L, mathcal_N, mathcal_P, mathcal_K):
+    P_t  = []
+    N_t = []
+
+    halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_K ]
+    polytope = halfspaces.pop(0)
+    for i in range(len(halfspaces)):
+            polytope.intersection_assign(  halfspaces[i] ) 
+
+    for i in mathcal_P:
+        cell_i = geometry.DominationPolytope(i, L)
+        if cell_i.intersection_assign(  halfspaces[i] ).is_empty() == False:
+            P_t.append(i)
+
+    for pair in mathcal_N:
+        cell_i = geometry.DominationPolytope(pair[0], L)
+        cell_j = geometry.DominationPolytope(pair[1], L)
+        if cell_i.intersection_assign( cell_j ).intersection_assign(  halfspaces[i] ).is_empty() == False:
+            N_t.append(pair)
+
+    return P_t,N_t
+
 
 
 # return domination Cell polytope interior for action i
@@ -130,6 +144,8 @@ def StrictDominationPolytope(i,LossMatrix):
             cs.insert( sum( (Dom[a,j]*p[j] for j in range(M)) ) < 0 )
             
     return ppl.NNC_Polyhedron(cs)
+
+
 
 # Check that an action is dominant
 # Check that an action is strictly dominant 
@@ -221,14 +237,6 @@ def is_linear_comb(Fiv, Fdash_list):
     initial_rank = np.linalg.matrix_rank(np.vstack(Fdash_list))
     new_rank = np.linalg.matrix_rank(np.vstack(Fdash_list + [Fiv]))
     return new_rank == initial_rank
-
-
-# def ObserverVector(a, b, LossMatrix, FeedbackMatrix, S_list):
-#     observer_vector = np.zeros(len(np.unique(FeedbackMatrix)))
-#     Lab = LossMatrix[a,...] - LossMatrix[b,...]
-
-    
-
 
 
 # Observability for a pair of actions
