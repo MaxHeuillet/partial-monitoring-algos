@@ -32,11 +32,16 @@ def signal_vec(i, v, FeedbackMatrix):
 def signal_vecs(i, FeedbackMatrix):
     return [signal_vec(i, v, FeedbackMatrix) for v in set(FeedbackMatrix[i,...])]
 
-
 def observer_vector(L, H, i, j, mathcal_K_plus):
+    A = np.vstack( global_signal(H) )
     Lij = L[i,...] - L[j,...]
-    A = np.stack( global_signal(H) )FeedbackMatrix
-    
+    print('Lij', Lij)
+    print('globalsignal',global_signal(H))
+    x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
+    lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
+    x = iter( np.round(x) )
+    return [ np.array( list(islice( x, i)) ) for i in lenght] 
+
 # Fjv: the row binary signal matrix for F_{i,j}=v (pseudo-action i/v)
 # Fdash_list : a list of row feedback vectors
 # check if a signal matrix is in the linear combination of the previous feedback vectors
@@ -109,31 +114,34 @@ def HalfSpace(pair, LossMatrix, halfspace):
         cs.insert(p[j] >= 0)
         
     # strict Loss domination constraints
-    substract = L[ pair[0] ] - L[ pair[1] ]  
+    substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
 
     cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
     
     return ppl.NNC_Polyhedron(cs)
 
 
-def get_polytope(halfspace, L, mathcal_N, mathcal_P, mathcal_K):
+def get_polytope(halfspace, L, mathcal_P, mathcal_K):
     P_t  = []
     N_t = []
 
     halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_K ]
+    print('Taille halfspaces',len(halfspaces))
     polytope = halfspaces.pop(0)
     for i in range(len(halfspaces)):
             polytope.intersection_assign(  halfspaces[i] ) 
 
     for i in mathcal_P:
         cell_i = DominationPolytope(i, L)
-        if cell_i.intersection_assign(  halfspaces[i] ).is_empty() == False:
+        print(cell_i)
+        print(polytope)
+        if ( cell_i.is_empty() and polytope.is_empty() ) == False:
             P_t.append(i)
-
-    for pair in mathcal_N:
+    print('mathcal_K',mathcal_K)
+    for pair in mathcal_K:
         cell_i = DominationPolytope(pair[0], L)
         cell_j = DominationPolytope(pair[1], L)
-        if cell_i.intersection_assign( cell_j ).intersection_assign(  halfspaces[i] ).is_empty() == False:
+        if ( cell_i.is_empty() and cell_j.is_empty() and  polytope.is_empty() ) == False:
             N_t.append(pair)
 
     return P_t,N_t
