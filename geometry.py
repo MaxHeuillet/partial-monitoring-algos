@@ -35,8 +35,8 @@ def signal_vecs(i, FeedbackMatrix):
 def observer_vector(L, H, i, j, mathcal_K_plus):
     A = np.vstack( global_signal(H) )
     Lij = L[i,...] - L[j,...]
-    print('Lij', Lij)
-    print('globalsignal',global_signal(H))
+    # print('Lij', Lij)
+    # print('globalsignal',global_signal(H))
     x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
     lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
     x = iter( np.round(x) )
@@ -126,18 +126,18 @@ def get_polytope(halfspace, L, mathcal_P, mathcal_K):
     N_t = []
 
     halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_K ]
-    print('Taille halfspaces',len(halfspaces))
+    # print('Taille halfspaces',len(halfspaces))
     polytope = halfspaces.pop(0)
     for i in range(len(halfspaces)):
             polytope.intersection_assign(  halfspaces[i] ) 
 
     for i in mathcal_P:
         cell_i = DominationPolytope(i, L)
-        print(cell_i)
-        print(polytope)
+        # print(cell_i)
+        # print(polytope)
         if ( cell_i.is_empty() and polytope.is_empty() ) == False:
             P_t.append(i)
-    print('mathcal_K',mathcal_K)
+    # print('mathcal_K',mathcal_K)
     for pair in mathcal_K:
         cell_i = DominationPolytope(pair[0], L)
         cell_j = DominationPolytope(pair[1], L)
