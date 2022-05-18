@@ -95,6 +95,27 @@ def DominationPolytope(i,LossMatrix):
             
     return ppl.C_Polyhedron(cs)
 
+def HalfSpace(pair, LossMatrix, halfspace):
+    N, M = LossMatrix.shape
+    # declare M ppl Variables
+    p = [ppl.Variable(j) for j in range(M)]
+    
+    # declare polytope constraints
+    cs = ppl.Constraint_System()
+    
+    # probabilies constraints on p
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+        
+    # strict Loss domination constraints
+    substract = L[ pair[0] ] - L[ pair[1] ]  
+
+    cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
+    
+    return ppl.NNC_Polyhedron(cs)
+
+
 def get_polytope(halfspace, L, mathcal_N, mathcal_P, mathcal_K):
     P_t  = []
     N_t = []
@@ -105,13 +126,13 @@ def get_polytope(halfspace, L, mathcal_N, mathcal_P, mathcal_K):
             polytope.intersection_assign(  halfspaces[i] ) 
 
     for i in mathcal_P:
-        cell_i = geometry.DominationPolytope(i, L)
+        cell_i = DominationPolytope(i, L)
         if cell_i.intersection_assign(  halfspaces[i] ).is_empty() == False:
             P_t.append(i)
 
     for pair in mathcal_N:
-        cell_i = geometry.DominationPolytope(pair[0], L)
-        cell_j = geometry.DominationPolytope(pair[1], L)
+        cell_i = DominationPolytope(pair[0], L)
+        cell_j = DominationPolytope(pair[1], L)
         if cell_i.intersection_assign( cell_j ).intersection_assign(  halfspaces[i] ).is_empty() == False:
             N_t.append(pair)
 
