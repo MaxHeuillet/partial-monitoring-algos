@@ -32,15 +32,30 @@ def signal_vec(i, v, FeedbackMatrix):
 def signal_vecs(i, FeedbackMatrix):
     return [signal_vec(i, v, FeedbackMatrix) for v in set(FeedbackMatrix[i,...])]
 
-def observer_vector(L, H, i, j, mathcal_K_plus):
-    A = np.vstack( global_signal(H) )
-    Lij = L[i,...] - L[j,...]
-    # print('Lij', Lij)
-    # print('globalsignal',global_signal(H))
-    x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
-    lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
-    x = iter( np.round(x) )
-    return [ np.array( list(islice( x, i)) ) for i in lenght] 
+
+def get_observer_vector(pair, L,H, observer_set):
+    
+    Lij = L[pair[0],...] - L[pair[1],...]
+    S_vectors = [ signal_vecs(k, H) for k in observer_set[ pair[0] ][ pair[1] ] ]
+    # print(S_vectors)
+    stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
+
+    resultat = stacked_S * Lij 
+    v_ij = resultat.T[0]
+    length = [ len(k)  for k in S_vectors]
+    v_ij = iter( v_ij )
+    return [ np.array( list( islice( v_ij, i)) ) for i in length] 
+
+
+# def observer_vector(L, H, i, j, mathcal_K_plus):
+#     A = np.vstack( global_signal(H) )
+#     Lij = L[i,...] - L[j,...]
+#     # print('Lij', Lij)
+#     # print('globalsignal',global_signal(H))
+#     x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
+#     lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
+#     x = iter( np.round(x) )
+#     return [ np.array( list(islice( x, i)) ) for i in lenght] 
 
 # Fjv: the row binary signal matrix for F_{i,j}=v (pseudo-action i/v)
 # Fdash_list : a list of row feedback vectors
@@ -125,24 +140,24 @@ def get_polytope(halfspace, L, mathcal_P, mathcal_N):
     P_t  = []
     N_t = []
 
-    halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_N ]
+    # halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_N ]
 
-    polytope = halfspaces.pop(0)
-    for i in range(len(halfspaces)):
-            polytope.intersection_assign(  halfspaces[i] ) 
+    # polytope = halfspaces.pop(0)
+    # for i in range(len(halfspaces)):
+    #         polytope.intersection_assign(  halfspaces[i] ) 
 
-    for i in mathcal_P:
-        cell_i = DominationPolytope(i, L)
-        # print(cell_i)
-        # print(polytope)
-        if ( cell_i.is_empty() and polytope.is_empty() ) == False:
-            P_t.append(i)
-    # print('mathcal_K',mathcal_K)
-    for pair in mathcal_N:
-        cell_i = DominationPolytope(pair[0], L)
-        cell_j = DominationPolytope(pair[1], L)
-        if ( cell_i.is_empty() and cell_j.is_empty() and  polytope.is_empty() ) == False:
-            N_t.append(pair)
+    # for i in mathcal_P:
+    #     cell_i = DominationPolytope(i, L)
+    #     # print(cell_i)
+    #     # print(polytope)
+    #     if ( cell_i.is_empty() and polytope.is_empty() ) == False:
+    #         P_t.append(i)
+    # # print('mathcal_K',mathcal_K)
+    # for pair in mathcal_N:
+    #     cell_i = DominationPolytope(pair[0], L)
+    #     cell_j = DominationPolytope(pair[1], L)
+    #     if ( cell_i.is_empty() and cell_j.is_empty() and  polytope.is_empty() ) == False:
+    #         N_t.append(pair)
 
     return mathcal_P, mathcal_N
 
@@ -155,7 +170,7 @@ def get_neighborhood_action_set(pair, N_bar, L):
     mathcal_N_plus = []
     for k in N_bar:
         cell_k = DominationPolytope(k, L)
-        print( cell_k.contains(cell_i) )
+        # print( cell_k.contains(cell_i) )
         if cell_k.contains(cell_i):
             mathcal_N_plus.append(k)
     return mathcal_N_plus
