@@ -121,12 +121,12 @@ def HalfSpace(pair, LossMatrix, halfspace):
     return ppl.NNC_Polyhedron(cs)
 
 
-def get_polytope(halfspace, L, mathcal_P, mathcal_K):
+def get_polytope(halfspace, L, mathcal_P, mathcal_N):
     P_t  = []
     N_t = []
 
-    halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_K ]
-    # print('Taille halfspaces',len(halfspaces))
+    halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_N ]
+
     polytope = halfspaces.pop(0)
     for i in range(len(halfspaces)):
             polytope.intersection_assign(  halfspaces[i] ) 
@@ -138,15 +138,27 @@ def get_polytope(halfspace, L, mathcal_P, mathcal_K):
         if ( cell_i.is_empty() and polytope.is_empty() ) == False:
             P_t.append(i)
     # print('mathcal_K',mathcal_K)
-    for pair in mathcal_K:
+    for pair in mathcal_N:
         cell_i = DominationPolytope(pair[0], L)
         cell_j = DominationPolytope(pair[1], L)
         if ( cell_i.is_empty() and cell_j.is_empty() and  polytope.is_empty() ) == False:
             N_t.append(pair)
 
-    return P_t,N_t
+    return mathcal_P, mathcal_N
 
+def get_neighborhood_action_set(pair, N_bar, L):
+    
+    cell_i = DominationPolytope(pair[0], L)
+    cell_j = DominationPolytope(pair[1], L)
+    cell_i.intersection_assign(cell_j) 
 
+    mathcal_N_plus = []
+    for k in N_bar:
+        cell_k = DominationPolytope(k, L)
+        print( cell_k.contains(cell_i) )
+        if cell_k.contains(cell_i):
+            mathcal_N_plus.append(k)
+    return mathcal_N_plus
 
 # return domination Cell polytope interior for action i
 def StrictDominationPolytope(i,LossMatrix):
