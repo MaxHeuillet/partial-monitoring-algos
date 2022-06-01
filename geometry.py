@@ -72,7 +72,6 @@ def is_linear_comb(Fiv, Fdash_list):
 
 ## Domination Cells decomposition of a Partial Monitoring Game
 
-
 # Domination matrix is the upper bound constraint for the i-th action's PM Cell
 # (LossMatrix[i,...] - LossMatrix).dot(p) < 0 means that 
 # i is the best action for outcome distribution p
@@ -115,51 +114,91 @@ def DominationPolytope(i,LossMatrix):
             
     return ppl.C_Polyhedron(cs)
 
-def HalfSpace(pair, LossMatrix, halfspace):
+def get_halfspace_pairs(dictionary):
+    result = []
+    for e1 in dictionary.keys():
+        for e2 in dictionary[e1].keys():
+            result.append( [e1,e2] )
+    return result
+
+def two_cell_intersection(pair, LossMatrix, halfspace, mathcal_N, mathcal_P):
+
     N, M = LossMatrix.shape
     # declare M ppl Variables
-    p = [ppl.Variable(j) for j in range(M)]
+    p = [ ppl.Variable(j) for j in range(M) ]
     
     # declare polytope constraints
     cs = ppl.Constraint_System()
-    
-    # probabilies constraints on p
+
+    # p belongs to $\Delta_M$ the set of M dimensional probability vectors
     cs.insert( sum( p[j] for j in range(M)) == 1 )
     for j in range(M):
         cs.insert(p[j] >= 0)
-        
-    # strict Loss domination constraints
-    substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
 
-    cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
-    
+    # strict Loss domination constraints for both a and b
+    Doma = scale_to_integers(domination_matrix( pair[0],LossMatrix))
+    Domb = scale_to_integers(domination_matrix(pair[1],LossMatrix)) 
+    for i in range(N):
+        if i!=pair[0]:
+            # p is such that for any action i Loss[a,...]*p <= Loss[a,...]*p
+            cs.insert( sum( (Doma[i,j]*p[j] for j in range(M)) ) <= 0 )
+        if i!=pair[1]:
+            # p is such that for any action i Loss[b,...]*p <= Loss[a,...]*p
+            cs.insert( sum( (Domb[i,j]*p[j] for j in range(M)) ) <= 0 )
+
+    # intersection from the halfspaces:
+    for pair in get_halfspace_pairs(halfspace):
+        substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
+
     return ppl.NNC_Polyhedron(cs)
 
 
-def get_polytope(halfspace, L, mathcal_P, mathcal_N):
+def single_cell_intersection(i, LossMatrix, halfspace, mathcal_N, mathcal_P):
+
+    N, M = LossMatrix.shape
+    
+    p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
+    cs = ppl.Constraint_System() # declare polytope constraints
+
+    # p belongs to $\Delta_M$ the set of M dimensional probability vectors
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+
+    # strict Loss domination constraints
+    Dom = scale_to_integers(domination_matrix(i,LossMatrix))
+    
+    for a in range(N):
+        if a != i:
+            # p is such that for any action a Loss[i,...]*p <= Loss[a,...]*p
+            #print "Domination line:", Dom[a,...], "inequality:", sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0
+            cs.insert( sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0 )
+    
+    # intersection from the halfspaces:
+    for pair in get_halfspace_pairs(halfspace):
+        substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
+
+    return ppl.NNC_Polyhedron(cs)
+
+def get_P_t(halfspace, L, mathcal_P, mathcal_N):
     P_t  = []
-    N_t = []
+    for pair in mathcal_P:
+        result = single_cell_intersection(pair, L, halfspace, mathcal_N, mathcal_P)
+        #print(result)
+        if result.is_empty() == False:
+            P_t.append(pair)
+    return mathcal_P #P_t
 
-    # halfspaces = [ HalfSpace(pair, L, halfspace) for pair in mathcal_N ]
-
-    # polytope = halfspaces.pop(0)
-    # for i in range(len(halfspaces)):
-    #         polytope.intersection_assign(  halfspaces[i] ) 
-
-    # for i in mathcal_P:
-    #     cell_i = DominationPolytope(i, L)
-    #     # print(cell_i)
-    #     # print(polytope)
-    #     if ( cell_i.is_empty() and polytope.is_empty() ) == False:
-    #         P_t.append(i)
-    # # print('mathcal_K',mathcal_K)
-    # for pair in mathcal_N:
-    #     cell_i = DominationPolytope(pair[0], L)
-    #     cell_j = DominationPolytope(pair[1], L)
-    #     if ( cell_i.is_empty() and cell_j.is_empty() and  polytope.is_empty() ) == False:
-    #         N_t.append(pair)
-
-    return mathcal_P, mathcal_N
+def get_N_t(halfspace, L, mathcal_P, mathcal_N):
+    N_t  = []
+    for i in mathcal_N:
+        result = two_cell_intersection(i, L, halfspace, mathcal_N, mathcal_P)
+        #print(result)
+        if result.is_empty() == False:
+            N_t.append(i)
+    return mathcal_N #N_t
 
 def get_neighborhood_action_set(pair, N_bar, L):
     
@@ -307,7 +346,6 @@ def GlobalObservableGame(pm):
     assert (N,M) == LossMatrix.shape
     assert (N,M) == FeedbackMatrix.shape
     
-
     global_S_list = global_signal(FeedbackMatrix)
 
     res = True
