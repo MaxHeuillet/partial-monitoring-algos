@@ -1,83 +1,128 @@
 from math import log, exp, pow
 import numpy as np
+import geometry
 
-class PMGame(object):
-    __slots__ = ['N', 'M', 'OutcomeDist', 'LossMatrix', 'FeedbackMatrix', 'FeedbackMatrix_symb', 'Actions_dict', 'Outcomes_dict', 'title', 'game_type']
-    def __init__(self, N, M, title =""):
-        self.N = N # Number of learner actions
-        self.M = M # Number of environment outcomes
-        self.OutcomeDist = np.ones(M )/M # outcome distribution (for stochastic PM)
-        self.LossMatrix = np.ones(shape=(N,M) ) # Loss MAtrix
-        self.FeedbackMatrix = np.empty(shape=(N,M) ) # Feedback (numeric form)
-        self.FeedbackMatrix_symb = np.empty(shape=(N,M), dtype=object) # Feedback (symbolic)        
-        self.Actions_dict = { a : "{0}".format(a) for a in range(self.N)} # Actions semantic
-        self.Outcomes_dict = { a : "{0}".format(a) for a in range(self.M)} # Outcomes semantic
-        self.title = title
-        self.game_type = "generic"
 
-def is_set(x, n, K):
-    return x & 2**(K-n-1) != 0 
 
-def arm_reward(x, n, K):
-    if is_set(x,n,K):
-        return 1.
+
+class Game():
+    
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix ):
+        self.LossMatrix = LossMatrix
+        self.FeedbackMatrix = FeedbackMatrix
+
+        self.LinkMatrix = LinkMatrix
+        self.n_actions = len(self.LossMatrix)
+        self.n_outcomes = len(self.LossMatrix[0])
+
+def apple_tasting( restructure_game ):
+    init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
+    init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
+
+    if restructure_game:
+        FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
     else:
-        return 0.
+        FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
 
 
-#Generate a PM instance for Bernoulli Bandit 
-def BernoulliBandit(Arms):
-    K = len(Arms) # number of arms
-    Arms = np.array(Arms )
-    pm = PMGame(K,2**K, str(K)+"-armed bandit") # PM Game with K actions and 2**K outcomes
-    pm.game_type = "bandit"
+    # if (FeedbackMatrix == LossMatrix).all():
+    #     LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
+    # else:
     
+    LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix
+
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+
+    return game
+
+def bandit( restructure_game ):
+    init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
+    init_FeedbackMatrix =  np.array([ [1, 0],[0, 1] ])
+
+    if restructure_game:
+        FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
+    else:
+        FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
+
+    if (FeedbackMatrix == LossMatrix).all():
+        LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
+    else:
+        LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
+
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+
+    return game
+
+
+def label_efficient():
+    LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
+    FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
+    LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
+
+
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+
+
+def general_algorithm(F, L):
+    # print(F)
+
+    N, M = F.shape
+
+    Fdash_list = []
+    Ldash_list = []
+    # We use the lists sizes for z in paper
+    h = {} # pseudo-action to action map
+    s = {} # pseudo-action to symbol map
+
+    for j in range(N):
+
+        for v in set(F[j,...]):
+                
+            Fiv = geometry.signal_vec( j, v, F )
+
+            if not Fdash_list or not geometry.is_linear_comb(Fiv, Fdash_list):
+                h[len(Fdash_list)] = j # h(z)=i in FeedExp3 paper
+                s[len(Fdash_list)] = v # not in FeedExp3 paper ??
+                Fdash_list.append(Fiv)
+                Ldash_list.append(L[j,...])
+                bool_fiv_added = True
+
+        if not bool_fiv_added:
+            h[len(Fdash_list)] = j # h(z)=j in the paper
+            s[len(Fdash_list)] = v # not in FeedExp3 paper ??
+            Fdash_list.append( np.zeros(M) )
+            Ldash_list.append(L[j,...])
+
+    # Build F' and H' matrices
+    FdashMatrix = np.vstack(Fdash_list)
+    LdashMatrix = np.vstack(Ldash_list)
+
+    Ndash, Mdash = FdashMatrix.shape
+    assert FdashMatrix.shape == LdashMatrix.shape # just in case
+
+    # Search for strictly-dominating pseudo-actions 
+    NonEmptyCells = []
+    EmptyCells = []
+    for iv in range(Ndash):
+        if geometry.isStrictlyNonDominated(iv, LdashMatrix):
+            NonEmptyCells.append(iv)
+        else:
+            EmptyCells.append(iv)
+            
+    if len(NonEmptyCells)>0: # An empty nonEmptyCells is a problem!
+        # Pick one non-dominated action
+        b = np.random.choice(NonEmptyCells)      # Choose any action from the set of actions with nonempty cells
+    else:
+        print("WARNING: no strictly dominant cell found")
+        #b = random.choice(range(Ndash))  # Choose any action
+        b = 0
+
+    # Translate the loss relatively to pseudo-action b. Recall that loss transposition does not impact the policy regret.
+    LdashMatrix = LdashMatrix - LdashMatrix[b,...]
     
-    pm.Outcomes_dict = { a : "{0:b}".format(a).zfill(int( log(pm.M,2) ) ) for a in range(pm.M)}
-    pm.Actions_dict= { a : "arm {0}".format(a) for a in range(K) }
-  
-    ## 1 - Each outcome is a binary reward vector of dimension K encoded as an integer
-    for x in range(pm.M):
-        px = 1.
-        for a in range(K):
-            if is_set(x,a,K):
-                px *= Arms[a]
-            else:
-                px *= 1. - Arms[a]
-        pm.OutcomeDist[x] = px
-
-    ## 2 - Loss and Feedback matrices
-    for a in range(K):
-        for x in range(pm.M):
-            pm.LossMatrix[a,x] = 1.0 - arm_reward(x,a,K)
-            pm.FeedbackMatrix[a,x] = arm_reward(x,a,K)
-            if arm_reward(x,a,K):
-                pm.FeedbackMatrix_symb[a,x] = 'win '
-            else:
-                pm.FeedbackMatrix_symb[a,x] = 'loss'
-    return pm
-
-
-
-def AppleTasting(Dist):
-    pm = PMGame(2, 2,"Apple tasting game") # It's a PM Game with 2 actions and 2 outcomes
-    pm.game_type = "apple tasting"
-    assert len(Dist) == 2
-    pm.OutcomeDist = np.array(Dist )
-    
-    pm.LossMatrix = np.array(
-     [[1, 0],
-      [0, 1]] )
-
-    pm.FeedbackMatrix = np.array(
-            [[0, 0],
-             [1, -1]] )
-
-    pm.FeedbackMatrix_symb = np.array(
-            [['blind', 'blind'],
-             ['rotten', 'good']], dtype=object)
-
-    pm.Actions_dict = { 0:'sell apple', 1:'taste apple'}
-    pm.Outcomes_dict = { 0:'rotten', 1:'good'}
-    
-    return pm
+    # Makes the dominated actions as bad as possible i.e. with worst possible loss
+    for iv in EmptyCells:
+        if not geometry.isNonDominated(iv, LdashMatrix):
+            LdashMatrix[iv,...] =  max(LdashMatrix[iv,...])
+        
+    return FdashMatrix, LdashMatrix
