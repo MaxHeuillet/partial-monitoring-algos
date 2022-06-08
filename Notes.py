@@ -1,4 +1,130 @@
+import gurobipy as gp
+from gurobipy import GRB
 
+
+env = gp.Env( empty = True )
+m = gp.Model("mip1")
+m.addVar(vtype=GRB.BINARY, name="x")
+m.setObjective(x + y + 2 * z, GRB.MINIMIZE)
+m.addConstr(x + 2 * y + 3 * z <= 4, "c0")
+m.optimize()
+
+
+FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
+
+A = geometry.get_alphabet_size(FeedbackMatrix)
+print('A', type(A) )
+
+def get_signal_matrices(H):
+    N, M = H.shape
+    A = get_alphabet_size(H)
+    signal_matrices = []
+    for i in range(N):
+        signal_matrix = np.zeros( (A,M) )
+        for j in range(M):
+            a = H[i][j]
+            signal_matrix[a][j] = 1
+        signal_matrices.append(signal_matrix)
+    return signal_matrices
+
+get_signal_matrices(FeedbackMatrix)
+
+
+def two_cell_intersection(pair, LossMatrix, halfspace, mathcal_N, mathcal_P):
+
+    N, M = LossMatrix.shape
+    # declare M ppl Variables
+    p = [ ppl.Variable(j) for j in range(M) ]
+    
+    # declare polytope constraints
+    cs = ppl.Constraint_System()
+
+    # p belongs to $\Delta_M$ the set of M dimensional probability vectors
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+
+    # strict Loss domination constraints for both a and b
+    Doma = scale_to_integers(domination_matrix( pair[0],LossMatrix))
+    Domb = scale_to_integers(domination_matrix(pair[1],LossMatrix)) 
+    for i in range(N):
+        if i!=pair[0]:
+            # p is such that for any action i Loss[a,...]*p <= Loss[a,...]*p
+            cs.insert( sum( (Doma[i,j]*p[j] for j in range(M)) ) <= 0 )
+        if i!=pair[1]:
+            # p is such that for any action i Loss[b,...]*p <= Loss[a,...]*p
+            cs.insert( sum( (Domb[i,j]*p[j] for j in range(M)) ) <= 0 )
+
+    # intersection from the halfspaces:
+    for pair in get_halfspace_pairs(halfspace):
+        substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
+
+    return ppl.NNC_Polyhedron(cs)
+
+
+# def observer_vector(L, H, i, j, mathcal_K_plus):
+#     A = np.vstack( global_signal(H) )
+#     Lij = L[i,...] - L[j,...]
+#     # print('Lij', Lij)
+#     # print('globalsignal',global_signal(H))
+#     x, res, rank, s = np.linalg.lstsq(A.T, Lij) 
+#     lenght = [ len( np.unique(H[k]) ) for k in mathcal_K_plus]
+#     x = iter( np.round(x) )
+#     return [ np.array( list(islice( x, i)) ) for i in lenght] 
+
+def get_P_t(halfspace, L, mathcal_P, mathcal_N):
+    P_t  = []
+    for pair in mathcal_P:
+        result = single_cell_intersection(pair, L, halfspace, mathcal_N, mathcal_P)
+        #print(result)
+        if result.is_empty() == False:
+            P_t.append(pair)
+    return P_t
+
+def get_N_t(halfspace, L, mathcal_P, mathcal_N):
+    N_t  = []
+    for i in mathcal_N:
+        result = two_cell_intersection(i, L, halfspace, mathcal_N, mathcal_P)
+        #print(result)
+        if result.is_empty() == False:
+            N_t.append(i)
+    return N_t
+
+def get_halfspace_pairs(dictionary):
+    result = []
+    for e1 in dictionary.keys():
+        for e2 in dictionary[e1].keys():
+            result.append( [e1,e2] )
+    return result
+
+def single_cell_intersection(i, LossMatrix, halfspace, mathcal_N, mathcal_P):
+
+    N, M = LossMatrix.shape
+    
+    p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
+    cs = ppl.Constraint_System() # declare polytope constraints
+
+    # p belongs to $\Delta_M$ the set of M dimensional probability vectors
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+
+    # strict Loss domination constraints
+    Dom = scale_to_integers(domination_matrix(i,LossMatrix))
+    
+    for a in range(N):
+        if a != i:
+            # p is such that for any action a Loss[i,...]*p <= Loss[a,...]*p
+            #print "Domination line:", Dom[a,...], "inequality:", sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0
+            cs.insert( sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0 )
+    
+    # intersection from the halfspaces:
+    for pair in get_halfspace_pairs(halfspace):
+        substract = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  halfspace[  pair[0] ][ pair[1] ] * sum( ( substract[a] * p[a] for a in range(M) ) )  > 0 )
+
+    return ppl.NNC_Polyhedron(cs)
     # def ucb1(self, method, job_id):
     #     '''Play the given bandit over T rounds using the UCB1 strategy.'''
 
