@@ -20,7 +20,104 @@ import gurobipy as gp
 from gurobipy import GRB
 
 
+def get_P_t(halfspace, L):
+    P_t  = []
+    N, M = L.shape
+    for i in range(N):
+        result = single_cell_intersection(i, L, halfspace)
+        if result.is_empty() == False:
+            P_t.append(i)
+    return P_t
 
+def get_N_t(halfspace, L):
+    N_t  = []
+    N, M = L.shape
+    for i in range(N):
+        for j in range(N):
+            if two_cell_intersection([i,j], L, halfspace ):
+                N_t.append([i,j])
+    return N_t
+
+
+
+def two_cell_intersection(pair, LossMatrix, halfspace):
+
+    N, M = LossMatrix.shape
+    # declare M ppl Variables
+
+    cs = ppl.Constraint_System()
+    p = [ ppl.Variable(j) for j in range(M) ]
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+
+    # intersection from the halfspaces:
+    for element in halfspace:
+        pair, sign = element[0], element[1]
+        Lij = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  sign * sum( ( Lij[a] * p[a] for a in range(M) ) )  > 0 )
+
+    open_polytope = ppl.NNC_Polyhedron(cs) 
+    print('open polytope', open_polytope)
+
+    cs2 = ppl.Constraint_System()
+    p2 = [ ppl.Variable(j) for j in range(M) ]
+    cs2.insert( sum( p2[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p2[j] >= 0)
+
+    # strict Loss domination constraints for both a and b
+    for i in range(N):
+        if i!=pair[0]:
+            # p is such that for any action i Loss[a,...]*p <= Loss[a,...]*p
+            cs2.insert( LossMatrix[ pair[0],...].dot(p) - LossMatrix[i,...].dot(p2) <= 0 )
+        if i!=pair[1]:
+            # p is such that for any action i Loss[b,...]*p <= Loss[a,...]*p
+            cs2.insert( LossMatrix[ pair[1],...].dot(p) - LossMatrix[i,...].dot(p2) <= 0 )
+
+    Ci_inter_Cj = ppl.NNC_Polyhedron(cs2) 
+    print('Ci_inter_Cj', Ci_inter_Cj)
+
+    return intersects(open_polytope, Ci_inter_Cj)
+
+def intersects(A, B):
+    if A.is_empty() or B.is_empty():
+        return True
+    else:
+        A.intersection_assign(B)
+        print('intersection:, ', A)
+        return A.is_empty()
+
+
+
+def single_cell_intersection(i, LossMatrix, halfspace):
+
+    N, M = LossMatrix.shape
+    
+    p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
+    cs = ppl.Constraint_System() # declare polytope constraints
+
+    # p belongs to $\Delta_M$ the set of M dimensional probability vectors
+    cs.insert( sum( p[j] for j in range(M)) == 1 )
+    for j in range(M):
+        cs.insert(p[j] >= 0)
+
+    # strict Loss domination constraints
+    # Dom = scale_to_integers(domination_matrix(i,LossMatrix))
+    
+    for a in range(N):
+        if a != i:
+            # p is such that for any action a Loss[i,...]*p <= Loss[a,...]*p
+            #print "Domination line:", Dom[a,...], "inequality:", sum( (Dom[a,j]*p[j] for j in range(M)) ) <= 0
+            cs.insert( LossMatrix[i,...].dot(p) <= 0 )
+    
+    # intersection from the halfspaces:
+    for element in halfspace:
+        pair, sign = element[0], element[1]
+        Lij = LossMatrix[ pair[0] ] - LossMatrix[ pair[1] ]  
+        cs.insert(  sign * sum( ( Lij[a] * p[a] for a in range(M) ) )  > 0 )
+
+    return ppl.NNC_Polyhedron(cs)
 
 
 ### General FeedExp3 helpers
@@ -35,55 +132,6 @@ def signal_vec(i, v, FeedbackMatrix):
 
 def signal_vecs(i, FeedbackMatrix):
     return [signal_vec(i, v, FeedbackMatrix) for v in set(FeedbackMatrix[i,...])]
-
-
-def get_alphabet_size(FeedbackMatrix):
-    N, M = FeedbackMatrix.shape
-    letters = []
-    for i in range(N):
-        for j in range(M):
-            letters.append( FeedbackMatrix[i][j] )
-    return len(set(letters)) 
-
-
-def get_signal_matrices(H):
-    N, M = H.shape
-    A = get_alphabet_size(H)
-    signal_matrices = []
-    for i in range(N):
-        signal_matrix = np.zeros( (A,M) )
-        for j in range(M):
-            a = H[i][j]
-            signal_matrix[a][j] = 1
-        signal_matrices.append(signal_matrix)
-    return signal_matrices
-
-
-
-    # # print(S_vectors)
-    # stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
-
-    # resultat = stacked_S * Lij 
-    # v_ij = resultat.T[0]
-    # length = [ len(k)  for k in S_vectors]
-    # v_ij = iter( v_ij )
-    # return [ np.array( list( islice( v_ij, i)) ) for i in length] 
-
-
-
-# def get_observer_vector(pair, L,H, observer_set):
-    
-#     Lij = L[pair[0],...] - L[pair[1],...]
-#     S_vectors = [ signal_vecs(k, H) for k in observer_set[ pair[0] ][ pair[1] ] ]
-#     # print(S_vectors)
-#     stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
-
-#     resultat = stacked_S * Lij 
-#     v_ij = resultat.T[0]
-#     length = [ len(k)  for k in S_vectors]
-#     v_ij = iter( v_ij )
-#     return [ np.array( list( islice( v_ij, i)) ) for i in length] 
-
 
 
 # Fjv: the row binary signal matrix for F_{i,j}=v (pseudo-action i/v)
@@ -143,213 +191,19 @@ def DominationPolytope(i,LossMatrix):
             
     return ppl.C_Polyhedron(cs)
 
-
-
-
-def get_observer_vector(pair, L,H, S_vectors):
-
-    N, M = H.shape
+def get_observer_vector_v2(pair, L, H ):
+    
     Lij = L[pair[0],...] - L[pair[1],...]
-    A = get_alphabet_size(H)
     
+    S_vectors = [ signal_vecs(k, H) for k in [0,1] ]
+    stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
 
-    m = gp.Model("mip1")
-    m.Params.LogToConsole = 0
-
-    vars = []
-    for k in range(N):
-        vars.append( [] )
-        for a in range(A):
-            varName =  '{} {}'.format(k,a) 
-            vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName) )
-
-    m.update()
-
-    obj = gp.QuadExpr ()
-    for i in range(N):
-        for a in range(A):
-            obj += vars[k][a] * vars[k][a]
-
-    m.setObjective(obj, GRB.MINIMIZE)
-
-    for j in range(M):
-        constraintExpr = gp.LinExpr()
-        str = 'c {}'.format(j)
-        for a in range(A):
-            for k in range(N):
-                constraintExpr += S_vectors[k][a][j] * vars[k][a]
-        m.addConstr(constraintExpr == Lij[j], str );
-
-    m.optimize()
-    vij = np.zeros( (N, A) )
-    for k in range(N):
-        for a in range(A):
-            vij[k, a] = vars[k][a].X
-
-    return vij
-
-
-def isNeighbor(LossMatrix, i1, i2, halfspace):
-
-    feasible = True
-    N, M = LossMatrix.shape
-    #print('N', N, 'M', M, 'i1', i1, 'i2', i2)
-
-    m = gp.Model("mip1")
-    m.Params.LogToConsole = 0
-
-    vars = []
-    for j in range(M):
-        varName =  'p_{}'.format(j) 
-        vars.append( m.addVar(0.00001, 1.0, -1.0, GRB.CONTINUOUS, varName) )
-
-    m.update()
-
-    simplexExpr = gp.LinExpr()
-    for j in range(M):
-        simplexExpr += 1.0 * vars[j]
-    m.addConstr(simplexExpr == 1.0, "css")
-
-    twoDegenerateExpr = gp.LinExpr()
-    for j in range(M):
-        twoDegenerateExpr += ( LossMatrix[i2][j]-LossMatrix[i1][j] ) * vars[j]
-    m.addConstr(twoDegenerateExpr == 0.0, "cdeg");
-
-    for i3 in range(N):
-        if ( (i3 == i1) or (i2 == i1) ) :
-            pass 
-        else:
-            lossExpr  = gp.LinExpr()
-            for j in range(M):
-                lossExpr += ( LossMatrix[i3][j] - LossMatrix[i1][j] ) * vars[j]
-        
-            lossConstStr = "c{}".format(i3)
-            m.addConstr(lossExpr >= 0.0, lossConstStr)
-
-    for element in halfspace:
-        pair, sign = element[0], element[1]
-        if sign == 0:
-            pass
-        else:
-            halfspaceExpr = gp.LinExpr()
-            for j in range(M):
-                halfspaceExpr += ( sign * (LossMatrix[i1][j] - LossMatrix[i2][j] ) ) * vars[j]
-        
-            halfspaceConstStr = "ch_{}_{}".format(i1,i2)
-            m.addConstr(halfspaceExpr >= 0.0000000000001,  halfspaceConstStr )
-
-    m.optimize()
-
-    if m.getAttr( GRB.Attr.Status )  in ( GRB.INF_OR_UNBD , GRB.INFEASIBLE , GRB.UNBOUNDED ):
-        feasible = False
-
-    return feasible
-    
-
-
-    # #simple constraint:
-    # p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
-    # cs = ppl.Constraint_System() # declare polytope constraints
-
-    # # p belongs to $\Delta_M$ the set of M dimensional probability vectors
-    # cs.insert( sum( p[j] for j in range(M)) == 1 )
-    # for j in range(M):
-    #     cs.insert(p[j] >= 0)
-
-    # # < p, loss(i1) - loss(i2) > = 0 
-    # result = 0
-    # for j in range(M):
-    #     result += ( LossMatrix[i2][j] - LossMatrix[i1][j] ) * p[j]
-    # cs.insert( result == 0)
-
-    # # < p, loss(i1) - loss(i2) > = 0 
-    # loss = []
-    # for i3 in range(N):
-    #     #print('i3',i3,'i2',i2,'i1',i1)
-    #     if i3 == i1 or i3 == i2:
-    #         pass
-    #     else:
-    #         for j in range(M):
-    #             loss.append(  (  LossMatrix[i3][j] - LossMatrix[i1][j]) * p[j] )
-    # #print('loss', loss, sum(loss), len(loss))
-    # if len(loss) > 0:
-    #     cs.insert( sum(loss) >= 0)
-
-    # # halfspace constraint: h(i,j) * (loss[i]-loss[j])^top @ p > 0 
-    # halfspaceExpr = []
-    # for element in halfspace:
-    #     pair, sign = element[0], element[1]
-    #     if sign== 0:
-    #         pass
-    #     else:
-    #         for j in range(M):
-    #             coef = sign * ( LossMatrix[ pair[0] ][j] - LossMatrix[  pair[1] ][j] )
-    #             if(coef != 0):
-    #                 halfspaceExpr.append( coef * p[j] )
-        
-    # #print('halfspaceexpr', halfspaceExpr)
-    # if len(halfspaceExpr) > 0:
-    #     cs.insert( sum(halfspaceExpr) > 0 )
-
-    # return ppl.NNC_Polyhedron(cs)
-
-
-def getNeighbors(LossMatrix, mathcal_N, halfspace):
-    N_t = []
-    for pair in mathcal_N:
-        if isNeighbor(LossMatrix, pair[0], pair[1], halfspace):
-            N_t.append( pair )
-    return N_t
-
-
-def getParetoOptimalActions(LossMatrix, halfspace):
-
-    N, M = LossMatrix.shape
-    P = []
-
-    for i in range(N):
-
-        p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
-        cs = ppl.Constraint_System() # declare polytope constraints
-
-        # p belongs to $\Delta_M$ the set of M dimensional probability vectors
-        cs.insert( sum( p[j] for j in range(M)) == 1 )
-        for j in range(M):
-            cs.insert(p[j] >= 0)
-
-        # <p , li2 - li > \geq 0
-        loss = []
-        for i2 in range(N):
-            if i2 == i:
-                pass
-            else:
-                for j in range(M):
-                    loss.append(  ( LossMatrix[i2][j] - LossMatrix[i][j] ) * p[j] )
-        if len(loss)>0:
-            cs.insert( sum(loss) >= 0 )
-
-        # halfspace constraint: h(i,j) * (loss[i]-loss[j])^top @ p > 0 
-        halfspaceExpr = []
-        for element in halfspace:
-            pair, sign = element[0], element[1]
-            if sign == 0:
-                pass
-            else:
-                for j in range(M):
-                    coef = sign * ( LossMatrix[ pair[0] ][j] - LossMatrix[ pair[1] ][j] )
-                    if(coef != 0):
-                        halfspaceExpr.append( coef * p[j] )
-        
-        print('halfspaceexpr', sum(halfspaceExpr) )
-        if len(halfspaceExpr)>0:
-            cs.insert( sum(halfspaceExpr) > 0 )
-
-        polytope = ppl.NNC_Polyhedron(cs)
-        if polytope.is_empty() == False:
-            P.append(i)
-
-    return P
-
+    resultat = stacked_S * Lij 
+    v_ij = resultat.T[0]
+    print(v_ij)
+    length = [ len(k)  for k in S_vectors]
+    v_ij = iter( v_ij )
+    return [ np.array( list( islice( v_ij, i)) ) for i in length] 
 
 def get_neighborhood_action_set(pair, N_bar, L):
     
