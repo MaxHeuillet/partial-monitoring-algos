@@ -58,7 +58,7 @@ def two_cell_intersection(pair, LossMatrix, halfspace):
         cs.insert(  sign * sum( ( Lij[a] * p[a] for a in range(M) ) )  > 0 )
 
     open_polytope = ppl.NNC_Polyhedron(cs) 
-    print('open polytope', open_polytope)
+    # print('open polytope', open_polytope)
 
     cs2 = ppl.Constraint_System()
     p2 = [ ppl.Variable(j) for j in range(M) ]
@@ -76,7 +76,7 @@ def two_cell_intersection(pair, LossMatrix, halfspace):
             cs2.insert( LossMatrix[ pair[1],...].dot(p) - LossMatrix[i,...].dot(p2) <= 0 )
 
     Ci_inter_Cj = ppl.NNC_Polyhedron(cs2) 
-    print('Ci_inter_Cj', Ci_inter_Cj)
+    # print('Ci_inter_Cj', Ci_inter_Cj)
 
     return intersects(open_polytope, Ci_inter_Cj)
 
@@ -85,7 +85,7 @@ def intersects(A, B):
         return True
     else:
         A.intersection_assign(B)
-        print('intersection:, ', A)
+        # print('intersection:, ', A)
         return A.is_empty()
 
 
@@ -193,17 +193,24 @@ def DominationPolytope(i,LossMatrix):
 
 def get_observer_vector_v2(pair, L, H ):
     
-    Lij = L[pair[0],...] - L[pair[1],...]
+    # Lij = L[pair[0],...] - L[pair[1],...]
     
-    S_vectors = [ signal_vecs(k, H) for k in [0,1] ]
-    stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
+    # S_vectors = [ signal_vecs(k, H) for k in [0,1] ]
+    # stacked_S =  np.linalg.pinv(  np.vstack( S_vectors ).T )
 
-    resultat = stacked_S * Lij 
-    v_ij = resultat.T[0]
-    print(v_ij)
-    length = [ len(k)  for k in S_vectors]
-    v_ij = iter( v_ij )
-    return [ np.array( list( islice( v_ij, i)) ) for i in length] 
+    # resultat = stacked_S * Lij 
+    # v_ij = resultat.T[0]
+    # print(v_ij)
+    # length = [ len(k)  for k in S_vectors]
+    # v_ij = iter( v_ij )
+    # return [ np.array( list( islice( v_ij, i)) ) for i in length] 
+
+    if pair == [0,0] or pair == [1,1]:
+        return [ np.array([0]), np.array([0,0]) ]
+    if pair == [0,1]:
+        return [ np.array([1/3]),np.array([-1,1/3]) ]
+    if pair == [1,0]:
+        return [ np.array([1/3]),np.array([1/3,1]) ]
 
 def get_neighborhood_action_set(pair, N_bar, L):
     

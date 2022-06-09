@@ -7,7 +7,7 @@ import geometry
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix ):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution ):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
 
@@ -15,7 +15,20 @@ class Game():
         self.n_actions = len(self.LossMatrix)
         self.n_outcomes = len(self.LossMatrix[0])
 
-def apple_tasting( restructure_game ):
+        self.outcome_dist = outcome_distribution
+        self.i_star = self.optimal_action(  )
+
+    def optimal_action(self, ):
+        deltas = []
+        for i in range(len(self.LossMatrix)):
+            deltas.append( self.LossMatrix[i,...].T @ list( self.outcome_dist.values() ) )
+        return np.argmin(deltas)
+
+    def delta(self, action):
+        return ( self.LossMatrix[action,...] - self.LossMatrix[self.i_star,...] ).T @ list( self.outcome_dist.values() ) 
+
+
+def apple_tasting( restructure_game, outcome_distribution ):
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
 
@@ -31,11 +44,11 @@ def apple_tasting( restructure_game ):
     
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
 
     return game
 
-def bandit( restructure_game ):
+def bandit( restructure_game, outcome_distribution ):
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 0],[0, 1] ])
 
@@ -49,18 +62,18 @@ def bandit( restructure_game ):
     else:
         LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
 
     return game
 
 
-def label_efficient():
+def label_efficient( outcome_distribution):
     LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
 
 
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix )
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
 
 
 def general_algorithm(F, L):

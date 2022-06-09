@@ -137,7 +137,7 @@ def isNeighbor(LossMatrix, i1, i2, halfspace):
             sign_Lij_p = sign * Lij.dot( vars )
             # print( 'halfspace constraint', sign_Lij_p )
             halfspaceConstStr = "halfspace_constraint_{}_{}".format(pair[0],pair[1])
-            m.addConstr(sign_Lij_p >= 0.000000000000001,  halfspaceConstStr ) # Gurobi does not support strict inequality constraints therefore constraint >= \epsilon
+            m.addConstr(sign_Lij_p >= 0.001,  halfspaceConstStr ) # Gurobi does not support strict inequality constraints therefore constraint >= \epsilon
 
     # for element in halfspace:
     #     pair, sign = element[0], element[1]
@@ -211,7 +211,7 @@ def getParetoOptimalActions(LossMatrix, halfspace):
                 sign_Lij_p = sign * Lij.dot( vars )
                 print( 'halfspace constraint', sign_Lij_p )
                 halfspaceConstStr = "halfspace_constraint_{}_{}".format(pair[0],pair[1])
-                m.addConstr(sign_Lij_p >= 0.000000000000001,  halfspaceConstStr )  # Gurobi does not support strict inequality constraints therefore constraint >= \epsilon
+                m.addConstr(sign_Lij_p >= 0.001,  halfspaceConstStr )  # Gurobi does not support strict inequality constraints therefore constraint >= \epsilon
         try:
 
             m.optimize()
