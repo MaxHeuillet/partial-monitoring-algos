@@ -11,7 +11,7 @@ class FeedExp3():
         self.horizon = horizon
         self.method = method
         self.u = u = np.ones(self.game.n_actions )/self.game.n_actions
-        self.L_tilde = np.zeros(game.n_actions )
+        self.L_tilde = np.zeros(game.n_actions, dtype = np.float128 )
         self.k_star = max( 1, np.fabs(game.LinkMatrix).max() )
 
         
