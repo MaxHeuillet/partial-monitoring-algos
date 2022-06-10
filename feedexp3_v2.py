@@ -1,6 +1,7 @@
 
 import numpy as np
 import geometry 
+from scipy.special import logsumexp
 
 class FeedExp3():
 
@@ -8,37 +9,41 @@ class FeedExp3():
 
         self.game = game
         self.horizon = horizon
-        self.pbt = np.ones(self.game.n_actions)/self.game.n_actions
         self.method = method
-        self.u = u = np.ones(self.game.n_actions)/self.game.n_actions
+        self.u = u = np.ones(self.game.n_actions )/self.game.n_actions
+        self.L_tilde = np.zeros(game.n_actions )
+        self.k_star = max( 1, np.fabs(game.LinkMatrix).max() )
 
-
-        if self.method == 'Piccolboni':
-            self.eta, self.gamma = self.parameters_Piccolboni()
         
     def get_action(self, t):
 
-        if self.method == 'Bianchi':
-            self.eta, self.gamma = self.parameters_Bianchi(self.k_star, t+1) 
-            
-        self.pbt_hat =  (1 - self.gamma) * self.pbt  + self.gamma * self.u 
-        # print('pbt', self.pbt_hat, 'gamma', self.gamma)
+        self.eta, self.gamma = self.parameters_Bianchi(self.k_star, t+1) 
+        
+        LogZ = logsumexp( - self.eta * self.L_tilde)
+        Q = np.exp( -self.eta * self.L_tilde - LogZ )
+        Q /= Q.sum()
+        # print('logZ', LogZ, 'Q', Q)
+        self.pbt  =  (1 - self.gamma) * Q.astype(np.float) + self.gamma / self.game.n_actions
+        # print('pbt', self.pbt, 'gamma', self.gamma, 'eta', self.eta, 'cumulatif loss',  self.L_tilde)
 
-        action = np.random.choice(self.game.n_actions, 1,  p = self.pbt_hat )[0]
+        action = np.random.choice(self.game.n_actions, 1,  p = self.pbt )[0]
         return action
 
     def update(self, action, feedback):
+        # print('action', action, 'feedback', feedback)
 
-        x = np.array( [ feedback * self.game.LinkMatrix[i][action] / self.pbt_hat[i] for i in range(self.game.n_actions) ] )
-        Z = sum( self.pbt / np.exp( self.eta * x ) )
-        self.pbt = self.pbt / ( Z * np.exp( self.eta * x  ) )
+        for i in range(self.game.n_actions):
+            l =  ( self.game.LinkMatrix[i][action] * feedback ) /self.pbt[action]
+            self.L_tilde[i] += self.L_tilde[i] + l
 
-    def parameters_Piccolboni(self, ):
-        ## [Piccolboni Schindelhauer "Discrete Prediction Games with Arbitrary Feedback and Loss" 2000]
-        ## fixed-known-horizon setting
-        eta = pow( np.log(self.game.n_actions), 1./2.) / pow(self.horizon, 1./2.)
-        gamma = np.fmin(1., pow(self.game.n_actions, 1./2.) * pow( np.log(self.game.n_actions),1./4.) / pow(self.horizon, 1./4.))
-        return eta, gamma
+
+    def parameters_Bianchi(self,  k_star, t):
+        # [Bianchi et al. 2006 "Regret minimization under partial monitoring"]
+   
+        eta = (k_star)**(2/3) * ( np.log(self.game.n_actions)/self.game.n_actions )**(2/3) * t**(-2/3)  #1 / C * pow( np.log( self.game.n_actions ) / ( self.game.n_actions * t ) , 2./3.) 
+        gamma = min(1, (k_star)**(1/3) * self.game.n_actions**(2/3) * t**(-1/3) )  #min(1,  C * pow( ( np.log( self.game.n_actions ) * self.game.n_actions **2) / t , 1./3.) )
+
+        return eta, gamma 
 
 
             

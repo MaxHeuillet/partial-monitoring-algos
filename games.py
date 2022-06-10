@@ -42,7 +42,7 @@ def apple_tasting( restructure_game, outcome_distribution ):
     #     LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
     # else:
     
-    LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix
+    LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
     game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
 
