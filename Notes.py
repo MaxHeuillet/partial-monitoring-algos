@@ -1,6 +1,39 @@
 import gurobipy as gp
 from gurobipy import GRB
 
+n_cores = 16
+horizon = 100
+n_folds = 25
+
+LossMatrix = np.array( [ [1, 0], [0, 1] ] )
+FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
+outcome_distribution = {'spam':0.05,'ham':0.95 }
+    # LossMatrix = np.array( [ [1, 1, 0],[0, 1, 1], [1, 0, 1] ] )
+    # FeedbackMatrix = np.array( [ [1, 0, 0],[0, 1, 0], [0, 0, 1] ] )
+    # outcome_distribution = {'spam':0.2, 'ham':0.6, 'other':0.2}
+
+task = SyntheticCase(LossMatrix, FeedbackMatrix, horizon, outcome_distribution) 
+print('action optimale', task.i_star)
+result = task.cpb_vanilla_v2( 10 )  
+
+    # print( result )
+    # print()
+    
+# regret = np.cumsum( np.array( [ task.delta(i) for i in range(2) ] ).T @ result )
+# plt.plot(regret)
+
+# game = games.apple_tasting(False, outcome_distribution)
+# regret= np.array([ game.delta(i) for i in range(game.n_actions) ]).T @ result
+# plt.plot(   regret , label = 'Bianchi', color = 'green' )
+
+# result =  eval_feedexp_parallel(task, n_cores, n_folds, horizon, True, 'Piccolboni' ) 
+# plt.plot(  np.mean( result , 0 ) , label = 'Piccolboni', color = 'green' )
+
+# result =  eval_feedexp_parallel(task, n_cores, n_folds, horizon, True, 'Bianchi' ) 
+# plt.plot(  np.mean( result , 0 ) , label = 'Bianchi', color = 'orange' )
+
+# plt.legend()
+
 
         # p = [ ppl.Variable(j) for j in range(M) ] # declare M ppl Variables
         # cs = ppl.Constraint_System() # declare polytope constraints
@@ -100,6 +133,144 @@ m.optimize()
 
 
 FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
+
+
+# class SyntheticCase:
+
+#     def __init__(self, LossMatrix, FeedbackMatrix, horizon, outcome_dist ):
+ 
+#         self.LossMatrix = LossMatrix 
+#         self.FeedbackMatrix = FeedbackMatrix 
+        
+#         self.outcome_dist = outcome_dist
+#         self.i_star = self.optimal_action( )
+        
+#         self.horizon = horizon
+#         self.n_actions = len(self.LossMatrix)
+#         self.n_outcomes = len(self.LossMatrix[0])
+
+#     def optimal_action(self, ):
+#         deltas = []
+#         for i in range(len(self.LossMatrix)):
+#             deltas.append( self.LossMatrix[i,...].T @ list( self.outcome_dist.values() ) )
+#         return np.argmin(deltas)
+
+#     def delta(self,action):
+#         return ( self.LossMatrix[action,...] - self.LossMatrix[self.i_star,...] ).T @ list( self.outcome_dist.values() ) 
+
+#     def set_outcomes(self, job_id):
+#         np.random.seed(job_id)
+#         #self.means = runif_in_simplex( len( LossMatrix[0] ) )
+#         self.outcomes = np.random.choice( self.n_outcomes , p= list( self.outcome_dist.values() ), size= self.horizon) 
+
+#     def get_feedback(self, FeedbackMatrix, action, outcome):
+#         return FeedbackMatrix[ action ][ outcome ] 
+
+
+#     def cpb_vanilla_v2(self, job_id):
+#         import geometry_v3
+
+#         action_counter = np.zeros( (self.n_actions, self.horizon) )
+
+#         self.set_outcomes(job_id)
+
+#         N = self.n_actions
+#         M = self.n_outcomes
+#         A = geometry_v3.alphabet_size(self.FeedbackMatrix, N,M)
+#         print('n-actions', N, 'n-outcomes', M, 'alphabet', A)
+
+#         SignalMatrices = geometry_v3.calculate_signal_matrices(self.FeedbackMatrix, N,M,A)
+
+#         n = np.zeros(N)
+#         nu = [  np.zeros( A ) for i in range(N)] 
+
+#         pareto_actions = geometry_v3.getParetoOptimalActions(self.LossMatrix, N, M, [])
+#         neighborhood_actions = geometry_v3.getNeighborhoodActions(self.LossMatrix, N, M, [])
+#         # print('neighborhood_actions', neighborhood_actions)
+
+#         v =  geometry_v3.getV(self.LossMatrix, N, M, A, SignalMatrices, neighborhood_actions)
+#         # print('V', v)
+#         W = geometry_v3.getConfidenceWidth(neighborhood_actions, v, N);
+#         print(W)
+#         alpha = 1.01
+
+#         eta = []
+#         for i in range(N):
+#             eta.append( W[i]**2/3 )
+
+#         for t in range(self.horizon):
+          
+#           if(t<N):
+
+#             action = t
+#             feedback = self.FeedbackMatrix[action][ self.outcomes[t]  ]
+#             n[action] += 1
+#             nu[action][ feedback ] += 1
+
+#             for i in range(N):
+#                 if i == action:
+#                     action_counter[i][t] = action_counter[i][t-1] +1
+#                 else:
+#                     action_counter[i][t] = action_counter[i][t-1]
+
+#           else: 
+
+#             halfspace = []
+
+#             for pair in neighborhood_actions:
+#                 tdelta = 0
+#                 c = 0
+#                 for k in range(N):
+#                     tdelta += v[pair[0]][pair[1]][k].dot( nu[k] ) / n[k]
+#                     c += np.linalg.norm( v[pair[0]][pair[1]][k], np.inf ) * np.sqrt( alpha * np.log(t) / n[k]  )
+                
+#                 if( abs(tdelta) >= c):
+#                     halfspace.append( ( pair, np.sign(tdelta) ) )
+#                 # else:
+#                 #     halfspace.append( ( pair, 0 ) )
+#                 # print('pair', pair,  'tdelta', tdelta, 'c', c)
+
+#             # print('halfspace', halfspace)
+#             P_t = geometry_v3.getParetoOptimalActions(self.LossMatrix, N, M, halfspace)
+#             N_t = geometry_v3.getNeighborhoodActions(self.LossMatrix, N, M, halfspace)
+
+#             Nplus_t = []
+
+#             for pair in N_t:
+#               Nplus_t.append(pair[0])
+#               Nplus_t.append(pair[1])
+              
+#             R_t = []
+#             for k in range(N):
+#               if n[k] <=  eta[k] * geometry_v3.f(t, alpha) :
+#                 R_t.append(k)
+#             R_t = np.unique(R_t)
+
+#             union1= np.union1d( Nplus_t, P_t )
+#             union1 = np.array(union1, dtype=int)
+#             # print('union1', union1)
+#             S =  np.union1d(  union1  ,  R_t)
+#             S = np.array( S, dtype = int)
+#             # print('S', S)
+#             S = np.unique(S)
+              
+#             value = [ W[i]**2/n[i] for i in S]
+#             # print('value', value)
+#             istar = np.argmax(value)
+
+#             print('N_t', N_t, 'Nplus_t', Nplus_t,'R_t',R_t, 'P_t', P_t , 'S', S, 'istar', istar)
+
+#             feedback = self.FeedbackMatrix[istar][ self.outcomes[t] ]
+#             n[istar] += 1
+#             nu[istar][ feedback ] += 1
+
+#             for i in range(N):
+#                 if i == istar:
+#                     action_counter[i][t] = action_counter[i][t-1] +1
+#                 else:
+#                     action_counter[i][t] = action_counter[i][t-1]
+
+#         return action_counter
 
 A = geometry.get_alphabet_size(FeedbackMatrix)
 print('A', type(A) )

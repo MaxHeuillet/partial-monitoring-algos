@@ -26,7 +26,7 @@ def getParetoOptimalActions(LossMatrix, N, M, halfspace):
         feasible = True
 
         # try:
-        m = gp.Model("mip1")
+        m = gp.Model( )
         m.Params.LogToConsole = 0
 
         vars = []
@@ -85,7 +85,7 @@ def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
     feasible = True
 
 
-    m = gp.Model("mip1")
+    m = gp.Model( )
     m.Params.LogToConsole = 0
     vars = []
     for j in range(M):
@@ -143,7 +143,7 @@ def getVij(LossMatrix, N, M, A, SignalMatrices, i1, i2):
     l2 = LossMatrix[i2]
     ldiff = l1 - l2
     # try:
-    m = gp.Model("mip1")
+    m = gp.Model( )
     m.Params.LogToConsole = 0
 
     vars = []
