@@ -19,10 +19,9 @@ def calculate_signal_matrices(FeedbackMatrix, N,M,A):
             signalMatrix[a][j] = 1
         signal_matrices.append(signalMatrix)
     return signal_matrices
-
 def getParetoOptimalActions(LossMatrix, N, M, halfspace):
     actions = []
-    for i in range(N):
+    for z in range(N):
         feasible = True
 
         # try:
@@ -44,10 +43,10 @@ def getParetoOptimalActions(LossMatrix, N, M, halfspace):
         m.addConstr(simplexExpr == 1.0, "css")
 
         for i2 in range(N):
-            if(i2 != i):
+            if(i2 != z):
                 lossExpr = gp.LinExpr()
                 for j in range(M):
-                    lossExpr += ( LossMatrix[i2][j] - LossMatrix[i][j] ) * vars[j]
+                    lossExpr += ( LossMatrix[i2][j] - LossMatrix[z][j] ) * vars[j]
                     lossConstStr = 'c {}'.format(i2)
                 m.addConstr(lossExpr >= 0.0, lossConstStr )
 
@@ -63,22 +62,23 @@ def getParetoOptimalActions(LossMatrix, N, M, halfspace):
                 m.addConstr(halfspaceExpr >= 0.001, halfspaceConstStr )
         try:
             m.optimize()
+            # print('action',z,'status',m.Status)
             objval = m.objVal
         except:
             # print('pareto declined action {}'.format(i))
             feasible=False
 
         if feasible:
-            actions.append(i)
+            actions.append(z)
 
     return actions
 
-def getNeighborhoodActions(LossMatrix, N, M, halfspace):
+def getNeighborhoodActions(LossMatrix, N, M, halfspace,mathcal_N):
     actions = []
-    for i1 in range(N):
-        for i2 in range(N):
-            if isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
-                actions.append( [i1,i2] )
+    for pair in mathcal_N:
+        i1,i2 = pair
+        if isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
+            actions.append( [i1,i2] )
     return actions
 
 def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
@@ -135,10 +135,14 @@ def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
 
 def getV(LossMatrix, N, M, A, SignalMatrices, neighborhood_actions):
     v = collections.defaultdict(dict)
+    # v[0][0] = [ np.array([[0]]) ]
+    # v[1][1] = [ None, np.array([[0,0]]) ]
+    # v[0][1] = [  np.array([[0]]), np.array([[-1, 1]])  ]
+    # v[1][0] = [  np.array([[0]]), np.array([[1, -1]])  ]
     v[0][0] = [ np.array([[0]]) ]
     v[1][1] = [ None, np.array([[0,0]]) ]
-    v[0][1] = [  np.array([[0]]), np.array([[-1, 1]])  ]
-    v[1][0] = [  np.array([[0]]), np.array([[1, -1]])  ]
+    v[0][1] = [  np.array([[0.5]]), np.array([[-1.5, 0.5]])  ]
+    v[1][0] = [  np.array([[0.5]]), np.array([[0.5, -1.5]])  ]
     
     # for pair in neighborhood_actions:
     #     v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, A, SignalMatrices, pair[0], pair[1])
