@@ -18,7 +18,7 @@ import ppl #parma polyhedra library for the cell decomposition
 from itertools import islice
 import gurobipy as gp
 from gurobipy import GRB
-
+import collections
 
 def get_P_t(halfspace, L):
     P_t  = []
@@ -212,18 +212,27 @@ def get_observer_vector_v2(pair, L, H ):
     if pair == [1,0]:
         return [ np.array([1/3]),np.array([1/3,1]) ]
 
-def get_neighborhood_action_set(pair, N_bar, L):
+def get_neighborhood_action_set( N, L):
+
+    mathcal_N_plus = collections.defaultdict(dict)
+
+    for i in range(N):
+        for j in range(N):
     
-    cell_i = DominationPolytope(pair[0], L)
-    cell_j = DominationPolytope(pair[1], L)
-    cell_i.intersection_assign(cell_j) 
-    mathcal_N_plus = []
-    for k in N_bar:
-        cell_k = DominationPolytope(k, L)
-        # print( cell_k.contains(cell_i) )
-        if cell_k.contains(cell_i):
-            mathcal_N_plus.append(k)
+            cell_i = DominationPolytope(i, L)
+            cell_j = DominationPolytope(j, L)
+            cell_i.intersection_assign(cell_j) 
+            result = []
+            for k in range(N):
+                cell_k = DominationPolytope(k, L)
+                # print( cell_k.contains(cell_i) )
+                if cell_k.contains(cell_i):
+                    result.append(k)
+
+            mathcal_N_plus[ i ][ j ] = result
+
     return mathcal_N_plus
+
 
 # return domination Cell polytope interior for action i
 def StrictDominationPolytope(i,LossMatrix):

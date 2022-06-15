@@ -11,14 +11,11 @@ class FeedExp3():
         self.pbt = np.ones(self.game.n_actions)/self.game.n_actions
 
         self.u = u = np.ones(self.game.n_actions)/self.game.n_actions
-        self.k_star = max( 1,  np.fabs(game.LinkMatrix).max() )
 
-        # self.eta, self.gamma = self.parameters_Piccolboni()
+        self.eta, self.gamma = self.parameters_Piccolboni()
         
     def get_action(self, t):
 
-        self.eta, self.gamma = self.parameters_Bianchi(t+1)
-            
         self.pbt_hat =  (1 - self.gamma) * self.pbt  + self.gamma * self.u 
         # print('pbt', self.pbt_hat, 'gamma', self.gamma)
 
@@ -37,12 +34,6 @@ class FeedExp3():
         eta = pow( np.log(self.game.n_actions), 1./2.) / pow(self.horizon, 1./2.)
         gamma = np.fmin(1., pow(self.game.n_actions, 1./2.) * pow( np.log(self.game.n_actions),1./4.) / pow(self.horizon, 1./4.))
         return eta, gamma
-
-    def parameters_Bianchi(self, t):
-        # [Bianchi et al. 2006 "Regret minimization under partial monitoring"]
-        eta = (self.k_star)**(2/3) * ( np.log(self.game.n_actions)/self.game.n_actions )**(2/3) * t**(-2/3)  #1 / C * pow( np.log( self.game.n_actions ) / ( self.game.n_actions * t ) , 2./3.) 
-        gamma = min(1, (self.k_star)**(1/3) * self.game.n_actions**(2/3) * t**(-1/3) )  #min(1,  C * pow( ( np.log( self.game.n_actions ) * self.game.n_actions **2) / t , 1./3.) )
-        return eta, gamma 
 
 
             

@@ -1,48 +1,44 @@
 
 import numpy as np
-import geometry 
 from scipy.special import logsumexp
 
 class FeedExp3():
 
-    def __init__(self, game, horizon, method):
+    def __init__(self, game, horizon):
 
         self.game = game
         self.horizon = horizon
-        self.method = method
-        self.u = u = np.ones(self.game.n_actions )/self.game.n_actions
         self.L_tilde = np.zeros(game.n_actions, dtype = np.float128 )
-        self.k_star = max( 1, np.fabs(game.LinkMatrix).max() )
+        self.k_star = max( 1,  np.fabs(game.LinkMatrix).max() )
+        # print('kstar', self.k_star)
 
-        
     def get_action(self, t):
 
-        self.eta, self.gamma = self.parameters_Bianchi(self.k_star, t+1) 
+        self.eta, self.gamma = self.parameters_Bianchi(t+1) 
         
         LogZ = logsumexp( - self.eta * self.L_tilde)
-        Q = np.exp( -self.eta * self.L_tilde - LogZ )
-        Q /= Q.sum()
+        Q = np.exp( -self.eta * self.L_tilde - LogZ ) #
+        Q = Q / Q.sum()
+        Q = Q.astype(np.float)
         # print('logZ', LogZ, 'Q', Q)
-        self.pbt  =  (1 - self.gamma) * Q.astype(np.float) + self.gamma / self.game.n_actions
+        self.pbt  =  (1 - self.gamma) * Q  + self.gamma / self.game.n_actions
         # print('pbt', self.pbt, 'gamma', self.gamma, 'eta', self.eta, 'cumulatif loss',  self.L_tilde)
 
         action = np.random.choice(self.game.n_actions, 1,  p = self.pbt )[0]
         return action
 
-    def update(self, action, feedback):
+    def update(self, action, feedback, outcome):
         # print('action', action, 'feedback', feedback)
 
-        for i in range(self.game.n_actions):
-            l =  ( self.game.LinkMatrix[i][action] * feedback ) /self.pbt[action]
+        for i in range( self.game.n_actions ):
+            l =  ( self.game.LinkMatrix[i][action] * feedback ) / self.pbt[action]
             self.L_tilde[i] += self.L_tilde[i] + l
 
 
-    def parameters_Bianchi(self,  k_star, t):
+    def parameters_Bianchi(self, t):
         # [Bianchi et al. 2006 "Regret minimization under partial monitoring"]
-   
-        eta = (k_star)**(2/3) * ( np.log(self.game.n_actions)/self.game.n_actions )**(2/3) * t**(-2/3)  #1 / C * pow( np.log( self.game.n_actions ) / ( self.game.n_actions * t ) , 2./3.) 
-        gamma = min(1, (k_star)**(1/3) * self.game.n_actions**(2/3) * t**(-1/3) )  #min(1,  C * pow( ( np.log( self.game.n_actions ) * self.game.n_actions **2) / t , 1./3.) )
-
+        eta = (self.k_star)**(2/3) * ( np.log(self.game.n_actions)/self.game.n_actions )**(2/3) * t**(-2/3)  #1 / C * pow( np.log( self.game.n_actions ) / ( self.game.n_actions * t ) , 2./3.) 
+        gamma = min(1, (self.k_star)**(1/3) * self.game.n_actions**(2/3) * t**(-1/3) )  #min(1,  C * pow( ( np.log( self.game.n_actions ) * self.game.n_actions **2) / t , 1./3.) )
         return eta, gamma 
 
 

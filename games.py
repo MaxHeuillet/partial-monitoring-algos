@@ -7,13 +7,17 @@ import geometry
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution ):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, outcome_distribution ):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
-
         self.LinkMatrix = LinkMatrix
+        self.SignalMatrices = SignalMatrices
         self.n_actions = len(self.LossMatrix)
         self.n_outcomes = len(self.LossMatrix[0])
+        # self.N = len(self.LossMatrix)
+        # self.M = len(self.LossMatrix[0])
+        # self.Actions_dict = { a : "{0}".format(a) for a in range(self.N)} # Actions semantic
+        # self.Outcomes_dict = { a : "{0}".format(a) for a in range(self.M)} # Outcomes semantic
 
         self.outcome_dist = outcome_distribution
         self.i_star = self.optimal_action(  )
@@ -31,6 +35,7 @@ class Game():
 def apple_tasting( restructure_game, outcome_distribution ):
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
+    signal_matrices =  [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ] ) ]
 
     if restructure_game:
         FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
@@ -44,13 +49,14 @@ def apple_tasting( restructure_game, outcome_distribution ):
     
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, outcome_distribution )
 
     return game
 
 def bandit( restructure_game, outcome_distribution ):
-    init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
-    init_FeedbackMatrix =  np.array([ [1, 0],[0, 1] ])
+    init_LossMatrix = np.array( [ [0, 0], [-1, 1] ] )
+    init_FeedbackMatrix =  np.array([ [0, 0],[-1, 1] ])
+    signal_matrices = [  np.array( [ [1,1] ] ), np.array( [ [0,1],[1,0] ] ) ] 
 
     if restructure_game:
         FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
@@ -62,18 +68,17 @@ def bandit( restructure_game, outcome_distribution ):
     else:
         LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix,signal_matrices, outcome_distribution )
 
     return game
 
 
-def label_efficient( outcome_distribution):
+def label_efficient( outcome_distribution ):
     LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
-
-
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, outcome_distribution )
+    signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, outcome_distribution )
 
 
 def general_algorithm(F, L):

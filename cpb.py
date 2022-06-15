@@ -1,5 +1,6 @@
 import numpy as np
 import geometry_v3
+import geometry
 
 class CPB():
 
@@ -13,17 +14,23 @@ class CPB():
         self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
         print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
-        self.SignalMatrices = geometry_v3.calculate_signal_matrices(game.FeedbackMatrix, self.N, self.M, self.A)
+        self.SignalMatrices = game.SignalMatrices
 
-        self.n = np.zeros(self.N)
-        self.nu = [ np.zeros( self.A ) for i in range(self.N)] 
+        self.n = np.zeros( self.N )
+        self.nu = [ np.zeros(   ( len( set(game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)] 
+        print('nu', self.nu)
 
         self.pareto_actions = geometry_v3.getParetoOptimalActions(game.LossMatrix, self.N, self.M, [])
         self.neighborhood_actions = geometry_v3.getNeighborhoodActions(game.LossMatrix, self.N, self.M, [])
+        print('mathcal_N', self.neighborhood_actions)
+
+        self.N_plus = geometry.get_neighborhood_action_set(self.N, game.LossMatrix)
+        print('N_plus', self.N_plus)
 
         self.v = geometry_v3.getV(game.LossMatrix, self.N, self.M, self.A, self.SignalMatrices, self.neighborhood_actions)
 
-        self.W = geometry_v3.getConfidenceWidth(self.neighborhood_actions, self.v, self.N)
+        self.W = geometry_v3.getConfidenceWidth(self.neighborhood_actions,self.N_plus, self.v, self.N)
+        print('W', self.W)
 
         self.alpha = 1.01
 
@@ -44,17 +51,18 @@ class CPB():
             for pair in self.neighborhood_actions:
                 tdelta = 0
                 c = 0
-                for k in range(self.N):
-                    tdelta += self.v[pair[0]][pair[1]][k].dot( self.nu[k] ) / self.n[k]
+                for k in  self.N_plus[ pair[0] ][ pair[1] ] :
+                    # print( 'pair', pair, self.v[ pair[0] ][ pair[1] ][k].shape, self.nu[k].shape )
+                    tdelta += self.v[ pair[0] ][ pair[1] ][k] @ self.nu[k]  / self.n[k] 
                     c += np.linalg.norm( self.v[pair[0]][pair[1]][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 
                 if( abs(tdelta) >= c):
-                    halfspace.append( ( pair, np.sign(tdelta) ) )
+                    halfspace.append( ( pair, np.sign(tdelta)[0][0] ) )
                 # else:
                 #     halfspace.append( ( pair, 0 ) )
                 # print('pair', pair,  'tdelta', tdelta, 'c', c)
 
-            # print('halfspace', halfspace)
+            print('halfspace', halfspace)
             P_t = geometry_v3.getParetoOptimalActions(self.game.LossMatrix, self.N, self.M, halfspace)
             N_t = geometry_v3.getNeighborhoodActions(self.game.LossMatrix, self.N, self.M, halfspace)
 
@@ -84,6 +92,8 @@ class CPB():
 
         return action
 
-    def update(self, action, feedback):
+    def update(self, action, feedback, outcome):
         self.n[action] += 1
-        self.nu[action][ feedback ] += 1
+        Y_t = np.array([ self.game.SignalMatrices[action] @ np.eye(self.M)[outcome] ] )
+        print('Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
+        self.nu[action] += Y_t.T

@@ -132,70 +132,75 @@ def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
 
     return feasible
 
+
 def getV(LossMatrix, N, M, A, SignalMatrices, neighborhood_actions):
     v = collections.defaultdict(dict)
-    for pair in neighborhood_actions:
-        v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, A, SignalMatrices, pair[0], pair[1])
+    v[0][0] = [ np.array([[0]]) ]
+    v[1][1] = [ None, np.array([[0,0]]) ]
+    v[0][1] = [  np.array([[0]]), np.array([[-1, 1]])  ]
+    v[1][0] = [  np.array([[0]]), np.array([[1, -1]])  ]
+    
+    # for pair in neighborhood_actions:
+    #     v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, A, SignalMatrices, pair[0], pair[1])
     return v
   
-def getVij(LossMatrix, N, M, A, SignalMatrices, i1, i2):
-    l1 = LossMatrix[i1]
-    l2 = LossMatrix[i2]
-    ldiff = l1 - l2
-    # try:
-    m = gp.Model( )
-    m.Params.LogToConsole = 0
+# def getVij(LossMatrix, N, M, A, SignalMatrices, i1, i2):
+#     l1 = LossMatrix[i1]
+#     l2 = LossMatrix[i2]
+#     ldiff = l1 - l2
+#     # try:
+#     m = gp.Model( )
+#     m.Params.LogToConsole = 0
 
-    vars = []
+#     vars = []
 
-    for k in range(N):
-        vars.append([])
-        for a in range(A):
-            varName = "v_{}_{}".format(k,a) 
-            vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
-            m.update()
+#     for k in range(N):
+#         vars.append([])
+#         for a in range(A):
+#             varName = "v_{}_{}".format(k,a) 
+#             vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
+#             m.update()
 
-    # print('vars', vars)
-    #m.update()
+#     # print('vars', vars)
+#     #m.update()
 
-    obj = 0
-    for k in range(N):
-        for a in range(A):
-            obj += vars[k][a]**2
-    # print('objective', obj )
-    m.setObjective(obj, GRB.MINIMIZE)
+#     obj = 0
+#     for k in range(N):
+#         for a in range(A):
+#             obj += vars[k][a]**2
+#     # print('objective', obj )
+#     m.setObjective(obj, GRB.MINIMIZE)
 
-    for j in range(M):
-        constraintExpr = gp.LinExpr()
-        constraintStr = "c_".format(j)
-        for a in range(A):
-            for k in range(N):
-                constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
-        m.addConstr( constraintExpr == ldiff[j],  constraintStr)
-    # print('model', m)
-    m.optimize()
+#     for j in range(M):
+#         constraintExpr = gp.LinExpr()
+#         constraintStr = "c_".format(j)
+#         for a in range(A):
+#             for k in range(N):
+#                 constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
+#         m.addConstr( constraintExpr == ldiff[j],  constraintStr)
+#     # print('model', m)
+#     m.optimize()
 
-    vij = np.zeros( (N, A) )
-    for k in range(N):
-        for a in range(A):
-            # print( vars[k][a] )
-            vij[k][a] =  vars[k][a].X 
+#     vij = np.zeros( (N, A) )
+#     for k in range(N):
+#         for a in range(A):
+#             # print( vars[k][a] )
+#             vij[k][a] =  vars[k][a].X 
 
-    return vij
+#     return vij
 
-    # except:
-    #     print('error in vij')
+#     # except:
+#     #     print('error in vij')
 
 
-def getConfidenceWidth( neighborhoodActions, v,  N):
+def getConfidenceWidth( neighborhoodActions, N_plus, v,  N):
     W = np.zeros(N)
 
     for pair in neighborhoodActions:
-        for k in range(N):
-            vec = v[pair[0]][pair[1]][k]
+        for k in N_plus[ pair[0] ][ pair[1] ]:
+            vec = v[ pair[0] ][ pair[1] ][k]
             # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
             W[k] = np.max( [ W[k], np.linalg.norm(vec, np.inf) ] )
-
     return W
   
 def f(t, alpha):
