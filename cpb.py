@@ -82,9 +82,9 @@ class CPB():
             # print('outcome frequency', self.nu, 'action frequency', self.n )
             # print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'R_t',R_t,'S',S)
 
-            value = [ self.W[i]**2/self.n[i] for i in S]
+            values = { i:self.W[i]**2/self.n[i] for i in S}
             # print('value', value)
-            action = np.argmax(value)
+            action = max(values, key=values.get)
 
         return action
 
