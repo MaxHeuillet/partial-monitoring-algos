@@ -7,14 +7,14 @@ import collections
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, neighborhood, v, outcome_distribution ):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, mathcal_N, v, outcome_distribution ):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
         self.LinkMatrix = LinkMatrix
         self.SignalMatrices = SignalMatrices
         self.n_actions = len(self.LossMatrix)
         self.n_outcomes = len(self.LossMatrix[0])
-        self.neighborhood = neighborhood
+        self.mathcal_N = mathcal_N
         self.v = v
 
         self.N = len(self.LossMatrix)
@@ -39,7 +39,7 @@ def apple_tasting( restructure_game, outcome_distribution ):
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
     signal_matrices =  [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ] ) ]
-    neighborhood = [ [0, 1], [1, 0] ]
+    mathcal_N = [ [0, 1], [1, 0] ]
 
     if restructure_game:
         FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
@@ -59,28 +59,28 @@ def apple_tasting( restructure_game, outcome_distribution ):
     
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, neighborhood, v, outcome_distribution )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, outcome_distribution )
 
     return game
 
-def bandit( restructure_game, outcome_distribution ):
-    init_LossMatrix = np.array( [ [0, 0], [-1, 1] ] )
-    init_FeedbackMatrix =  np.array([ [0, 0],[-1, 1] ])
-    signal_matrices = [  np.array( [ [1,1] ] ), np.array( [ [0,1],[1,0] ] ) ] 
+# def bandit( restructure_game, outcome_distribution ):
+#     init_LossMatrix = np.array( [ [0, 0], [-1, 1] ] )
+#     init_FeedbackMatrix =  np.array([ [0, 0],[-1, 1] ])
+#     signal_matrices = [  np.array( [ [1,1] ] ), np.array( [ [0,1],[1,0] ] ) ] 
 
-    if restructure_game:
-        FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
-    else:
-        FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
+#     if restructure_game:
+#         FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
+#     else:
+#         FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
 
-    if (FeedbackMatrix == LossMatrix).all():
-        LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
-    else:
-        LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
+#     if (FeedbackMatrix == LossMatrix).all():
+#         LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
+#     else:
+#         LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix,signal_matrices, outcome_distribution )
+#     game = Game( LossMatrix, FeedbackMatrix, LinkMatrix,signal_matrices, outcome_distribution )
 
-    return game
+#     return game
 
 
 def label_efficient( outcome_distribution ):
@@ -88,7 +88,7 @@ def label_efficient( outcome_distribution ):
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
     signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
-    neighborhood = [ [0,1], [0,2], [1,0], [2,0], [1,2],  [2,1] ] #
+    mathcal_N = [  [1,2],  [2,1] ] # [0,1], [0,2], [1,0], [2,0],
 
     v = collections.defaultdict(dict)
     v[0][1] = [  np.array([[0.5, -0.5]]) ,  np.array([[0.5]]),  np.array([[0]]) ]
@@ -100,7 +100,7 @@ def label_efficient( outcome_distribution ):
     v[2][1] = [  np.array([[1, -1]]) ,  np.array([[0.5]]) , np.array([[-0.5]]) ]
     v[1][2] = [  np.array([[-1, 1]]) ,  np.array([[-0.5]]) , np.array([[0.5]]) ]
 
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, neighborhood, v, outcome_distribution )
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, outcome_distribution )
 
 
 def general_algorithm(F, L):

@@ -206,12 +206,12 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
     #     print('error in vij')
 
 
-def getConfidenceWidth( neighborhoodActions, N_plus, v,  N):
+def getConfidenceWidth( neighborhoodActions, V, v,  N):
     W = np.zeros(N)
 
     for pair in neighborhoodActions:
         # print('pair', pair, 'N_plus', N_plus[ pair[0] ][ pair[1] ] )
-        for k in N_plus[ pair[0] ][ pair[1] ]:
+        for k in V[ pair[0] ][ pair[1] ]:
             vec = v[ pair[0] ][ pair[1] ][k]
             # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
             W[k] = np.max( [ W[k], np.linalg.norm(vec, np.inf) ] )

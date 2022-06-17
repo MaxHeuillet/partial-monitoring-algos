@@ -389,7 +389,7 @@ def LocalObservableGame(pm):
     why = "all neighbouring pairs are observable."
     res = True
     for a in range(N):
-        for b in range(N): #a+1,
+        for b in range(a+1): #a+1,
             if areNeighbours(a, b, LossMatrix):
                 # local signal space
                 local_S_list = [signal_vecs(i, pm.FeedbackMatrix) for i in Neighbourhood(a, b, LossMatrix)]
@@ -398,8 +398,8 @@ def LocalObservableGame(pm):
             if not res:
                 # print("[{0},{1}] pair is not locally observable.".format(pm.Actions_dict[a], pm.Actions_dict[b]) )
                 why = "[{0},{1}] pair is not locally observable.".format(pm.Actions_dict[a], pm.Actions_dict[b])
-                #return res, why
-    #return res, why
+                return res, why
+    return res, why
 
 
 def isTrivialGame(pm):
