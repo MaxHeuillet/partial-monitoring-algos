@@ -1,6 +1,7 @@
 import numpy as np
 import geometry_v3
 import geometry
+import collections
 
 class CPB():
 
@@ -12,7 +13,7 @@ class CPB():
         self.N = game.n_actions
         self.M = game.n_outcomes
         self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
-        # print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
+        print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
         self.SignalMatrices = game.SignalMatrices
 
@@ -21,16 +22,33 @@ class CPB():
         # print('nu', self.nu)
 
         self.pareto_actions = geometry_v3.getParetoOptimalActions(game.LossMatrix, self.N, self.M, [])
-        self.neighborhood_actions = [ [0, 1], [1, 0] ]#geometry_v3.getNeighborhoodActions(game.LossMatrix, self.N, self.M, [])
-        # print('mathcal_N', self.neighborhood_actions)
+        self.neighborhood_actions = game.neighborhood #geometry_v3.getNeighborhoodActions(game.LossMatrix, self.N, self.M, [])
+        print('mathcal_N', self.neighborhood_actions)
 
-        self.N_plus =  geometry.get_neighborhood_action_set(self.N, game.LossMatrix)
-        # print('N_plus', self.N_plus)
+        # self.N_plus =  geometry.get_neighborhood_action_set(self.N, game.LossMatrix)
+        self.N_plus =  collections.defaultdict(dict)
+        self.N_plus[0][1] = [ 0, 1, 2 ]
+        self.N_plus[0][2] = [ 0, 1, 2 ]
+        self.N_plus[1][0] = [ 0, 1, 2 ]
+        self.N_plus[2][0] = [ 0, 1, 2 ]
+        self.N_plus[2][1] = [ 1, 2 ]
+        self.N_plus[1][2] = [ 1, 2 ]
+        print('N_plus', self.N_plus)
 
-        self.v = geometry_v3.getV(game.LossMatrix, self.N, self.M, self.A, self.SignalMatrices, self.neighborhood_actions)
+        self.V = collections.defaultdict(dict)
+        self.V[0][1] = self.N_plus[0][1]
+        self.V[0][2] = self.N_plus[0][2]
+        self.V[1][0] = self.N_plus[1][0]
+        self.V[2][0] = self.N_plus[2][0]
+        self.V[2][1] = [ 0, 1, 2 ]
+        self.V[1][2] = [ 0, 1, 2 ]
+
+        self.v = geometry_v3.getV(game.LossMatrix, 3, 2, game.FeedbackMatrix, game.SignalMatrices, game.neighborhood, self.V)# game.v #geometry_v3.getV(game.LossMatrix, self.N, self.M, self.A, self.SignalMatrices, self.neighborhood_actions)
+        print('observer vectors', self.v)
+
 
         self.W = geometry_v3.getConfidenceWidth(self.neighborhood_actions,self.N_plus, self.v, self.N)
-        # print('W', self.W)
+        print('W', self.W)
 
         self.alpha = 1.01
 
@@ -49,42 +67,53 @@ class CPB():
             for pair in self.neighborhood_actions:
                 tdelta = 0
                 c = 0
+                # print('pair', pair, 'N_plus', self.N_plus[ pair[0] ][ pair[1] ] )
                 for k in  self.N_plus[ pair[0] ][ pair[1] ] :
-                    # print( 'pair', pair, self.v[ pair[0] ][ pair[1] ][k].shape, self.nu[k].shape )
+                    # print( 'proba', self.nu[k]  / self.n[k]  )
                     tdelta += self.v[ pair[0] ][ pair[1] ][k] @ self.nu[k]  / self.n[k] 
                     c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 # print('pair', pair, 'tdelta', tdelta, 'confidence', c)
-                
+                print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
                 if( abs(tdelta) >= c):
-                    halfspace.append( ( pair, np.sign(tdelta)[0][0] ) )
+                    halfspace.append( ( pair, np.sign(tdelta)[0] ) ) #[0]
                 # else:
                 #     halfspace.append( ( pair, 0 ) )
-                # print('pair', pair,  'tdelta', tdelta, 'c', c)
+                
 
-            # print('halfspace', halfspace)
+            print('halfspace', halfspace)
             P_t = geometry_v3.getParetoOptimalActions(self.game.LossMatrix, self.N, self.M, halfspace)
             N_t = geometry_v3.getNeighborhoodActions(self.game.LossMatrix, self.N, self.M, halfspace,  self.neighborhood_actions )
 
             Nplus_t = []
             for pair in N_t:
                 Nplus_t.extend( self.N_plus[ pair[0] ][ pair[1] ] )
+
             R_t = []
             for k in range(self.N):
               if self.n[k] <=  self.eta[k] * geometry_v3.f(t, self.alpha) :
                 R_t.append(k)
-            union1= np.union1d( Nplus_t, P_t )
+
+            V_t = []
+            for pair in N_t:
+                V_t.extend( self.V[ pair[0] ][ pair[1] ] )
+
+            intersect = np.intersect1d(V_t, R_t)
+
+            union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)
             # print('union1', union1)
-            S =  np.union1d(  union1  ,  R_t)
+            S =  np.union1d(  union1  , intersect ) #intersect
             S = np.array( S, dtype = int)
             # print('S', S)
             S = np.unique(S)
             # print('outcome frequency', self.nu, 'action frequency', self.n )
-            # print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'R_t',R_t,'S',S)
+            
 
             values = { i:self.W[i]**2/self.n[i] for i in S}
-            # print('value', value)
+            # print('value', values)
             action = max(values, key=values.get)
+            print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'V_t',V_t, 'R_t',R_t, 'S',S,'values', values, 'action', action)
+            print('n', self.n,'nu', self.nu)
 
         return action
 

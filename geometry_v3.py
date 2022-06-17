@@ -19,6 +19,7 @@ def calculate_signal_matrices(FeedbackMatrix, N,M,A):
             signalMatrix[a][j] = 1
         signal_matrices.append(signalMatrix)
     return signal_matrices
+
 def getParetoOptimalActions(LossMatrix, N, M, halfspace):
     actions = []
     for z in range(N):
@@ -133,74 +134,83 @@ def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
     return feasible
 
 
-def getV(LossMatrix, N, M, A, SignalMatrices, neighborhood_actions):
+def getV(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, neighborhood_actions, V):
     v = collections.defaultdict(dict)
-    # v[0][0] = [ np.array([[0]]) ]
-    # v[1][1] = [ None, np.array([[0,0]]) ]
-    # v[0][1] = [  np.array([[0]]), np.array([[-1, 1]])  ]
-    # v[1][0] = [  np.array([[0]]), np.array([[1, -1]])  ]
-    v[0][0] = [ np.array([[0]]) ]
-    v[1][1] = [ None, np.array([[0,0]]) ]
-    v[0][1] = [  np.array([[0.5]]), np.array([[-1.5, 0.5]])  ]
-    v[1][0] = [  np.array([[0.5]]), np.array([[0.5, -1.5]])  ]
-    
-    # for pair in neighborhood_actions:
-    #     v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, A, SignalMatrices, pair[0], pair[1])
+    for pair in neighborhood_actions:
+        # print(pair)
+        v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V,  pair[0], pair[1])
     return v
   
-# def getVij(LossMatrix, N, M, A, SignalMatrices, i1, i2):
-#     l1 = LossMatrix[i1]
-#     l2 = LossMatrix[i2]
-#     ldiff = l1 - l2
-#     # try:
-#     m = gp.Model( )
-#     m.Params.LogToConsole = 0
+def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
 
-#     vars = []
+    l1 = LossMatrix[i1]
+    l2 = LossMatrix[i2]
+    ldiff = l1 - l2
 
-#     for k in range(N):
-#         vars.append([])
-#         for a in range(A):
-#             varName = "v_{}_{}".format(k,a) 
-#             vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
-#             m.update()
+    m = gp.Model( )
+    m.Params.LogToConsole = 0
 
-#     # print('vars', vars)
-#     #m.update()
+    vars = []
 
-#     obj = 0
-#     for k in range(N):
-#         for a in range(A):
-#             obj += vars[k][a]**2
-#     # print('objective', obj )
-#     m.setObjective(obj, GRB.MINIMIZE)
+    for k in V[i1][i2] :
+        vars.append([])
+        sk = len( set(FeedbackMatrix[k]) )
+        for a in range( sk ):
+            varName = "v_{}_{}_{}".format(i1, i2, a) 
+            vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
+            m.update()
 
-#     for j in range(M):
-#         constraintExpr = gp.LinExpr()
-#         constraintStr = "c_".format(j)
-#         for a in range(A):
-#             for k in range(N):
-#                 constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
-#         m.addConstr( constraintExpr == ldiff[j],  constraintStr)
-#     # print('model', m)
-#     m.optimize()
+    # print('vars', vars)
+    #m.update()
 
-#     vij = np.zeros( (N, A) )
-#     for k in range(N):
-#         for a in range(A):
-#             # print( vars[k][a] )
-#             vij[k][a] =  vars[k][a].X 
+    obj = 0
+    for k in  V[i1][i2] :
+        sk = len( set(FeedbackMatrix[k]) )
+        for a in range( sk ):
+            obj += vars[k][a]**2
+    # print('objective', obj )
+    m.setObjective(obj, GRB.MINIMIZE)
 
-#     return vij
+    expression = None
+    for k in  V[i1][i2] :
+        expression += SignalMatrices[k].T @ vars[k]
+    # print(expression)
+    m.addConstr( expression[0] == ldiff[0],  'constraint0')
+    m.addConstr( expression[1] == ldiff[1],  'constraint1')
 
-#     # except:
-#     #     print('error in vij')
+
+
+    # for j in range(M):
+    #     constraintExpr = gp.LinExpr()
+    #     constraintStr = "c_".format(j)
+    #     for a in range( len(set(FeedbackMatrix[k])) ):
+    #         for k in range(N):
+    #             constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
+    #     m.addConstr( constraintExpr == ldiff[j],  constraintStr)
+    # # print('model', m)
+    m.optimize()
+
+    
+    vij = []
+    for k in  V[i1][i2] :
+        sk = len( set(FeedbackMatrix[k]) )
+        vijk = np.zeros( sk )
+        for a in range( sk ):
+            # print( vars[k][a] )
+            vijk[a] =   vars[k][a].X
+        vij.append(vijk)
+
+    return vij
+
+    # except:
+    #     print('error in vij')
 
 
 def getConfidenceWidth( neighborhoodActions, N_plus, v,  N):
     W = np.zeros(N)
 
     for pair in neighborhoodActions:
+        # print('pair', pair, 'N_plus', N_plus[ pair[0] ][ pair[1] ] )
         for k in N_plus[ pair[0] ][ pair[1] ]:
             vec = v[ pair[0] ][ pair[1] ][k]
             # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
