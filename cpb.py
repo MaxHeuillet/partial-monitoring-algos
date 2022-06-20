@@ -22,33 +22,16 @@ class CPB():
         # print('nu', self.nu)
 
         self.pareto_actions = geometry_v3.getParetoOptimalActions(game.LossMatrix, self.N, self.M, [])
-        self.mathcal_N = game.mathcal_N #geometry_v3.getNeighborhoodActions(game.LossMatrix, self.N, self.M, [])
+        self.mathcal_N = game.mathcal_N
         # print('mathcal_N', self.mathcal_N)
 
-        # self.N_plus =  geometry.get_neighborhood_action_set(self.N, game.LossMatrix)
-        self.N_plus =  collections.defaultdict(dict)
-        # self.N_plus[0][1] = [ 0, 1, 2 ]
-        # self.N_plus[0][2] = [ 0, 1, 2 ]
-        # self.N_plus[1][0] = [ 0, 1, 2 ]
-        # self.N_plus[2][0] = [ 0, 1, 2 ]
-        self.N_plus[2][1] = [ 1, 2 ]
-        self.N_plus[1][2] = [ 1, 2 ]
-        # print('N_plus', self.N_plus)
+        self.N_plus =  game.N_plus
 
-        self.V = collections.defaultdict(dict)
-        # self.V[0][1] = self.N_plus[0][1]
-        # self.V[0][2] = self.N_plus[0][2]
-        # self.V[1][0] = self.N_plus[1][0]
-        # self.V[2][0] = self.N_plus[2][0]
-        self.V[2][1] = [ 0, 1, 2 ]
-        self.V[1][2] = [ 0, 1, 2 ]
+        self.V = game.V
 
-        self.v = {1: {2: [ np.array([-1.,  1.]), np.array([0]), np.array([0])]}, 2: {1: [np.array([ 1., -1.]), np.array([0.]), np.array([0.])]}} #geometry_v3.getV(game.LossMatrix, 3, 2, game.FeedbackMatrix, game.SignalMatrices, game.mathcal_N, self.V)# game.v #geometry_v3.getV(game.LossMatrix, self.N, self.M, self.A, self.SignalMatrices, self.neighborhood_actions)
-        # print('observer vectors', self.v)
-
+        self.v = game.v 
 
         self.W = geometry_v3.getConfidenceWidth(self.mathcal_N, self.V, self.v, self.N)
-        # print('W', self.W)
 
         self.alpha = 1.01
 
@@ -102,7 +85,7 @@ class CPB():
             union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)
             # print('union1', union1)
-            S =  np.union1d(  union1  , intersect ) #intersect
+            S =  np.union1d(  union1  , intersect )
             S = np.array( S, dtype = int)
             # print('S', S)
             S = np.unique(S)

@@ -7,7 +7,7 @@ import collections
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, mathcal_N, v, outcome_distribution ):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, mathcal_N, v, N_plus, V, outcome_distribution ):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
         self.LinkMatrix = LinkMatrix
@@ -16,6 +16,8 @@ class Game():
         self.n_outcomes = len(self.LossMatrix[0])
         self.mathcal_N = mathcal_N
         self.v = v
+        self.N_plus = N_plus
+        self.V = V
 
         self.N = len(self.LossMatrix)
         self.M = len(self.LossMatrix[0])
@@ -46,20 +48,22 @@ def apple_tasting( restructure_game, outcome_distribution ):
     else:
         FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
 
-    v = collections.defaultdict(dict)
-    v[0][0] = [ np.array([[0]]) ]
-    v[1][1] = [ None, np.array([[0,0]]) ]
-    v[0][1] = [  np.array([[0.5]]), np.array([[-1.5, 0.5]])  ]
-    v[1][0] = [  np.array([[0.5]]), np.array([[0.5, -1.5]])  ]
+    v = {0: {1: [np.array([0]), np.array([-1.,  1.])]}, 1: {0: [np.array([0]), np.array([ 1., -1.])]}}
+    #collections.defaultdict(dict)
+    #v[0][1] = [  np.array([[0.5]]), np.array([[-1.5, 0.5]])  ]
+    #v[1][0] = [  np.array([[0.5]]), np.array([[0.5, -1.5]])  ]
 
+    N_plus =  collections.defaultdict(dict)
+    N_plus[0][1] = [ 0, 1 ]
+    N_plus[1][0] = [ 0, 1 ]
 
-    # if (FeedbackMatrix == LossMatrix).all():
-    #     LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
-    # else:
-    
+    V = collections.defaultdict(dict)
+    V[0][1] = [ 0,1 ]
+    V[1][0] = [ 0,1 ]
+
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, outcome_distribution )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, N_plus, V, outcome_distribution )
 
     return game
 
@@ -88,19 +92,20 @@ def label_efficient( outcome_distribution ):
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
     signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
-    mathcal_N = [  [1,2],  [2,1] ] # [0,1], [0,2], [1,0], [2,0],
-
-    v = collections.defaultdict(dict)
-    v[0][1] = [  np.array([[0.5, -0.5]]) ,  np.array([[0.5]]),  np.array([[0]]) ]
-    v[1][0] = [  np.array([[-0.5, 0.5]]) ,  np.array([[-0.5]]),  np.array([[0]]) ]
     
-    v[0][2] = [  np.array([[-0.5, 0.5]]) ,  np.array([[0.5]]),  np.array([[0]]) ]
-    v[2][0] = [  np.array([[0.5, -0.5]]) ,  np.array([[-0.5]]),  np.array([[0]]) ]
+    mathcal_N = [  [1,2],  [2,1] ] 
 
-    v[2][1] = [  np.array([[1, -1]]) ,  np.array([[0.5]]) , np.array([[-0.5]]) ]
-    v[1][2] = [  np.array([[-1, 1]]) ,  np.array([[-0.5]]) , np.array([[0.5]]) ]
+    v = {1: {2: [ np.array([-1.,  1.]), np.array([0]), np.array([0])]}, 2: {1: [np.array([ 1., -1.]), np.array([0.]), np.array([0.])]}}
+    
+    N_plus =  collections.defaultdict(dict)
+    N_plus[2][1] = [ 1, 2 ]
+    N_plus[1][2] = [ 1, 2 ]
 
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, outcome_distribution )
+    V = collections.defaultdict(dict)
+    V[2][1] = [ 0, 1, 2 ]
+    V[1][2] = [ 0, 1, 2 ]
+
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, N_plus, V, outcome_distribution )
 
 
 def general_algorithm(F, L):
