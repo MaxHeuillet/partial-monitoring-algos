@@ -3,6 +3,8 @@ import numpy as np
 import scipy
 
 
+
+
 class TSPM_alg:
 
     def __init__(self, game, horizon,  ):
@@ -19,7 +21,7 @@ class TSPM_alg:
 
       self.lbd = 0.001
       self.B0 = self.lbd * np.identity(self.M)
-      self.b0 = np.zeros(2)
+      self.b0 = np.zeros(self.M) 
       self.R = 1
       self.B = self.B0
       self.b = self.b0
@@ -35,12 +37,26 @@ class TSPM_alg:
 
     def sample_from_g(self,):
         condition = False
-        B_inv = self.B #self.C - 2 * self.D + norm.cdf(x, mean, std) 
-        B_inv = np.linalg.inv( B_inv )
-        product = B_inv @ self.b 
-        print('product', product, 'B_inv', B_inv)
+
+        # 1. calc tilde{B} and tilde{b}
+        B = self.B
+        b = self.b
+        print('b', b)
+        n_outcome = self.M
+        one_vec = np.atleast_2d( np.ones(n_outcome - 1) ).T # \mathbb{1}_{M-1}
+        # sub matrix of B
+        C = B[:n_outcome-1, :n_outcome-1]
+        d = np.atleast_2d(B[:n_outcome-1, -1]).T
+        D = (np.dot(d, one_vec.T) + np.dot(one_vec, d.T)) / 2
+        f = B[-1, -1]
+        # sub vector of b
+        b_alpha = np.atleast_2d( b[:n_outcome-1, 0] ).T
+        b_M = b[-1, 0]
+        B_tilde = C - 2*D + f*np.dot(one_vec, one_vec.T)
+        b_tilde = f*one_vec - d + b_alpha - b_M*one_vec
+
         while condition == False:
-            p = np.random.normal( product, B_inv  )
+            p = np.random.normal( B_tilde, b_tilde  )
             print(p)
             if self.in_simplex(p):
                 condition = True
