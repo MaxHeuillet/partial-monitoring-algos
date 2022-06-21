@@ -1,3 +1,93 @@
+class BPMPolicy():
+  def __init__(self, game, horizon, p0, sigma0 ):
+
+      self.game = game
+      self.horizon = horizon
+
+      self.N = game.n_actions
+      self.M = game.n_outcomes
+      self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
+      print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
+
+      self.SignalMatrices = self.game.SignalMatrices  #geometry_v3.calculate_signal_matrices(game.FeedbackMatrix, self.N, self.M, self.A)
+      self.sstInvs = [  np.linalg.inv( s @ s.T ) for s in  self.SignalMatrices ] 
+      self.Ps = [ self.SignalMatrices[i].T @  self.sstInvs[i] @ self.SignalMatrices[i] for i in range(self.N) ] 
+
+      self.p0 = p0 
+      self.sigma0 = sigma0
+      self.p = p0 
+      self.sigma = sigma0
+      self.sigmaInv = np.linalg.inv( sigma0 )
+
+      self.sample_size = 10
+      self.numC = 10
+      self.samples = np.zeros( ( self.sample_size * self.numC * 2, self.M) )
+      # self.cInequality = self.getCells()
+      self.ActiveActions = None
+      self.n = np.zeros(self.N)
+
+      self.feedback = np.zeros( (self.N,self.M) )
+
+  def getOptimalAction(self, p):
+    expectedLoss = self.game.LossMatrix @ p
+    return np.argmin(expectedLoss)
+
+  def sampleP(self,):
+    z = np.random.normal(0,1, self.M )
+    sigma = np.linalg.inv(self.sigmaInv) 
+    A = sigma @ sigma.T
+    vec = A @ z
+    return vec
+
+  def nonNegative(self,p):
+    if (p < 0).any():
+      return False
+    return True
+
+  def get_action(self, t):
+    
+    optimalActions = set()
+    c=0
+    while c<self.sample_size:
+        p = self.sampleP()
+        if self.nonNegative(p):
+          optimal = self.getOptimalAction(p)
+          print('probability', p)
+          optimalActions.add(optimal)
+          c+=1
+    print('optimal actions', optimalActions)
+    feedbackRowwise = np.sum( self.feedback , 1)
+    values = { i:feedbackRowwise[i] for i in optimalActions }
+    print('values', values)
+    action = min(values, key=values.get)
+    return action
+
+  
+  def update(self, action, feedback, outcome):
+    self.feedback[action][outcome] += 1
+
+    new_sigmaInv_t = self.sigmaInv + self.Ps[action]
+    new_sigma_t = np.linalg.inv( new_sigmaInv_t )
+    Y_t = self.SignalMatrices[action] @ np.eye(self.M)[outcome]
+    new_p_t = new_sigma_t @ ( self.sigmaInv @ self.p + self.SignalMatrices[action].T @ self.sstInvs[action] @ Y_t )
+    
+    self.sigmaInv = new_sigmaInv_t
+    self.p = new_p_t
+    self.sigma = new_sigma_t
+
+
+n_cores = 1
+n_folds = 1
+horizon = 31
+
+outcome_distribution =  {'spam':0.05,'ham':0.95}
+
+game = games.apple_tasting(False, outcome_distribution)
+print('optimal action', game.i_star)
+alg = BPMPolicy(  game, horizon, [0.5,0.5], np.identity(2) )
+task = Evaluation(horizon)
+a = task.eval_policy_once(alg,game,1)
+
 import gurobipy as gp
 from gurobipy import GRB
 
