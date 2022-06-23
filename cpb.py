@@ -16,6 +16,7 @@ class CPB():
         # print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
         self.SignalMatrices = game.SignalMatrices
+        # print('signalmatrices', self.SignalMatrices)
 
         self.n = np.zeros( self.N )
         self.nu = [ np.zeros(   ( len( set(game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)] 
@@ -91,7 +92,6 @@ class CPB():
             S = np.unique(S)
             # print('outcome frequency', self.nu, 'action frequency', self.n )
             
-
             values = { i:self.W[i]**2/self.n[i] for i in S}
             # print('value', values)
             action = max(values, key=values.get)
@@ -102,6 +102,11 @@ class CPB():
 
     def update(self, action, feedback, outcome):
         self.n[action] += 1
-        Y_t = np.array([ self.game.SignalMatrices[action] @ np.eye(self.M)[outcome] ] )
-        # print('Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
-        self.nu[action] += Y_t.T
+        e_y = np.zeros( (self.M, 1) )
+        e_y[outcome] = 1
+        Y_t =  self.game.SignalMatrices[action] @ e_y 
+        # print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
+
+
+
+        self.nu[action] += Y_t

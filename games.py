@@ -2,16 +2,18 @@ from math import log, exp, pow
 import numpy as np
 import geometry
 import collections
+import geometry_v3
 
 
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, mathcal_N, v, N_plus, V, outcome_distribution ):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V, outcome_distribution ):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
         self.LinkMatrix = LinkMatrix
         self.SignalMatrices = SignalMatrices
+        self.SignalMatricesAdim = signal_matrices_Adim
         self.n_actions = len(self.LossMatrix)
         self.n_outcomes = len(self.LossMatrix[0])
         self.mathcal_N = mathcal_N
@@ -41,6 +43,10 @@ def apple_tasting( restructure_game, outcome_distribution ):
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
     signal_matrices =  [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ] ) ]
+
+    A = geometry_v3.alphabet_size(init_FeedbackMatrix,  len(init_FeedbackMatrix),len(init_FeedbackMatrix[0]) )
+    signal_matrices_Adim = calculate_signal_matrices(init_FeedbackMatrix, len(init_FeedbackMatrix),len(init_FeedbackMatrix[0]),A)
+
     mathcal_N = [ [0, 1], [1, 0] ]
 
     if restructure_game:
@@ -63,7 +69,7 @@ def apple_tasting( restructure_game, outcome_distribution ):
 
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, N_plus, V, outcome_distribution )
+    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V, outcome_distribution )
 
     return game
 
@@ -92,6 +98,9 @@ def label_efficient( outcome_distribution ):
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
     signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
+
+    A = geometry_v3.alphabet_size(FeedbackMatrix,  len(FeedbackMatrix),len(FeedbackMatrix[0]) )
+    signal_matrices_Adim = calculate_signal_matrices(FeedbackMatrix, len(FeedbackMatrix),len(FeedbackMatrix[0]),A)
     
     mathcal_N = [  [1,2],  [2,1] ] 
 
@@ -105,7 +114,47 @@ def label_efficient( outcome_distribution ):
     V[2][1] = [ 0, 1, 2 ]
     V[1][2] = [ 0, 1, 2 ]
 
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, mathcal_N, v, N_plus, V, outcome_distribution )
+    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V, outcome_distribution )
+
+def calculate_signal_matrices(FeedbackMatrix, N,M,A):
+    signal_matrices = []
+
+    if N == 3: #label efficient
+        for i in range(N):
+            signalMatrix = np.zeros( (A, M) )
+            for j in range(M):
+                a = FeedbackMatrix[i][j]
+                signalMatrix[ feedback_idx_label_efficient(a) ][j] = 1
+            signal_matrices.append(signalMatrix)
+    else: #apple tasting
+        for i in range(N):
+            signalMatrix = np.zeros( (A,M) )
+            for j in range(M):
+                a = FeedbackMatrix[i][j]
+                signalMatrix[ feedback_idx_apple_tasting(a) ][j] = 1
+            signal_matrices.append(signalMatrix)
+
+    return signal_matrices
+
+
+def feedback_idx_apple_tasting(feedback):
+    idx = None
+    if feedback == 0:
+        idx = 0
+    elif feedback == 1:
+        idx = 1
+    return idx
+
+def feedback_idx_label_efficient(feedback):
+    idx = None
+    if feedback == 1:
+        idx = 0
+    elif feedback == 0.5:
+        idx = 1
+    elif feedback == 0.25:
+        idx = 2
+    return idx
+    
 
 
 def general_algorithm(F, L):
