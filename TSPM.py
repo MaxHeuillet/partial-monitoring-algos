@@ -87,7 +87,7 @@ class TSPM_alg:
             # print('homemade KL', self.kl_div(  'package KL', scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
             print(self.n[i].sum() , self.q[i] , self.SignalMatrices[i] @ p , scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
             result *= np.exp( - self.n[i].sum() * scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
-        print('result',result)
+        # print('result',result)
         result *= np.diagonal( scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,   np.linalg.inv( self.B ) ) )
         return result
 
@@ -100,12 +100,8 @@ class TSPM_alg:
 
     def get_action(self, t):
 
-        if t < 20:
-            action = 0
-        elif t>= 20 and t<40:
-            action = 1
-        elif t>=40 and t<60:
-            action = 2
+        if t < self.N:
+            action = t
 
         else:
             p_tilde = self.accept_reject()
