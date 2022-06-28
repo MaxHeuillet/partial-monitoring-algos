@@ -27,13 +27,13 @@ class Game():
         self.Outcomes_dict = { a : "{0}".format(a) for a in range(self.M)} # Outcomes semantic
 
         self.outcome_dist = outcome_distribution
-        self.i_star = self.optimal_action(  )
+        self.deltas, self.i_star = self.optimal_action(  )
 
     def optimal_action(self, ):
         deltas = []
         for i in range(len(self.LossMatrix)):
             deltas.append( self.LossMatrix[i,...].T @ list( self.outcome_dist.values() ) )
-        return np.argmin(deltas)
+        return deltas, np.argmin(deltas)
 
     def delta(self, action):
         return ( self.LossMatrix[action,...] - self.LossMatrix[self.i_star,...] ).T @ list( self.outcome_dist.values() ) 

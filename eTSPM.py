@@ -2,7 +2,7 @@ import geometry_v3
 import numpy as np
 import scipy
 
-class TSPM_alg:
+class eTSPM_alg:
 
     def __init__(self, game, horizon,  ):
       self.game = game
@@ -100,16 +100,27 @@ class TSPM_alg:
 
     def get_action(self, t):
 
+        K = self.N
+        c = 1
+        d = np.sort(self.game.deltas)[1]
+
         if t < self.N:
             action = t
 
         else:
-            p_tilde = self.accept_reject()
-            # print('p_tilde:', p_tilde)
-            action = np.argmin(  self.game.LossMatrix @ p_tilde  )
-            # print('mean:', np.linalg.inv(self.B) @ self.b, '  var:', np.linalg.inv(self.B) )
-            # print(p_tilde, self.game.LossMatrix @ p_tilde, action )
 
+            epsilon = min( [1, (c * K) / (t * d**2) ] )
+            # print(epsilon)
+            if np.random.choice([True, False], size = 1, p = [epsilon,1-epsilon]):
+                action = np.random.choice(self.N, size = 1)[0]
+            else:
+                p_tilde = self.accept_reject()
+                # print('p_tilde:', p_tilde)
+                action = np.argmin(  self.game.LossMatrix @ p_tilde  )
+                # print('mean:', np.linalg.inv(self.B) @ self.b, '  var:', np.linalg.inv(self.B) )
+                # print(p_tilde, self.game.LossMatrix @ p_tilde, action )
+
+            # print(action)
         return action
 
     def update(self, action, feedback, outcome):
