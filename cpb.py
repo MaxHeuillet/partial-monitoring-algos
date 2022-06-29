@@ -33,7 +33,7 @@ class CPB():
         self.v = game.v 
 
         self.W = geometry_v3.getConfidenceWidth(self.mathcal_N, self.V, self.v, self.N)
-
+        # print('weights', self.W)
         self.alpha = 1.01
 
         self.eta =  self.W **2/3 
@@ -52,9 +52,10 @@ class CPB():
                 tdelta = 0
                 c = 0
                 # print('pair', pair, 'N_plus', self.N_plus[ pair[0] ][ pair[1] ] )
-                for k in  self.V[ pair[0] ][ pair[1] ] :
-                    # print( 'proba', self.nu[k]  / self.n[k]  )
-                    tdelta += self.v[ pair[0] ][ pair[1] ][k] @ self.nu[k]  / self.n[k] 
+                for k in  self.V[ pair[0] ][ pair[1] ]:
+                    # print( 'pair ', pair, 'action ', k, 'proba ', self.nu[k]  / self.n[k]  )
+                    # print('k', k, 'pair ', pair, 'v ', self.v[ pair[0] ][ pair[1] ][k] , 'nu ', self.nu[k]  )
+                    tdelta += self.v[ pair[0] ][ pair[1] ][k].T @ ( self.nu[k]  / self.n[k] )
                     c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 # print('pair', pair, 'tdelta', tdelta, 'confidence', c)
                 # print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
@@ -71,6 +72,7 @@ class CPB():
             Nplus_t = []
             for pair in N_t:
                 Nplus_t.extend( self.N_plus[ pair[0] ][ pair[1] ] )
+            Nplus_t = np.unique(Nplus_t)
 
             R_t = []
             for k in range(self.N):
@@ -80,6 +82,7 @@ class CPB():
             V_t = []
             for pair in N_t:
                 V_t.extend( self.V[ pair[0] ][ pair[1] ] )
+            V_t = np.unique(V_t)
 
             intersect = np.intersect1d(V_t, R_t)
 
@@ -106,7 +109,4 @@ class CPB():
         e_y[outcome] = 1
         Y_t =  self.game.SignalMatrices[action] @ e_y 
         # print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
-
-
-
         self.nu[action] += Y_t

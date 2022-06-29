@@ -1,6 +1,7 @@
 import geometry_v3
 import numpy as np
 import scipy
+from scipy.stats import multivariate_normal
 
 class TSPM_alg:
 
@@ -26,6 +27,7 @@ class TSPM_alg:
       self.R = 1
 
       self.n , self.q = [] , []
+
       for i in range(self.N):
           self.n.append( np.zeros( self.A ) )
           self.q.append(  np.zeros( self.A ) )
@@ -43,65 +45,73 @@ class TSPM_alg:
         one_vec = np.atleast_2d( np.ones(self.M - 1) ).T # \mathbb{1}_{M-1}
         # sub matrix of B
         C = self.B[:self.M-1, :self.M-1]
-        d =  self.B[:self.M-1, -1].T
+        d =  np.atleast_2d( self.B[:self.M-1, -1]).T
+        # print(d)
+
         D = (np.dot(d, one_vec.T) + np.dot(one_vec, d.T)) / 2
         f = self.B[-1, -1]
         # print('C', C, 'd', d, 'D', D, 'f', f)
         # sub vector of b
-        b_alpha = self.b[:self.M-1,0 ].T #0
+        b_alpha = np.atleast_2d( self.b[:self.M-1,0 ] ).T #0
         b_M = self.b[-1, 0] 
+
         B_tilde = C - 2 * D + f * np.dot(one_vec, one_vec.T)
         b_tilde = f * one_vec - d + b_alpha - b_M * one_vec
 
         B_tilde_inv = np.linalg.inv(B_tilde)
         Bb = B_tilde_inv @ b_tilde
+
         # print( 'sampler dans la distribution:',  Bb , B_tilde_inv )
 
         while condition == False:
-            p = np.random.normal( Bb, B_tilde_inv  )[0][0]
+            p = np.random.normal(  Bb[:,0], np.diagonal(B_tilde_inv) )#np.random.multivariate_normal( Bb[:,0], B_tilde_inv  )
             # print('echantillon',p)
-            if p<=1 and p>=0: #self.in_simplex(p):
+            if p.sum()<=1 and (p<=1).all() and (p>=0).all(): #self.in_simplex(p):
                 condition = True
         # print(p)
-        return np.array( [ p , 1 - p ] )
+        return np.concatenate( [ p , [1 - p.sum()] ] )
 
     def accept_reject(self,):
-        limit = 100
+        limit = 1000
         threshold = 0
         while threshold < limit:
             p_tilde = self.sample_from_g()
             u_tilde = np.random.uniform(0, 1)
-            # print(p_tilde)
+            # print('p_tilde', p_tilde)
             # print( 'mean', np.linalg.inv( self.B ) @ self.b , 'var', np.linalg.inv( self.B ) )
             # print( 'Ru',  self.R * u_tilde,  'F', self.F(p_tilde), 'G', self.G(p_tilde)  )
             
             threshold+=1
             if ( self.R * u_tilde <  self.F( p_tilde ) / self.G( p_tilde ) ).all()  :
                 return p_tilde
-            if threshold == 99:
+            if threshold == limit-1:
                 print('limit trial exceeded')
 
     def F(self, p):
         result = 1
+        mean_vec = np.linalg.inv( self.B ) @ self.b
         for i in range(self.N):
             # print('homemade KL', self.kl_div(  'package KL', scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
-            # print('n[i]:', self.n[i].sum() , ' q[i]:', self.q[i] , ' Sp:', self.SignalMatrices[i] @ p , ' KL:', scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
+            # print('n[i]:', self.n[i].sum() , ' q[i]:', self.q[i] ,' Sp:', self.SignalMatrices[i] @ p, ' KL:', scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
             result *= np.exp( - self.n[i].sum() * scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
         # print('result',result)
-        result *= np.diagonal( scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,   np.linalg.inv( self.B ) ) )
+        # print( 'mean', np.linalg.inv( self.B ) @ self.b )
+        result *= scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) ) #multivariate_normal(mean=  mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p )
         return result
 
     def G(self,p):
         result = 1
+        mean_vec = np.linalg.inv( self.B ) @ self.b
         for i in range(self.N):
             result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p )**2  )
-        result *=  np.diagonal( scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,  np.linalg.inv( self.B ) ) ) 
+        result *=   scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) )  #multivariate_normal(mean= mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p ) 
         return result
 
     def get_action(self, t):
 
-        if t < self.N:
-            action = t
+        if t < 10 * self.N:
+
+            action = t // 10
 
         else:
             p_tilde = self.accept_reject()
@@ -141,5 +151,8 @@ class TSPM_alg:
             elif feedback == 0.25:
                 idx = 2
         else:
-            print('error')
+            if feedback == 1:
+                idx = 0
+            elif feedback == 2:
+                idx = 1
         return idx

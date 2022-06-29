@@ -134,9 +134,9 @@ def isNeighbor(LossMatrix, N, M, i1, i2, halfspace):
     return feasible
 
 
-def getV(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, neighborhood_actions, V):
+def getV(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, mathcal_N, V):
     v = collections.defaultdict(dict)
-    for pair in neighborhood_actions:
+    for pair in mathcal_N:
         # print(pair)
         v[ pair[0] ][ pair[1] ]  = getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V,  pair[0], pair[1])
     return v
@@ -150,17 +150,16 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
     m = gp.Model( )
     m.Params.LogToConsole = 0
 
-    vars = []
-
+    vars = collections.defaultdict(dict)
     for k in V[i1][i2] :
-        vars.append([])
+        vars[k] = []
         sk = len( set(FeedbackMatrix[k]) )
         for a in range( sk ):
             varName = "v_{}_{}_{}".format(i1, i2, a) 
             vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
             m.update()
 
-    # print('vars', vars)
+    print('vars', vars)
     #m.update()
 
     obj = 0
@@ -175,10 +174,8 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
     for k in  V[i1][i2] :
         expression += SignalMatrices[k].T @ vars[k]
     # print(expression)
-    m.addConstr( expression[0] == ldiff[0],  'constraint0')
-    m.addConstr( expression[1] == ldiff[1],  'constraint1')
-
-
+    for l in range(len(ldiff)):
+        m.addConstr( expression[l] == ldiff[l],  'constraint{}'.format(l) )
 
     # for j in range(M):
     #     constraintExpr = gp.LinExpr()
@@ -189,16 +186,15 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
     #     m.addConstr( constraintExpr == ldiff[j],  constraintStr)
     # # print('model', m)
     m.optimize()
-
     
-    vij = []
-    for k in  V[i1][i2] :
+    vij = {}
+    for k in V[i1][i2] :
         sk = len( set(FeedbackMatrix[k]) )
         vijk = np.zeros( sk )
         for a in range( sk ):
             # print( vars[k][a] )
             vijk[a] =   vars[k][a].X
-        vij.append(vijk)
+        vij[k] = vijk
 
     return vij
 
@@ -206,19 +202,20 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
     #     print('error in vij')
 
 
-def getConfidenceWidth( neighborhoodActions, V, v,  N):
+def getConfidenceWidth( mathcal_N, V, v,  N):
     W = np.zeros(N)
 
-    for pair in neighborhoodActions:
+    for pair in mathcal_N:
         # print('pair', pair, 'N_plus', N_plus[ pair[0] ][ pair[1] ] )
         for k in V[ pair[0] ][ pair[1] ]:
+            # print('pair ', pair, 'v ', v[ pair[0] ][ pair[1] ], 'V ', V[ pair[0] ][ pair[1] ] )
             vec = v[ pair[0] ][ pair[1] ][k]
             # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
             W[k] = np.max( [ W[k], np.linalg.norm(vec, np.inf) ] )
     return W
   
 def f(t, alpha):
-    return pow(alpha*t*t*np.log(t), 1/3)
+    return (alpha**1/3) *  (t** 2/3) * (np.log(t)**1/3) 
 
 
   

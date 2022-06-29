@@ -4,13 +4,14 @@ import scipy
 
 class eTSPM_alg:
 
-    def __init__(self, game, horizon,  ):
+    def __init__(self, game, horizon, decay  ):
       self.game = game
       self.horizon = horizon
 
       self.N = game.n_actions
       self.M = game.n_outcomes
       self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
+      self.decay = decay
       print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
       self.SignalMatrices = game.SignalMatricesAdim
@@ -109,7 +110,7 @@ class eTSPM_alg:
 
         else:
 
-            epsilon = min( [1, (c * K) / (t * d**2) ] )
+            epsilon = min( [1, (c * K) / (t * d**2) ] ) if self.decay == 1 else min([1, 1 / np.sqrt(t) ])
             # print(epsilon)
             if np.random.choice([True, False], size = 1, p = [epsilon,1-epsilon]):
                 action = np.random.choice(self.N, size = 1)[0]
