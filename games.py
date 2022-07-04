@@ -177,9 +177,7 @@ def feedback_idx_label_efficient(feedback):
         idx = 2
     return idx
     
-
-
-
+    
 def dynamic_pricing( mode ):
     c = 2
     LossMatrix = np.array( [ [0,1,2,3,4], [c,0,1,2,3],[c,c,0,1,2],[c,c,c,0,1],[c,c,c,c,0] ] )

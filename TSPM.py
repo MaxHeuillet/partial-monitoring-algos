@@ -34,7 +34,7 @@ class TSPM_alg:
 
     def in_simplex(self,p):
         res = False
-        if p.sum() <= 1 and (p>=0).all():
+        if p.sum()<=1 and (p<=1).all() and (p>=0).all():
             res = True
         return res
 
@@ -45,14 +45,14 @@ class TSPM_alg:
         one_vec = np.atleast_2d( np.ones(self.M - 1) ).T # \mathbb{1}_{M-1}
         # sub matrix of B
         C = self.B[:self.M-1, :self.M-1]
-        d =  np.atleast_2d( self.B[:self.M-1, -1]).T
+        d =  np.atleast_2d(self.B[:self.M-1, -1]).T 
         # print(d)
 
         D = (np.dot(d, one_vec.T) + np.dot(one_vec, d.T)) / 2
         f = self.B[-1, -1]
         # print('C', C, 'd', d, 'D', D, 'f', f)
         # sub vector of b
-        b_alpha = np.atleast_2d( self.b[:self.M-1,0 ] ).T #0
+        b_alpha = np.atleast_2d(self.b[:self.M-1,0 ]).T #0
         b_M = self.b[-1, 0] 
 
         B_tilde = C - 2 * D + f * np.dot(one_vec, one_vec.T)
@@ -63,10 +63,10 @@ class TSPM_alg:
 
         # print( 'sampler dans la distribution:',  Bb , B_tilde_inv )
 
-        while condition == False:
-            p = np.random.normal(  Bb[:,0], np.diagonal(B_tilde_inv) )#np.random.multivariate_normal( Bb[:,0], B_tilde_inv  )
+        while condition == False: #
+            p =  np.random.normal(  Bb[:,0], np.diagonal(B_tilde_inv) )
             # print('echantillon',p)
-            if p.sum()<=1 and (p<=1).all() and (p>=0).all(): #self.in_simplex(p):
+            if self.in_simplex(p):
                 condition = True
         # print(p)
         return np.concatenate( [ p , [1 - p.sum()] ] )
@@ -90,13 +90,14 @@ class TSPM_alg:
     def F(self, p):
         result = 1
         mean_vec = np.linalg.inv( self.B ) @ self.b
+
         for i in range(self.N):
             # print('homemade KL', self.kl_div(  'package KL', scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
             # print('n[i]:', self.n[i].sum() , ' q[i]:', self.q[i] ,' Sp:', self.SignalMatrices[i] @ p, ' KL:', scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
             result *= np.exp( - self.n[i].sum() * scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
         # print('result',result)
         # print( 'mean', np.linalg.inv( self.B ) @ self.b )
-        result *= scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) ) #multivariate_normal(mean=  mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p )
+        result *=   scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) ) #multivariate_normal(mean=  mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p ) #
         return result
 
     def G(self,p):
@@ -104,14 +105,14 @@ class TSPM_alg:
         mean_vec = np.linalg.inv( self.B ) @ self.b
         for i in range(self.N):
             result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p )**2  )
-        result *=   scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) )  #multivariate_normal(mean= mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p ) 
+        result *=  scipy.stats.norm.pdf( p ,  mean_vec[:,0] ,  np.diagonal( np.linalg.inv( self.B ) ) ) #multivariate_normal(mean= mean_vec[:,0], cov= np.linalg.inv( self.B ) ).pdf( p ) #
         return result
 
     def get_action(self, t):
 
-        if t < 10 * self.N:
+        if t < 1 * self.N:
 
-            action = t // 10
+            action = t #// 10
 
         else:
             p_tilde = self.accept_reject()

@@ -70,31 +70,6 @@ def PLOT(epsilon,):
     q = np.random.binomial(1, epsilon)
 
 
-def generate_sequence(target, k, t, test_loader,n_classes,epsilon):
-
-        R = {}
-        Sa = []
-        for i,data in enumerate(test_loader):
-            x,y = data
-            x_attacked = fgsm_attack(target, epsilon, x, y, n_classes)
-
-            if i < t:
-                v =  nn.CrossEntropyLoss()( target.clf(x_attacked) ,y)
-                R[i] = v
-                R = {k: v for k, v in sorted(R.items(), key=lambda item: item[1])}
-            else:
-                v =  nn.CrossEntropyLoss()( target.clf(x_attacked) ,y)
-                last_value = list(R.values())[-1]
-                last_key = list(R.keys())[-1]
-                if v>=last_value and len(Sa)<=k:
-                    del R[ last_key ]
-                    R[i] = v
-                    R = {k: v for k, v in sorted(R.items(), key=lambda item: item[1])}
-                    Sa.append(i)
-
-        attack_label = [ 1 if i in Sa else 0 for i in range(len(test_loader)) ]
-                    
-        return attack_label
 
 def fgsm_attack(target, epsilon, x, y, n_classes):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") 

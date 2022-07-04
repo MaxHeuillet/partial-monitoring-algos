@@ -110,11 +110,11 @@ class TSPM_alg:
     def get_action(self, t):
         K = self.N
         c = 1
-        d = np.sort(self.game.deltas)[1]
+        d = 0.1#np.sort( self.game.deltas )[1]
 
-        if t < 10 * self.N:
+        if t < 1 * self.N:
 
-            action = t // 10
+            action = t #// 10
 
         else:
 

@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader, TensorDataset
 
-import attacks
-import models
+import attacks as attacks
+import application_to_images.blackbox as blackbox
 from tqdm.notebook import tqdm
 import numpy as np
 
@@ -49,10 +49,10 @@ def create_task( input, model,probas, name):
 
 def create_train_val():
     
-    target = models.load_target()
+    target = blackbox.load_target()
 
     mnist_train = datasets.MNIST("../data", train=True, download=True, transform=transforms.ToTensor() )
-    create_task(mnist_train,target,[0.5,0.5], 'train')
+    create_task(mnist_train, target, [0.5,0.5], 'train')
 
     mnist_val = datasets.MNIST("../data", train=False, download=True, transform=transforms.ToTensor() )
     create_task(mnist_val,target,[0.5,0.5], 'val')
@@ -60,7 +60,7 @@ def create_train_val():
 
 def task_loader(name):
     
-    target = models.load_target()
+    target = blackbox.load_target()
 
     train_data = torch.load('./train_{}.pt'.format(name) )
 

@@ -90,14 +90,14 @@ class ucbTSPM_alg:
             # print('n[i]:', self.n[i].sum() , ' q[i]:', self.q[i] , ' Sp:', self.SignalMatrices[i] @ p , ' KL:', scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
             result *= np.exp( - self.n[i].sum() * scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
         # print('result',result)
-        result *= np.diagonal( scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,   np.linalg.inv( self.B ) ) )
+        result *= scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,  np.diagonal(  np.linalg.inv( self.B ) ) )
         return result
 
     def G(self,p):
         result = 1
         for i in range(self.N):
             result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p )**2  )
-        result *=  np.diagonal( scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,  np.linalg.inv( self.B ) ) ) 
+        result *=   scipy.stats.norm.pdf( p , np.linalg.inv( self.B ) @ self.b ,  np.diagonal(np.linalg.inv( self.B ) ) ) 
         return result
 
     def get_action(self, t):

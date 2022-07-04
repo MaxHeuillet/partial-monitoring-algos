@@ -37,6 +37,9 @@ class CPB():
         self.alpha = 1.01
 
         self.eta =  self.W **2/3 
+
+        self.memory_pareto = {}
+        self.memory_neighbors = {}
  
     def get_action(self, t):
 
@@ -66,8 +69,8 @@ class CPB():
                 
 
             # print('halfspace', halfspace)
-            P_t = geometry_v3.getParetoOptimalActions(self.game.LossMatrix, self.N, self.M, halfspace)
-            N_t = geometry_v3.getNeighborhoodActions(self.game.LossMatrix, self.N, self.M, halfspace,  self.mathcal_N )
+            P_t = self.pareto_halfspace_memory(halfspace)
+            N_t = self.neighborhood_halfspace_memory(halfspace)
 
             Nplus_t = []
             for pair in N_t:
@@ -110,3 +113,46 @@ class CPB():
         Y_t =  self.game.SignalMatrices[action] @ e_y 
         # print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
         self.nu[action] += Y_t
+
+        
+
+    def halfspace_code(self, halfspace):
+        string = ''
+        for element in halfspace:
+            pair, sign = element
+            string += '{}{}{}'.format(pair[0],pair[1], sign)
+        return string 
+
+
+    def pareto_halfspace_memory(self,halfspace):
+
+        code = self.halfspace_code(  sorted( halfspace) )
+        known = False
+        for mem in self.memory_pareto.keys():
+            if code  == mem:
+                known = True
+
+        if known:
+            result = self.memory_pareto[ code ]
+        else:
+            result =  geometry_v3.getParetoOptimalActions(self.game.LossMatrix, self.N, self.M, halfspace)
+            self.memory_pareto[code ] =result
+ 
+        return result
+
+    def neighborhood_halfspace_memory(self,halfspace):
+
+        code = self.halfspace_code(  sorted( halfspace) )
+        known = False
+        for mem in self.memory_neighbors.keys():
+            if code  == mem:
+                known = True
+
+        if known:
+            result = self.memory_neighbors[ code ]
+        else:
+            result =  geometry_v3.getNeighborhoodActions(self.game.LossMatrix, self.N, self.M, halfspace,  self.mathcal_N )
+            self.memory_neighbors[code ] =result
+ 
+        return result
+
