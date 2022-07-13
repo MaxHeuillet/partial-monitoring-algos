@@ -5,7 +5,7 @@ from sklearn.linear_model import LogisticRegression
 
 class CPB_side():
 
-    def __init__(self, game, horizon):
+    def __init__(self, game, horizon,):
 
         self.game = game
         self.horizon = horizon
@@ -46,8 +46,6 @@ class CPB_side():
             self.contexts.append( {'features':[], 'labels':[],'weights':None} )
  
     def get_action(self, t, X):
-
-
 
         if(t<self.N):
 

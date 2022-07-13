@@ -5,7 +5,7 @@ import collections
 
 class CPB():
 
-    def __init__(self, game, horizon):
+    def __init__(self, game, horizon, alpha ):
 
         self.game = game
         self.horizon = horizon
@@ -34,7 +34,7 @@ class CPB():
 
         self.W = geometry_v3.getConfidenceWidth(self.mathcal_N, self.V, self.v, self.N)
         # print('weights', self.W)
-        self.alpha = 1.01
+        self.alpha = alpha #1.01
 
         self.eta =  self.W **2/3 
 
@@ -43,9 +43,9 @@ class CPB():
  
     def get_action(self, t):
 
-        if(t<self.N):
+        if(t< 10 * self.N):
 
-            action = t
+            action = t // 10
 
         else:
 
