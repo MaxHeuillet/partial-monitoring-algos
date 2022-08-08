@@ -6,6 +6,7 @@ import gurobipy as gp
 from gurobipy import GRB
 import scipy
 
+
 class PM_DMED:
 
     def __init__(self, game, horizon):
@@ -97,7 +98,7 @@ class PM_DMED:
       self.Zn.extend( actions_subset )
 
     def use_cache(self, t):
-      return (t>100) and  ( (t%10)!=0 )
+      return (t>100) and ( (t%10)!=0 )
 
     def getConstrainedRandomPoint(self, p):
       pSample = []
