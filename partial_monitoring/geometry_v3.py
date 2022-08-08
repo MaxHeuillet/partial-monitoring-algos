@@ -172,18 +172,19 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
 
     expression = None
     for k in  V[i1][i2] :
+        print('signal',SignalMatrices[k].shape,'vars', vars[k] )
         expression += SignalMatrices[k].T @ vars[k]
-    # print(expression)
+    #print(expression)
     for l in range(len(ldiff)):
         m.addConstr( expression[l] == ldiff[l],  'constraint{}'.format(l) )
 
-    # for j in range(M):
-    #     constraintExpr = gp.LinExpr()
-    #     constraintStr = "c_".format(j)
-    #     for a in range( len(set(FeedbackMatrix[k])) ):
-    #         for k in range(N):
-    #             constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
-    #     m.addConstr( constraintExpr == ldiff[j],  constraintStr)
+    #for j in range(M):
+    #    constraintExpr = gp.LinExpr()
+    #    constraintStr = "c_".format(j)
+    #    for a in range( len(set(FeedbackMatrix[k])) ):
+    #        for k in range(N):
+    #            constraintExpr += SignalMatrices[k][a][j] * vars[k][a]
+    #    m.addConstr( constraintExpr == ldiff[j],  constraintStr)
     # # print('model', m)
     m.optimize()
     
@@ -215,7 +216,10 @@ def getConfidenceWidth( mathcal_N, V, v,  N):
     return W
   
 def f(t, alpha):
-    return (alpha**1/3) *  (t** 2/3) * (np.log(t)**1/3) 
+    return   (t** 2/3) * ( alpha * np.log(t) )**1/3 
+
+def f_v2(t, alpha, Z):
+    return   (t** 2/3) * Z
 
 
   

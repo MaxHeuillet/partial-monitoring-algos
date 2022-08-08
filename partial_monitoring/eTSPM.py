@@ -117,24 +117,31 @@ class eTSPM_alg:
         K = self.N
         c = 1
         d = np.sort(self.game.deltas)[1]
+        counter = [i for i in range(self.N) if self.n[i].sum() < 10 * self.A ]
 
-        if t < 10 * self.N:
-            action = t // 10
-
+        if len(counter) > 0:
+            action = counter[0]
         else:
-
             epsilon = min( [1, (c * K) / (t * d**2) ] ) if self.decay == 1 else min([1, 1 / np.sqrt(t) ])
             # print(epsilon)
             if np.random.choice([True, False], size = 1, p = [epsilon,1-epsilon]):
+
                 action = np.random.choice(self.N, size = 1)[0]
+
             else:
                 p_tilde = self.accept_reject()
-                # print('p_tilde:', p_tilde)
-                action = np.argmin(  self.game.LossMatrix @ p_tilde  )
-                # print('mean:', np.linalg.inv(self.B) @ self.b, '  var:', np.linalg.inv(self.B) )
-                # print(p_tilde, self.game.LossMatrix @ p_tilde, action )
+            # print('p_tilde:', p_tilde)
+            #action = np.argmin(  self.game.LossMatrix @ p_tilde  )
+   
+                action = np.argmin(  self.game.LossMatrix @ p_tilde  ) 
+
+            # print('mean:', np.linalg.inv(self.B) @ self.b, '  var:', np.linalg.inv(self.B) )
+            # print(p_tilde, self.game.LossMatrix @ p_tilde, action )
 
             # print(action)
+
+
+        
         return action
 
     def update(self, action, feedback, outcome):

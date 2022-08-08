@@ -5,9 +5,10 @@ from scipy.stats import multivariate_normal
 
 class TSPM_alg:
 
-    def __init__(self, game, horizon,  ):
+    def __init__(self, game, horizon, R ):
       self.game = game
       self.horizon = horizon
+      self.R = R
 
       self.N = game.n_actions
       self.M = game.n_outcomes
@@ -24,8 +25,6 @@ class TSPM_alg:
       self.B = self.B0
       self.b = self.b0
 
-      self.R = 1
-
       self.n , self.q = [] , []
 
       for i in range(self.N):
@@ -38,21 +37,30 @@ class TSPM_alg:
             res = True
         return res
 
+    def reset(self,):
+        self.B0 = self.lbd * np.identity(self.M)
+        self.b0 = np.zeros( (self.M, 1) ) 
+        self.B = self.B0
+        self.b = self.b0
+        self.n , self.q = [] , []
+
+        for i in range(self.N):
+            self.n.append( np.zeros( self.A ) )
+            self.q.append(  np.zeros( self.A ) )
+
+
+
     def sample_from_g(self,):
         condition = False
 
-        # 1. calc tilde{B} and tilde{b}
-        one_vec = np.atleast_2d( np.ones(self.M - 1) ).T # \mathbb{1}_{M-1}
-        # sub matrix of B
+        one_vec = np.atleast_2d( np.ones(self.M - 1) ).T 
         C = self.B[:self.M-1, :self.M-1]
         d =  np.atleast_2d(self.B[:self.M-1, -1]).T 
-        # print(d)
 
         D = (np.dot(d, one_vec.T) + np.dot(one_vec, d.T)) / 2
         f = self.B[-1, -1]
-        # print('C', C, 'd', d, 'D', D, 'f', f)
-        # sub vector of b
-        b_alpha = np.atleast_2d(self.b[:self.M-1,0 ]).T #0
+
+        b_alpha = np.atleast_2d(self.b[:self.M-1,0 ]).T 
         b_M = self.b[-1, 0] 
 
         B_tilde = C - 2 * D + f * np.dot(one_vec, one_vec.T)
@@ -61,46 +69,36 @@ class TSPM_alg:
         B_tilde_inv = np.linalg.inv(B_tilde)
         Bb = B_tilde_inv @ b_tilde
 
-        # print( 'sampler dans la distribution:',  Bb , B_tilde_inv )
-
-        while condition == False: #
+        while condition == False: 
             p =  np.random.multivariate_normal(  Bb[:,0],  B_tilde_inv  )
-            # print('echantillon',p)
             if self.in_simplex(p):
                 condition = True
-        # print(p)
         return np.concatenate( [ p , [1 - p.sum()] ] )
 
-    def accept_reject(self,):
-        limit = 1000
+    def accept_reject(self,t):
+        limit = 100
         threshold = 0
         while threshold < limit:
             p_tilde = self.sample_from_g()
             u_tilde = np.random.uniform(0, 1)
-            # print('p_tilde', p_tilde)
-            # print( 'mean', np.linalg.inv( self.B ) @ self.b , 'var', np.linalg.inv( self.B ) )
-            # print( 'Ru',  self.R * u_tilde,  'F', self.F(p_tilde), 'G', self.G(p_tilde)  )
-            
-            threshold+=1
+            threshold += 1
             if self.R * u_tilde <  self.F( p_tilde ) / self.G( p_tilde )   :
+                #print('rejects', threshold)
                 return p_tilde
             if threshold == limit-1:
-                print('limit trial exceeded')
+                print('limit threshold ', t)
+                #return [0.5] * self.M
 
     def F(self, p):
         result = 1
         mean_vec = np.linalg.inv( self.B ) @ self.b
         inv = np.linalg.inv( self.B )
-
         for i in range(self.N):
-            # print('homemade KL', self.kl_div(  'package KL', scipy.special.kl_div( self.q[i], self.SignalMatrices[i] @ p ).sum() )
-            # print('n[i]:', self.n[i].sum() , ' q[i]:', self.q[i] ,' Sp:', self.SignalMatrices[i] @ p, ' KL:', scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
             result *= np.exp( - self.n[i].sum() * scipy.special.kl_div( self.q[i] , self.SignalMatrices[i] @ p  ).sum() )
-        # print('result',result)
-        # print( 'mean', np.linalg.inv( self.B ) @ self.b )
-        posterior =  multivariate_normal(mean=  mean_vec[:,0], cov= inv ).pdf( p )
-        # print( 'posterior', posterior, 'mean', mean_vec[:,0], 'std' , np.linalg.inv( self.B ) )
-        result *=   posterior 
+        posterior = multivariate_normal(mean=  mean_vec[:,0], cov= inv ).pdf( p )
+        #print('F posterior', posterior)
+        result *= posterior 
+
         return result
 
     def G(self,p):
@@ -108,23 +106,27 @@ class TSPM_alg:
         mean_vec = np.linalg.inv( self.B ) @ self.b
         inv = np.linalg.inv( self.B )
         for i in range(self.N):
-            result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p )**2  )
-        posterior =  multivariate_normal(mean=  mean_vec[:,0], cov= inv ).pdf( p )
+            result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p ) ** 2  )
+        posterior =  multivariate_normal(mean=  mean_vec[:,0], cov= inv  ).pdf( p )
+        #print('G posterior', posterior)
         result *=  posterior 
         return result
 
     def get_action(self, t):
 
-        if t < 10 * self.N:
 
-            action = t // 10
+        #counter = [i for i in range(self.N) if self.n[i].sum() < 10 * self.A ] 
+        #if len(counter) > 0:
+        #    action = counter[0]
 
-        else:
-            p_tilde = self.accept_reject()
-            # print('p_tilde:', p_tilde)
-            action = np.argmin(  self.game.LossMatrix @ p_tilde  )
-            # print('mean:', np.linalg.inv(self.B) @ self.b, '  var:', np.linalg.inv(self.B) )
-            # print(p_tilde, self.game.LossMatrix @ p_tilde, action )
+        #if t < self.N:
+        #    action = t
+
+        #else:
+
+        p_tilde = self.accept_reject(t)
+
+        action = np.argmin(  self.game.LossMatrix @ p_tilde  ) 
 
         return action
 

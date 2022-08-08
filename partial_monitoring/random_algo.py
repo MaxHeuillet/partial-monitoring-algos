@@ -1,4 +1,5 @@
 
+from re import L
 import numpy as np
 
 
@@ -16,4 +17,7 @@ class Random():
         return action
 
     def update(self, action, feedback, outcome):
+        pass
+
+    def reset(self,):
         pass

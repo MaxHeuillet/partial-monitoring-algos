@@ -40,12 +40,18 @@ class CPB():
 
         self.memory_pareto = {}
         self.memory_neighbors = {}
+
+    def reset(self,):
+        self.n = np.zeros( self.N )
+        self.nu = [ np.zeros(   ( len( set(self.game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)] 
+        self.memory_pareto = {}
+        self.memory_neighbors = {}
  
     def get_action(self, t):
 
-        if(t< 10 * self.N):
+        if(t< 1* self.N):
 
-            action = t // 10
+            action = t #// 10
 
         else:
 
@@ -101,7 +107,7 @@ class CPB():
             values = { i:self.W[i]**2/self.n[i] for i in S}
             # print('value', values)
             action = max(values, key=values.get)
-            # print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'V_t',V_t, 'R_t',R_t, 'S',S,'values', values, 'action', action)
+            #print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'V_t',V_t, 'R_t',R_t, 'S',S,'values', values, 'action', action)
             # print('n', self.n,'nu', self.nu)
 
         return action
