@@ -5,6 +5,8 @@ import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
 import scipy
+import cyipopt
+import tnlp
 
 
 class PM_DMED:
@@ -18,100 +20,247 @@ class PM_DMED:
       self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
       print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
-      self.Zc = [ i for i in range(self.N) ]
-      self.Zr = [ i for i in range(self.N) ]
-      self.Zn = None
+      self.LC = [ i for i in range(self.N) ]
+      self.LRc = [ i for i in range(self.N) ]
+      self.LN = None
 
-      self.n , self.symbol_dist = [] , []
+      self.constraintNum = 300
+      self.VERY_LARGE_DOUBLE = 10000000
+      self.VERY_SMALL_DOUBLE  = 0.000001
+
+      self.feedback = [] 
 
       for i in range(self.N):
-          self.n.append( np.zeros( self.A ) )
-          self.symbol_dist.append(  np.zeros( self.A ) )
+          self.feedback.append(  np.zeros( self.A ) )
 
     def get_action(self, t):
-
       if t < self.N:
         action = t
-
       else:
-        action = np.random.choice(self.Zc)
+        action = self.LC[0]
 
+      return action 
 
-    def reset(self,p ):
-      pass
+    def reset(self, ):
+
+      self.LC = [ i for i in range(self.N) ]
+      self.LRc = [ i for i in range(self.N) ]
+      self.LN = []
+
+      self.feedback = [] 
+      for i in range(self.N):
+          self.feedback.append(  np.zeros( self.A ) )
+
 
     
-    def optimization_problem(self, p):
-      m = gp.Model( )
-      m.Params.LogToConsole = 0
+    # def optimization_problem(self, p):
+    #   m = gp.Model( )
+    #   m.Params.LogToConsole = 0
+    #   vars = []
+    #   for i in range(self.M):
+    #     varName =  'p_{}'.format(i) 
+    #     vars.append( m.addVar(0.00001, 1.0, -1.0, GRB.CONTINUOUS, varName) )
+    #     m.update()
 
-      vars = []
-      for i in range(self.M):
-        varName =  'p_{}'.format(i) 
-        vars.append( m.addVar(0.00001, 1.0, -1.0, GRB.CONTINUOUS, varName) )
-        m.update()
+    #   obj = 0
+    #   for i in range(self.N):
+    #     calc = self.game.SignalMatricesAdim[i] @ vars
+    #     kl_dv = 0
+    #     for k in range(self.M):
+    #       if p[k] == 0 or calc[k] == 0:
+    #         kl_dv += 0
+    #       kl_dv += p[k] * np.log( p[k] / calc[k] )
+    #       obj += kl_dv
 
-      obj = 0
-      for i in range(self.N):
-        calc = self.game.SignalMatricesAdim[i] @ vars
-        kl_dv = 0
-        for k in range(self.M):
-          if p[k] == 0 or calc[k] == 0:
-            kl_dv += 0
-          kl_dv += p[k] * np.log( p[k] / calc[k] )
-          obj += kl_dv
-
-      m.setObjective(obj, GRB.MINIMIZE)
-      m.optimize()
-      result = m.objVal
-      
-      return result
-
-    def get_random_pbt(self,):
-      random_point = np.random.uniform(0,1,self.M)
-      random_pbt = random_point / random_point.sum()
-      return random_pbt
+    #   m.setObjective(obj, GRB.MINIMIZE)
+    #   m.optimize()
+    #   result = m.objVal
+    #   return result
 
     def update(self, action, feedback, outcome, t):
+      self.feedback[action][ self.feedback_idx(feedback) ] += 1
 
-      self.Zc.remove(action)
-      self.Zr.remove(action)
-
-      idx = self.feedback_idx( feedback ) 
-      e_y = np.zeros( (self.A, 1) )
-      e_y[idx] = 1
-
-      self.n[action][idx] += 1
-      self.symbol_dist[action] = self.n[action] / self.n[action].sum() 
-
-      ######### algorithm PM-DMED:
-
-      hat_p = self.optimization_problem( self.get_random_pbt() )
-      i_t =  np.argmin(  self.game.LossMatrix @ hat_p  ) 
-
-      if i_t not in self.Zr:
-        self.Zn.append(i_t)
-      
-      # sub sampled actions
-      actions_subset = [ i for i in self.N if i not in self.Zr ]
-      actions_subset = [ i for i in actions_subset if self.n[i] < self.c * np.sqrt( np.log(t) ) ]
-      self.Zn.extend( actions_subset )
+      if t <= self.N: #initial exploration
+        return 
+      else:
+        self.LC.remove(action)
+        self.LRc.append(action)
+        ins_actions = self.insufficientActions(t)
+        for j in self.LRc:
+          if j in ins_actions:
+            self.LN.append(j)
+          
+          if len(self.LC) == 0:
+            self.LC = self.LN.copy()
+            self.LRc = []
+            for i in range(self.N):
+              if i not in self.LC:
+                self.LRc.append(i)
+            self.LN = []    
 
     def use_cache(self, t):
       return (t>100) and ( (t%10)!=0 )
 
+    def MLE(self,accuracy):
+
+      lb = [ 0.0001 for _ in range(self.M)]
+      ub = [ 0.999 for _ in range(self.M)]
+
+      cl = [1.0]
+      cu = [1.0]
+
+      nlp = cyipopt.Problem( n=self.M, m=1,
+                            problem_obj=tnlp.MLE_NLP(self.game, self.A, self.feedback ),
+                            lb=lb, ub=ub, cl=cl, cu=cu )
+
+      accuracy = 0.1
+
+      cyipopt.set_logging_level(0)
+
+      nlp.add_option('sb', 'yes')
+      nlp.add_option('print_level', 0)
+      nlp.add_option('mu_strategy', 'adaptive')
+      nlp.add_option("tol", 0.1 * accuracy)
+      nlp.add_option("acceptable_tol", 1 * accuracy)
+      nlp.add_option("bound_relax_factor", 0.0)
+      nlp.add_option("jac_c_constant", "yes")
+      nlp.add_option("hessian_approximation", "limited-memory")
+
+      x0 = [ 1/ self.M for j in range(self.M) ]
+      x, info = nlp.solve(x0)
+
+      if info['status'] == 0 :
+        solution = x
+
+      else:
+        solution = np.random.uniform(0,1,self.M)
+        solution = solution / solution.sum()
+    
+      return solution
+
+    def insufficientActions(self, t):
+      actions = []
+      suffExplore = []
+      
+      if self.use_cache(t): #use previous p
+        suffExplore = self.suffExplore_cache.copy()
+      else:
+        #print('test')
+        p = self.MLE( 0.1/pow(t+1, 0.5) )
+        #print('crash')
+        #print(p)
+        suffExplore = self.sufficientExploration( p , np.max( [np.log(t), 1.0] )  )
+        #print(suffExplore)
+        self.suffExplore_cache = suffExplore
+
+      for i in range(self.N):
+        if(suffExplore[i] >= sum(self.feedback[i])  ):
+          actions.append(i)
+
+      return actions
+
+    def getRandomPoint(self,):
+      random_point = np.random.uniform(0,1,self.M)
+      random_pbt = random_point / random_point.sum()
+      return random_pbt
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+    def sufficientExploration(self, p, logt ):
+      #print('major test')
+
+      ps = [ self.getConstrainedRandomPoint( p ) for c in range(self.constraintNum) ]
+      #print('ps')
+
+      m = gp.Model( )
+      m.Params.LogToConsole = 0
+
+      vars = { i:0 for i in range(self.N) }
+
+      Deltas = np.zeros(self.N)
+      numZeros = 0
+      for i in range(self.N):
+        for j in range(self.M):
+          ldiff = self.game.LossMatrix[i,j] - self.game.LossMatrix[self.game.i_star, j]
+          #print('ldiff', ldiff)
+          #print('p', p)
+          Deltas[i] +=  ldiff * p[j]
+        if Deltas[i] < self.VERY_SMALL_DOUBLE:
+          numZeros += 1
+
+      #print('hey')
+      
+      if numZeros>=2: #degenerate optimal solution
+        vals = np.zeros(self.M)
+        for i in range(self.N):
+          if Deltas[i] < self.VERY_SMALL_DOUBLE:
+            vals[i] = self.VERY_LARGE_DOUBLE
+        return vals 
+
+      for i in range(self.N):
+        if i == self.game.i_star: 
+          pass
+        else:
+          varName = "N_{}".format(i) 
+          vars[i] =  m.addVar(0, GRB.INFINITY, Deltas[i], GRB.CONTINUOUS, varName ) 
+          m.update()
+
+      m.update()
+
+      #print('hola')
+      #print('vars', vars)
+      for c in range(len(ps)):
+        if self.getOptimalAction(ps[c]) == self.game.i_star:
+          pass
+        else:
+          ps[c] = self.findBoundaryByBisection( p, ps[c])
+          ConstExpr = 0
+          for i in range(self.N):
+            if i == self.game.i_star:
+              pass
+            else:
+              di = self.kl_i(p, ps[c], i)
+              ConstExpr += di * vars[i]
+
+            if i == self.N:
+              m.addConstr( ConstExpr >= logt,  'constraint{}'.format(c) )
+      
+      #print('heyyy')
+      
+      m.optimize()
+      vals = np.zeros(self.N)
+      for i in range(self.N):
+        if i == self.game.i_star:
+          vals[i] = self.VERY_LARGE_DOUBLE
+        else:
+          vals[i] =  vars[i].X 
+
+      #print('vals')
+      return vals
+
+    def getOptimalAction(self, p):
+      deltas = []
+      for i in range( len(self.game.LossMatrix) ):
+        deltas.append( self.game.LossMatrix[i,...].T @ p )
+      return np.argmin(deltas)
+
+
+
     def getConstrainedRandomPoint(self, p):
-      pSample = []
+      pSample = np.zeros( self.M )
       for a in range(self.A):
         psum = 0
         sum = 0
         for j in range(self.M):
-          if self.game.LossMatrix[a][j]:
+          if self.game.SignalMatricesAdim[self.game.i_star][ a ][j]:
             pSample[j] = np.random.uniform(0,1)
             psum += p[j]
             sum += pSample[j]
         for j in range(self.M):
-          if self.game.LossMatrix[a][j]:
+          if self.game.SignalMatricesAdim[self.game.i_star][ a ][j]:
             pSample[j] *= psum/sum
       return pSample
 
@@ -131,142 +280,32 @@ class PM_DMED:
       p1_sym = np.zeros(self.A)
       p2_sym = np.zeros(self.A)
       for j in range(self.M):
-        p1_sym[ self.game.FeedbackMatrix[i,j] ] += p1[j]
-        p2_sym[ self.game.FeedbackMatrix[i,j] ] += p2[j]
+        p1_sym[ self.feedback_idx( self.game.FeedbackMatrix[i,j]) ] += p1[j]
+        p2_sym[ self.feedback_idx( self.game.FeedbackMatrix[i,j]) ] += p2[j]
       return scipy.special.kl_div( p1_sym , p2_sym ).sum()
 
-
-    def sufficientExploration(self, p, constraintNum):
-
-      ps = []
-      for c in range(constraintNum):
-        ps.append( self.getConstrainedRandomPoint( p ) )
-      
-      m = gp.Model( )
-      m.Params.LogToConsole = 0
-
-      vars = []
-      Deltas = np.zeros(self.N)
-      numZeros = 0
-      for i in range(self.N):
-        for j in range(self.M):
-          Deltas[i] +=  [ self.game.LossMatrix[i,j] - self.game.LossMatrix[self.game.i_star, j] ] * p[j]
-        if Deltas[i] < VERY_SMALL_DOUBLE:
-          numZeros += 1
-      
-      if numZeros>=2:
-        for i in range(self.N):
-          if Deltas[i] < VERY_SMALL_DOUBLE:
-            vals[i] = VERY_LARGE_DOUBLE
-        return vals 
-
-      obj = 0
-      for i in  range(self.N):
-        if i == self.game.i_star: 
-          pass
-        varName = "N_{}".format(i) 
-        vars[i].append( m.addVar(0, GRB.INFINITY, Deltas[i], GRB.CONTINUOUS, varName ) ) 
-        m.update()
-        
-      m.setObjective(15*x1 + 18*x2 + 30*x3, GRB.MAXIMIZE)
-      m.update()
-
-      expression = None
-      for c in range(len(ps)):
-        if self.getOptimalAction(self.game.LossMatrix, ps[c])==self.game.i_star:
-          pass
-        ps[c] = self.findBoundaryByBisection(self.game.LossMatrix, p, ps[c], self.game.i_star)
-      for i in range(self.N):
-        if i == self.game.i_star:
-          pass
-        double_di = self.kl_i(p, ps[c], i)
-        expression += di * vars[i]
-
-        if i == N:
-          constName = "N_{}".format(i) 
-        m.addConstr( expression[l] == ldiff[l],  'constraint{}'.format(l) )
-        vars[i].append( m.addVar(0, GRB.INFINITY, Deltas[i], GRB.CONTINUOUS, varName ) ) 
-
-        m.optimize()
-        vals = []
-        for i in range(N):
-          if i == self.game.i_star:
-            vals.append(VERY_LARGE_DOUBLE)
-          else:
-            vals.append( vars[i].X )
-        return vals
+    def feedback_idx(self, feedback):
+        idx = None
+        if self.N ==2:
+            if feedback == 0:
+                idx = 0
+            elif feedback == 1:
+                idx = 1
+        elif self.N == 3:
+            if feedback == 1:
+                idx = 0
+            elif feedback == 0.5:
+                idx = 1
+            elif feedback == 0.25:
+                idx = 2
+        else:
+            if feedback == 1:
+                idx = 0
+            elif feedback == 2:
+                idx = 1
+        return idx
 
 
-    def MLE(self,accuracy, t):
-
-      if self.use_cache(t):
-        samples = cache.copy()
-      else:
-        samples = [ self.get_random_pbt() for _ in range(1000) ]
-        cache = samples.copy()
+    
 
 
-#      VectorXd MLE(double accuracy){
-#     // Create a new instance of your nlp
-#     //  (use a SmartPtr, not raw)
-#     SmartPtr<TNLP> nlp = new MLE_NLP(lossMatrix, feedbackMatrix, N, M, A, feedback);
-#     //m_app->Options()->SetNumericValue("tol", 1.);
-#     //nlp->num_option("acceptable_tol", accuracy);
-
-#     // Create a new instance of IpoptApplication
-#     //  (use a SmartPtr, not raw)
-# //    SmartPtr<IpoptApplication> app = new IpoptApplication(true); //console output
-#     SmartPtr<IpoptApplication> app = new IpoptApplication(false); //no console output
-#     app->Options()->SetNumericValue("tol", 0.1*accuracy);
-#     app->Options()->SetNumericValue("acceptance_tol", 1*accuracy);
-# //    app->Options()->SetStringValue("nlp_scaling_method", "none");
-#     app->Options()->SetNumericValue("bound_relax_factor", 0.0);
-#     app->Options()->SetStringValue("jac_c_constant", "yes");
-# //    app->Options()->SetStringValue("mehrotra_algorithm", "yes");
-# //    app->Options()->SetStringValue("warm_start_init_point", "yes");
-# //    app->Options()->SetStringValue("warm_start_bound_push", "yes");
-# //    app->Options()->SetStringValue("linear_solver", "ma77");
-# //    app->Options()->SetStringValue("linear_solver", "ma86");
-# //    app->Options()->SetStringValue("linear_solver", "ma97");
-# //    app->Options()->SetStringValue("linear_solver", "pardiso");
-# //    app->Options()->SetStringValue("linear_solver", "mumps");
-#     app->Options()->SetStringValue("hessian_approximation", "limited-memory"); //l-bfgs is very fast
-
-#     //here change some options
- 
-#     // Intialize the IpoptApplication and process the options
-#     ApplicationReturnStatus status;
-#     status = app->Initialize();
-#     bool success = (status == Solve_Succeeded) || (status == Solved_To_Acceptable_Level);
-#     if (!success) {
-#       printf("\n\n*** Error during initialization!\n");
-#       //return (int) status;
-#     }
-
-#     // Ask Ipopt to solve the problem
-#     status = app->OptimizeTNLP(nlp);
-
-#     if (success) {
-#       //printf("\n\n*** The problem solved!\n");
-#       //std::cout << "feedback=" << feedback << std::endl;
-#       VectorXd solution = ipopt_mle_solution;
-#       return solution;
-#     }
-#     else {
-#       printf("\n\n*** The problem FAILED!\n");
-#       std::cout << "feedback=" << feedback << std::endl;
-#       VectorXd randSolution = VectorXd::Zero(M);
-#       double sum = 0.;
-#       for(uint j=0;j<M;++j){
-#         randSolution(j) = unitNormal(randomEngine);
-#         sum += randSolution(j);
-#       }
-#       return randSolution / sum;
-      
-
-
-
-      
-
-
- 

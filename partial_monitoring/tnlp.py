@@ -22,7 +22,7 @@ class MLE_NLP:
         hatp_sym = np.zeros(self.A)
         
         for j in range(self.M):
-            p_sym[ self.feedbackMatrix[i][j] ] += x[j]
+            p_sym[ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
         
         for a in range(self.A):
             hatp_sym[a] = self.feedback[i][a] / self.feedbackRowwise[i]
@@ -38,14 +38,14 @@ class MLE_NLP:
         hatpMat = np.zeros( (self.N, self.A) )
         for i in range(self.N): #calculate empirical divergence
             for j in range(self.M):
-                pMat[ i][ self.feedbackMatrix[i][j] ] += x[j]
+                pMat[ i][ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
             for a in range(self.A):
                 hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i]
 
         grad_f = np.zeros(self.M)
         for j in range(self.M):
             for i in range(self.N):
-                a = self.feedbackMatrix[i][j]
+                a = self.feedback_idx( self.feedbackMatrix[i][j] )
                 grad_f[j] -= self.feedbackRowwise[i] * hatpMat[i, a] / pMat[i][a]
         #print('gradient == run')
         return grad_f
@@ -73,23 +73,6 @@ class MLE_NLP:
         #print('jacobian == run')
         return (values)
 
-    # def hessianstructure(self):
-    #     M  = 4
-    #     counter = 0
-    #     for row in range(M):
-    #         for col in range(row):
-    #             counter+=1
-    #     idx = 0
-    #     iRow = np.zeros(counter, dtype = int )
-    #     jCol = np.zeros(counter, dtype = int )
-    #     for row in range(M):
-    #         for col in range(row):
-    #             iRow[idx] = row
-    #             jCol[idx] = col
-    #             idx+=1
-    #     #print('hessianstructure == run')
-    #     return ( jCol.tolist(), iRow.tolist() )
-
     def hessian(self, x, lagrange, obj_factor):
         # return the values. This is a symmetric matrix, fill the lower left triangle only
             
@@ -97,9 +80,9 @@ class MLE_NLP:
         hatpMat = np.zeros( (self.N, self.A) )
         for i in range(self.N): #calculate empirical divergence
             for j in range(self.M):
-                pMat[i][self.feedbackMatrix[i][j] ] += x[j]
+                pMat[i][ self.feedback_idx( self.feedbackMatrix[i][j] )  ] += x[j]
             for a in range(self.A):
-                hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i]
+                hatpMat[i][  a  ] = self.feedback[i][a] / self.feedbackRowwise[i]
 
         # dense hessian
         values = np.zeros(self.size)
@@ -107,9 +90,10 @@ class MLE_NLP:
         for row in range(self.M):
             for col in range(row):
                 for i in range(self.N):
-                    a1 = self.feedbackMatrix[i][row]
-                    a2 = self.feedbackMatrix[i][row]
+                    a1 = self.feedback_idx( self.feedbackMatrix[i][row] ) 
+                    a2 = self.feedback_idx( self.feedbackMatrix[i][row] ) 
                     if a1 == a2 :
+
                         values[idx] += obj_factor * (self.feedbackRowwise[i] * hatpMat[i][a1] / (pMat[i][a1] * pMat[i][a1] ) )
                 idx +=1
 
@@ -118,7 +102,31 @@ class MLE_NLP:
         return values 
 
     def intermediate( self, alg_mod, iter_count,  obj_value, inf_pr, inf_du, mu, d_norm, regularization_size, alpha_du, alpha_pr, ls_trials ):
-        print("Objective value at iteration #%d is - %g" % (iter_count, obj_value) )
+        pass #print("Objective value at iteration #%d is - %g" % (iter_count, obj_value) )
+
+    def feedback_idx(self, feedback):
+        idx = None
+        if self.N ==2:
+            if feedback == 0:
+                idx = 0
+            elif feedback == 1:
+                idx = 1
+        elif self.N == 3:
+            if feedback == 1:
+                idx = 0
+            elif feedback == 0.5:
+                idx = 1
+            elif feedback == 0.25:
+                idx = 2
+        else:
+            if feedback == 1:
+                idx = 0
+            elif feedback == 2:
+                idx = 1
+        return idx
+
+
+    
 
 
 
