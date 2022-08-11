@@ -112,7 +112,7 @@ class CPB():
 
         return action
 
-    def update(self, action, feedback, outcome):
+    def update(self, action, feedback, outcome, t):
         self.n[action] += 1
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1

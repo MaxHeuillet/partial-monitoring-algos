@@ -16,7 +16,7 @@ class Random():
         action = np.random.choice(self.game.n_actions, 1,  p = pbt )[0]
         return action
 
-    def update(self, action, feedback, outcome):
+    def update(self, action, feedback, outcome, t):
         pass
 
     def reset(self,):

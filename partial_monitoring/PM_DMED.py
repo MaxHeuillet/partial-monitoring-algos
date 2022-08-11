@@ -51,32 +51,6 @@ class PM_DMED:
       for i in range(self.N):
           self.feedback.append(  np.zeros( self.A ) )
 
-
-    
-    # def optimization_problem(self, p):
-    #   m = gp.Model( )
-    #   m.Params.LogToConsole = 0
-    #   vars = []
-    #   for i in range(self.M):
-    #     varName =  'p_{}'.format(i) 
-    #     vars.append( m.addVar(0.00001, 1.0, -1.0, GRB.CONTINUOUS, varName) )
-    #     m.update()
-
-    #   obj = 0
-    #   for i in range(self.N):
-    #     calc = self.game.SignalMatricesAdim[i] @ vars
-    #     kl_dv = 0
-    #     for k in range(self.M):
-    #       if p[k] == 0 or calc[k] == 0:
-    #         kl_dv += 0
-    #       kl_dv += p[k] * np.log( p[k] / calc[k] )
-    #       obj += kl_dv
-
-    #   m.setObjective(obj, GRB.MINIMIZE)
-    #   m.optimize()
-    #   result = m.objVal
-    #   return result
-
     def update(self, action, feedback, outcome, t):
       self.feedback[action][ self.feedback_idx(feedback) ] += 1
 
@@ -194,7 +168,7 @@ class PM_DMED:
       #print('hey')
       
       if numZeros>=2: #degenerate optimal solution
-        vals = np.zeros(self.M)
+        vals = np.zeros(self.N)
         for i in range(self.N):
           if Deltas[i] < self.VERY_SMALL_DOUBLE:
             vals[i] = self.VERY_LARGE_DOUBLE
