@@ -158,7 +158,6 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
             varName = "v_{}_{}_{}".format(i1, i2, a) 
             vars[k].append( m.addVar(-GRB.INFINITY, GRB.INFINITY, 0., GRB.CONTINUOUS, varName ) ) 
             m.update()
-
     print('vars', vars)
     #m.update()
 
@@ -214,6 +213,7 @@ def getConfidenceWidth( mathcal_N, V, v,  N):
             # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
             W[k] = np.max( [ W[k], np.linalg.norm(vec, np.inf) ] )
     return W
+
   
 def f(t, alpha):
     return   (t** 2/3) * ( alpha * np.log(t) )**1/3 
