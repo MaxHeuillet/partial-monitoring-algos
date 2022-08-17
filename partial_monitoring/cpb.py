@@ -47,7 +47,7 @@ class CPB():
         self.memory_pareto = {}
         self.memory_neighbors = {}
  
-    def get_action(self, t):
+    def get_action(self, t, X = None):
 
         if(t< 1* self.N):
 
@@ -67,7 +67,7 @@ class CPB():
                     tdelta += self.v[ pair[0] ][ pair[1] ][k].T @ ( self.nu[k]  / self.n[k] )
                     c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 # print('pair', pair, 'tdelta', tdelta, 'confidence', c)
-                print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
+                #print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
                 if( abs(tdelta) >= c):
                     halfspace.append( ( pair, np.sign(tdelta)[0] ) ) #[0]
                 # else:
@@ -107,12 +107,13 @@ class CPB():
             values = { i:self.W[i]**2/self.n[i] for i in S}
             # print('value', values)
             action = max(values, key=values.get)
-            print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'V_t',V_t, 'R_t',R_t, 'S',S,'values', values, 'action', action)
+            #print('P_t',P_t,'N_t', N_t,'Nplus_t',Nplus_t,'V_t',V_t, 'R_t',R_t, 'S',S,'values', values, 'action', action)
             # print('n', self.n,'nu', self.nu)
 
         return action
 
-    def update(self, action, feedback, outcome, t):
+
+    def update(self, action, feedback, outcome, X, t):
         self.n[action] += 1
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1

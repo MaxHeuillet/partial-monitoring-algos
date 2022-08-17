@@ -4,7 +4,7 @@ import numpy as np
 
 class BPM:
 
-    def __init__(self, game, horizon, p0, sigma0 ):
+    def __init__(self, game, horizon,  ):
       self.game = game
       self.horizon = horizon
 
@@ -17,11 +17,11 @@ class BPM:
       self.sstInvs = [  np.linalg.inv( s @ s.T ) for s in  self.SignalMatrices ] 
       self.Ps = [ self.SignalMatrices[i].T @  self.sstInvs[i] @ self.SignalMatrices[i] for i in range(self.N) ] 
 
-      self.p0 = p0 
-      self.sigma0 = sigma0
-      self.p = p0 
-      self.sigma = sigma0
-      self.sigmaInv = np.linalg.inv( sigma0 )
+      self.p0 =  [0.5, 0.5 ]
+      self.sigma0 = np.identity(2)
+      self.p = self.p0.copy()
+      self.sigma = self.sigma0.copy()
+      self.sigmaInv = np.linalg.inv( self.sigma0.copy() )
 
       self.sample_size = 100
       self.numC = 10
@@ -30,7 +30,18 @@ class BPM:
       self.ActiveActions = None
       self.n = np.zeros(self.N)
 
-    def update(self, action, feedback, outcome):
+    def reset(self,):
+      self.p0 =  [0.5, 0.5 ]
+      self.sigma0 = np.identity(2)
+      self.p = self.p0.copy()
+      self.sigma = self.sigma0.copy()
+      self.sigmaInv = np.linalg.inv( self.sigma0.copy() )
+      self.samples = np.zeros( ( self.sample_size * self.numC * 2, self.M) )
+      self.ActiveActions = None
+      self.n = np.zeros(self.N)
+
+
+    def update(self, action, feedback, outcome, X, t):
       # self.feedback_counter[action][outcome] +=1
       self.n[action] += 1
 
@@ -70,9 +81,13 @@ class BPM:
         cInequality.append( res )
       return cInequality
 
+    def use_cache(self, t):
+      return t%10 !=0 
+
     def get_action(self, t):
 
-      self.populateSamples(t)
+      if self.use_cache(t): #use previous p
+        self.populateSamples(t)
 
       currentActiveActions = []
       score = np.zeros(self.N)

@@ -4,15 +4,17 @@ import scipy
 
 class MLE_NLP:
 
-    def __init__(self, game, A, symbol_dist):
+    def __init__(self, game, A, feedback):
         self.game = game
         self.N = game.n_actions
         self.M = game.n_outcomes
         self.A = A
         self.feedbackMatrix = game.FeedbackMatrix
-        self.feedback = symbol_dist
-        self.feedbackRowwise = [ sum(symbol_dist[i]) for i in range(game.n_actions) ] # num of feedback a for action i
+        self.feedback = feedback
+        self.feedbackRowwise = [ sum(feedback[i]) for i in range(game.n_actions) ] # num of feedback a for action i
         self.size = self.get_size()
+        self.history = set([])
+        self.counter = 0
 
   # Method to return the objective value */
     def objective(self, x):
@@ -25,10 +27,20 @@ class MLE_NLP:
             p_sym[ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
         
         for a in range(self.A):
-            hatp_sym[a] = self.feedback[i][a] / self.feedbackRowwise[i]
+            hatp_sym[a] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
         
+        #print(hatp_sym)
         obj_value += self.feedbackRowwise[i] * scipy.special.kl_div( hatp_sym , p_sym  ).sum() 
     # print('objective == run')
+        if obj_value not in self.history:
+            self.history.add(obj_value)
+
+        elif obj_value in self.history:
+            self.counter+=1
+
+        if self.counter == 10:
+            obj_value = None
+
 
       return obj_value
 
@@ -38,10 +50,11 @@ class MLE_NLP:
         hatpMat = np.zeros( (self.N, self.A) )
         for i in range(self.N): #calculate empirical divergence
             for j in range(self.M):
-                pMat[ i][ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
+                pMat[i][ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
             for a in range(self.A):
-                hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i]
-
+                #print('self.feedback[i][a]', self.feedback[i][a],'self.feedbackRowwise[i]', self.feedbackRowwise[i] )
+                hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
+        #print(hatpMat)
         grad_f = np.zeros(self.M)
         for j in range(self.M):
             for i in range(self.N):
@@ -82,7 +95,7 @@ class MLE_NLP:
             for j in range(self.M):
                 pMat[i][ self.feedback_idx( self.feedbackMatrix[i][j] )  ] += x[j]
             for a in range(self.A):
-                hatpMat[i][  a  ] = self.feedback[i][a] / self.feedbackRowwise[i]
+                hatpMat[i][  a  ] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
 
         # dense hessian
         values = np.zeros(self.size)
@@ -102,7 +115,8 @@ class MLE_NLP:
         return values 
 
     def intermediate( self, alg_mod, iter_count,  obj_value, inf_pr, inf_du, mu, d_norm, regularization_size, alpha_du, alpha_pr, ls_trials ):
-        pass #print("Objective value at iteration #%d is - %g" % (iter_count, obj_value) )
+        #print("Objective value at iteration #%d is - %g" % (iter_count, obj_value) )
+        pass
 
     def feedback_idx(self, feedback):
         idx = None

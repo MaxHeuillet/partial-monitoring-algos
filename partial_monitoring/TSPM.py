@@ -130,7 +130,7 @@ class TSPM_alg:
 
         return action
 
-    def update(self, action, feedback, outcome, t):
+    def update(self,  action, feedback, outcome, X, t):
 
       self.B = self.B + self.sts[action]
       

@@ -55,7 +55,7 @@ class CPB_side():
                 # print('pair ', pair, 'v ', v[ pair[0] ][ pair[1] ], 'V ', V[ pair[0] ][ pair[1] ] )
                 vec = self.v[ pair[0] ][ pair[1] ][k]
                 # print('vec', vec, 'norm', np.linalg.norm(vec, np.inf) )
-                W[k] = np.max( [ W[k], np.linalg.norm(vec) ] )
+                W[k] = np.max( [ W[k], np.linalg.norm(vec, np.inf) ] )
         return W
 
     def reset(self,):
@@ -72,6 +72,7 @@ class CPB_side():
 
         if t < self.N:
             action = t
+            self.d = len(X)
 
         else: 
 
@@ -86,7 +87,7 @@ class CPB_side():
                 X_it =  np.array( self.contexts[i]['features'] )
                 n, D = X_it.shape
                 X_it = X_it.reshape( (D, n) )
-                formule = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X #D * (  np.sqrt( (D+1) * np.log(t) ) + len(self.SignalMatrices[i]) ) *
+                formule = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 # a = D * (  np.sqrt( (D+1) * np.log(t) ) + len(self.SignalMatrices[i]) )
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 #print('action {}, first component {}, second component, {}'.format(i, a, b  ) )
@@ -104,7 +105,7 @@ class CPB_side():
                     # print( 'pair ', pair, 'action ', k, 'proba ', self.nu[k]  / self.n[k]  )
                     # print('k', k, 'pair ', pair, 'v ', self.v[ pair[0] ][ pair[1] ][k].T.shape , 'q[k] ', q[k].shape  )
                     tdelta += self.v[ pair[0] ][ pair[1] ][k].T @ q[k]
-                    c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k] ) * w[k]
+                    c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k] , np.inf) * w[k] * np.sqrt( (self.d+1) * np.log(t) ) * self.d
                 #print('pair', pair, 'tdelta', tdelta, 'confidence', c)
                 #print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
                 if( abs(tdelta) >= c):
@@ -150,7 +151,7 @@ class CPB_side():
 
         return action
 
-    def update(self, action, feedback, outcome, X, t):
+    def update(self, action, feedback, outcome, t, X):
 
         self.n[action] += 1
         e_y = np.zeros( (self.M, 1) )

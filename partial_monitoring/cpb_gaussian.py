@@ -140,7 +140,7 @@ class CPB_gaussian():
 
         return action
 
-    def update(self, action, feedback, outcome, t):
+    def update(self, action, feedback, outcome, context, t):
         self.n[action] += 1
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1

@@ -20,57 +20,61 @@ class PM_DMED:
       self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
       print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
 
-      self.LC = [ i for i in range(self.N) ]
-      self.LRc = [ i for i in range(self.N) ]
-      self.LN = None
+      self.LC = set( [ i for i in range(self.N) ] )
+      self.ZR = set(  [ i for i in range(self.N) ] )
+      self.LN = set([])
 
       self.constraintNum = 300
       self.VERY_LARGE_DOUBLE = 10000000
       self.VERY_SMALL_DOUBLE  = 0.000001
 
-      self.feedback = [] 
+      
+      self.c = 1
 
+      self.feedback = [] 
       for i in range(self.N):
           self.feedback.append(  np.zeros( self.A ) )
 
     def get_action(self, t):
-      if t < self.N:
-        action = t
-      else:
-        action = self.LC[0]
+      # if t < self.N:
+      #   action = t
+      # else:
+      action = self.LC.pop()
 
       return action 
 
     def reset(self, ):
 
-      self.LC = [ i for i in range(self.N) ]
-      self.LRc = [ i for i in range(self.N) ]
-      self.LN = []
+      self.LC = set( [ i for i in range(self.N) ] )
+      self.ZR = set( [ i for i in range(self.N) ] )
+      self.LN = set( [] )
 
       self.feedback = [] 
       for i in range(self.N):
           self.feedback.append(  np.zeros( self.A ) )
 
-    def update(self, action, feedback, outcome, t):
+    def update(self, action, feedback, outcome, context, t):
+      #print('Zc', self.LC, 'Zr', self.ZR, 'Zn', self.LN )
       self.feedback[action][ self.feedback_idx(feedback) ] += 1
 
-      if t <= self.N: #initial exploration
-        return 
-      else:
-        self.LC.remove(action)
-        self.LRc.append(action)
-        ins_actions = self.insufficientActions(t)
-        for j in self.LRc:
-          if j in ins_actions:
-            self.LN.append(j)
+      if action in self.ZR:
+        self.ZR.remove(action)
+
+      for i in range(self.N):
+        if i not in self.ZR and sum(self.feedback[i]) < self.c * np.sqrt( np.log( t+1 ) ):
+          #print( 'forced exploration of {}'.format(i) )
+          self.LN.add(i)
+
+      ins_actions = self.insufficientActions(t+1)
+      #print('insufficient actions', ins_actions)
+      for j in range(self.N):
+        if j in ins_actions and j not in self.ZR:
+          self.LN.add(j)
           
-          if len(self.LC) == 0:
-            self.LC = self.LN.copy()
-            self.LRc = []
-            for i in range(self.N):
-              if i not in self.LC:
-                self.LRc.append(i)
-            self.LN = []    
+      if len(self.LC) == 0:
+        self.LC = self.LN.copy()
+        self.ZR = self.LN.copy()
+        self.LN = set([])  
 
     def use_cache(self, t):
       return (t>100) and ( (t%10)!=0 )
@@ -84,8 +88,8 @@ class PM_DMED:
       cu = [1.0]
 
       nlp = cyipopt.Problem( n=self.M, m=1,
-                            problem_obj=tnlp.MLE_NLP(self.game, self.A, self.feedback ),
-                            lb=lb, ub=ub, cl=cl, cu=cu )
+                             problem_obj=tnlp.MLE_NLP(self.game, self.A, self.feedback ),
+                             lb=lb, ub=ub, cl=cl, cu=cu )
 
       accuracy = 0.1
 
@@ -99,37 +103,41 @@ class PM_DMED:
       nlp.add_option("bound_relax_factor", 0.0)
       nlp.add_option("jac_c_constant", "yes")
       nlp.add_option("hessian_approximation", "limited-memory")
+      nlp.add_option('max_iter', 10)
 
-      x0 = [ 1/ self.M for j in range(self.M) ]
-      x, info = nlp.solve(x0)
+      x0 = [ 1/self.M for j in range(self.M) ]
 
-      if info['status'] == 0 :
-        solution = x
-
-      else:
-        solution = np.random.uniform(0,1,self.M)
+      try:
+        x, info = nlp.solve(x0)
+        if info['status'] == 0 :
+          solution = x
+        else:
+          solution = np.random.uniform(0, 1, self.M)
+          solution = solution / solution.sum()
+  
+      except TypeError:
+        #print('erreur optimisation')
+        solution = np.random.uniform(0, 1, self.M)
         solution = solution / solution.sum()
-    
+      #print('x',x)
+      #print('info', info)
+
       return solution
 
     def insufficientActions(self, t):
-      actions = []
-      suffExplore = []
-      
+
       if self.use_cache(t): #use previous p
         suffExplore = self.suffExplore_cache.copy()
       else:
-        #print('test')
         p = self.MLE( 0.1/pow(t+1, 0.5) )
-        #print('crash')
-        #print(p)
+        #print('problematic p', p )
+        #print('t', t)
+        #print('value', np.max( [np.log(t), 1.0] ))
+
         suffExplore = self.sufficientExploration( p , np.max( [np.log(t), 1.0] )  )
-        #print(suffExplore)
         self.suffExplore_cache = suffExplore
 
-      for i in range(self.N):
-        if(suffExplore[i] >= sum(self.feedback[i])  ):
-          actions.append(i)
+      actions = [ i for i in range(self.N) if suffExplore[i] >= sum(self.feedback[i]) ]
 
       return actions
 
@@ -220,8 +228,6 @@ class PM_DMED:
       for i in range( len(self.game.LossMatrix) ):
         deltas.append( self.game.LossMatrix[i,...].T @ p )
       return np.argmin(deltas)
-
-
 
     def getConstrainedRandomPoint(self, p):
       pSample = np.zeros( self.M )
