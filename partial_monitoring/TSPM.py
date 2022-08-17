@@ -87,7 +87,7 @@ class TSPM_alg:
                 return p_tilde
             if threshold == limit-1:
                 print('limit threshold ', t)
-                #return [0.5] * self.M
+                return [0.5] * self.M
 
     def F(self, p):
         result = 1
