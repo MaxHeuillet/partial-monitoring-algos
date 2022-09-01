@@ -5,13 +5,14 @@ import collections
 
 class CPB_gaussian():
 
-    def __init__(self, game, horizon, alpha, with_f2, sigma, M_prim ):
+    def __init__(self, game, horizon, alpha, with_f2, sigma, M_prim , uniform):
 
         self.game = game
         self.horizon = horizon
         self.with_f2 = with_f2
         self.sigma = sigma
         self.M_prim = M_prim
+        self.uniform = uniform
 
         self.N = game.n_actions
         self.M = game.n_outcomes
@@ -51,7 +52,7 @@ class CPB_gaussian():
         M_prim = self.M_prim
         sigma = self.sigma
         U = np.sqrt( self.alpha  * np.log(t) ) 
-        Z = np.random.uniform( 0, U )
+        
         alphas = np.arange(0, U, U/M_prim )
 
         p_m_hat =  np.array([ np.exp( -(alphas[i]**2) / 2*(sigma**2)  )  for i in range(len(alphas)-1) ] )
@@ -59,7 +60,10 @@ class CPB_gaussian():
         p_m = p_m.tolist()
         p_m.append(epsilon)
         
-        Z = np.random.choice(alphas, p= p_m)
+        if self.uniform: 
+            Z = np.random.uniform( 0, U )
+        else:
+            Z = np.random.choice(alphas, p= p_m)
 
         return Z
 
@@ -110,7 +114,7 @@ class CPB_gaussian():
             R_t = []
             for k in range(self.N):
                 if self.with_f2:
-                    if self.n[k] <=  self.eta[k] * geometry_v3.f_v2(t, self.alpha, Z) :
+                    if self.n[k] <=  self.eta[k] * geometry_v3.f_v2(t, self.alpha, Z**2) :
                         R_t.append(k)
                 else:
                     if self.n[k] <=  self.eta[k] * geometry_v3.f(t, self.alpha) :
