@@ -1,6 +1,6 @@
 import numpy
 
-class ContextualLinGaussianPM:
+class ContextualLinGaussianBandit:
     
     def __init__(self, thetas, noise, seed=None):
         self.thetas = numpy.copy(thetas)

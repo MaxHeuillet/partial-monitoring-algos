@@ -9,7 +9,7 @@ from itertools import combinations, permutations
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V , mode = None):
+    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V ,  mode = None):
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
         self.LinkMatrix = LinkMatrix
@@ -32,7 +32,8 @@ class Game():
         self.outcome_dist = None #self.set_outcome_distribution()
         self.deltas, self.i_star = None, None #self.optimal_action(  )
 
-    def set_outcome_distribution(self, outcome_distribution):
+    def set_outcome_distribution(self, outcome_distribution, jobid):
+        self.jobid = jobid
         self.outcome_dist = outcome_distribution
         self.deltas, self.i_star = self.optimal_action(  )
 

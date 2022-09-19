@@ -11,7 +11,8 @@ import tnlp
 
 class PM_DMED:
 
-    def __init__(self, game, horizon):
+    def __init__(self, game, horizon, c):
+
       self.game = game
       self.horizon = horizon
       self.N = game.n_actions
@@ -28,17 +29,13 @@ class PM_DMED:
       self.VERY_LARGE_DOUBLE = 10000000
       self.VERY_SMALL_DOUBLE  = 0.000001
 
-      
-      self.c = 1
+      self.c = c
 
       self.feedback = [] 
       for i in range(self.N):
-          self.feedback.append(  np.zeros( self.A ) )
+          self.feedback.append(  np.ones( self.A ) ) # ones and not zeros for avoiding infeasible models
 
     def get_action(self, t):
-      # if t < self.N:
-      #   action = t
-      # else:
       action = self.LC.pop()
 
       return action 
@@ -51,7 +48,7 @@ class PM_DMED:
 
       self.feedback = [] 
       for i in range(self.N):
-          self.feedback.append(  np.zeros( self.A ) )
+          self.feedback.append(  np.ones( self.A ) ) # ones and not zeros for avoiding infeasible models
 
     def update(self, action, feedback, outcome, context, t):
       #print('Zc', self.LC, 'Zr', self.ZR, 'Zn', self.LN )
@@ -60,13 +57,17 @@ class PM_DMED:
       if action in self.ZR:
         self.ZR.remove(action)
 
+      
       for i in range(self.N):
+        # print('not in', i not in self.ZR )
+        # print('counter', sum(self.feedback[i]) < self.c * np.sqrt( np.log( t+1 ) ) )
+        # print('ZR', self.ZR , 'counter', sum(self.feedback[i]), 'threshold', self.c * np.sqrt( np.log( t+1 ) ) )
         if i not in self.ZR and sum(self.feedback[i]) < self.c * np.sqrt( np.log( t+1 ) ):
-          #print( 'forced exploration of {}'.format(i) )
+          # print( '/forced exploration of {}'.format(i) )
           self.LN.add(i)
 
       ins_actions = self.insufficientActions(t+1)
-      #print('insufficient actions', ins_actions)
+      # print('insufficient actions', ins_actions)
       for j in range(self.N):
         if j in ins_actions and j not in self.ZR:
           self.LN.add(j)
@@ -75,6 +76,7 @@ class PM_DMED:
         self.LC = self.LN.copy()
         self.ZR = self.LN.copy()
         self.LN = set([])  
+        # print(self.LC)
 
     def use_cache(self, t):
       return (t>100) and ( (t%10)!=0 )
@@ -103,7 +105,6 @@ class PM_DMED:
       nlp.add_option("bound_relax_factor", 0.0)
       nlp.add_option("jac_c_constant", "yes")
       nlp.add_option("hessian_approximation", "limited-memory")
-      nlp.add_option('max_iter', 10)
 
       x0 = [ 1/self.M for j in range(self.M) ]
 
@@ -112,11 +113,12 @@ class PM_DMED:
         if info['status'] == 0 :
           solution = x
         else:
+          # print('erreur optimisation 1')
           solution = np.random.uniform(0, 1, self.M)
           solution = solution / solution.sum()
   
       except TypeError:
-        #print('erreur optimisation')
+        # print('erreur optimisation 2')
         solution = np.random.uniform(0, 1, self.M)
         solution = solution / solution.sum()
       #print('x',x)
@@ -141,10 +143,10 @@ class PM_DMED:
 
       return actions
 
-    def getRandomPoint(self,):
-      random_point = np.random.uniform(0,1,self.M)
-      random_pbt = random_point / random_point.sum()
-      return random_pbt
+    # def getRandomPoint(self,):
+    #   random_point = np.random.uniform(0,1,self.M)
+    #   random_pbt = random_point / random_point.sum()
+    #   return random_pbt
 
 
 ##########################################################################################

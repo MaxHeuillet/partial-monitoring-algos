@@ -16,9 +16,12 @@ class MLE_NLP:
         self.history = set([])
         self.counter = 0
 
+
   # Method to return the objective value */
     def objective(self, x):
+
       obj_value = 0
+
       for i in range(self.N): #calculate empirical divergence
         p_sym = np.zeros(self.A)
         hatp_sym = np.zeros(self.A)
@@ -27,22 +30,25 @@ class MLE_NLP:
             p_sym[ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
         
         for a in range(self.A):
-            hatp_sym[a] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
+            hatp_sym[a] = self.feedback[i][a] / self.feedbackRowwise[i] 
         
-        #print(hatp_sym)
-        obj_value += self.feedbackRowwise[i] * scipy.special.kl_div( hatp_sym , p_sym  ).sum() 
-    # print('objective == run')
+        
+        kl_div = scipy.special.kl_div( hatp_sym , p_sym  ) 
+        kl_div[np.isinf(kl_div)] = 0
+        # print('hatp_sym', hatp_sym, 'p_sym', p_sym, 'kl div', kl_div )
+        obj_value += self.feedbackRowwise[i] * kl_div.sum() 
+
         if obj_value not in self.history:
             self.history.add(obj_value)
-
         elif obj_value in self.history:
             self.counter+=1
-
-        if self.counter == 10:
+        if self.counter == 100:
             obj_value = None
-
+        #     print('forced stop' )
+        # print(obj_value)
 
       return obj_value
+
 
     def gradient(self, x):
 
@@ -53,14 +59,14 @@ class MLE_NLP:
                 pMat[i][ self.feedback_idx( self.feedbackMatrix[i][j]) ] += x[j]
             for a in range(self.A):
                 #print('self.feedback[i][a]', self.feedback[i][a],'self.feedbackRowwise[i]', self.feedbackRowwise[i] )
-                hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
+                hatpMat[i][a] = self.feedback[i][a] / self.feedbackRowwise[i] 
         #print(hatpMat)
         grad_f = np.zeros(self.M)
         for j in range(self.M):
             for i in range(self.N):
                 a = self.feedback_idx( self.feedbackMatrix[i][j] )
                 grad_f[j] -= self.feedbackRowwise[i] * hatpMat[i, a] / pMat[i][a]
-        #print('gradient == run')
+        # print('gradient', grad_f)
         return grad_f
 
 
@@ -95,7 +101,7 @@ class MLE_NLP:
             for j in range(self.M):
                 pMat[i][ self.feedback_idx( self.feedbackMatrix[i][j] )  ] += x[j]
             for a in range(self.A):
-                hatpMat[i][  a  ] = self.feedback[i][a] / self.feedbackRowwise[i] if self.feedbackRowwise[i]>0 else np.nan
+                hatpMat[i][  a  ] = self.feedback[i][a] / self.feedbackRowwise[i] 
 
         # dense hessian
         values = np.zeros(self.size)
@@ -115,7 +121,7 @@ class MLE_NLP:
         return values 
 
     def intermediate( self, alg_mod, iter_count,  obj_value, inf_pr, inf_du, mu, d_norm, regularization_size, alpha_du, alpha_pr, ls_trials ):
-        #print("Objective value at iteration #%d is - %g" % (iter_count, obj_value) )
+        # print("Objectivse value at iteration #%d is - %g" % (iter_count, obj_value) )
         pass
 
     def feedback_idx(self, feedback):
