@@ -5,7 +5,7 @@ import collections
 
 class CPB_gaussian():
 
-    def __init__(self, game, horizon, alpha, with_f2, sigma, M_prim , uniform):
+    def __init__(self, game, horizon, alpha, with_f2, sigma, M_prim , uniform, epsilon):
 
         self.game = game
         self.horizon = horizon
@@ -13,6 +13,7 @@ class CPB_gaussian():
         self.sigma = sigma
         self.M_prim = M_prim
         self.uniform = uniform
+        self.epsilon = epsilon
 
         self.N = game.n_actions
         self.M = game.n_outcomes
@@ -48,7 +49,7 @@ class CPB_gaussian():
 
     def obtain_probability(self, t):
 
-        epsilon = 10e-7
+        epsilon = self.epsilon #10e-7
         M_prim = self.M_prim
         sigma = self.sigma
         U = np.sqrt( self.alpha  * np.log(t) ) 
