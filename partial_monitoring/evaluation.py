@@ -32,11 +32,11 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
     for jobid in range(n_folds):
         
         if type == 'easy' :
-            p = np.random.uniform(0, 0.2) if np.random.uniform(0,1)>0.5 else np.random.uniform(0.8, 1)
+            p = np.random.uniform(0, 0.2) #if np.random.uniform(0,1)>0.5 else np.random.uniform(0.8, 1)
         #elif type == 'easy' and jobid > 100:
         #    p = np.random.uniform(0.8, 1)
         else:
-            p = np.random.uniform(0.4,0.6)
+            p = np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
 
     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions ,range(n_folds)) ) ) 
@@ -110,46 +110,37 @@ class Evaluation:
 
 def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, labels):
 
-    fig = go.Figure( )
+    # fig = go.Figure( )
 
-    final_regrets = []
+    # final_regrets = []
 
     for alg, color, label in zip( algos, colors, labels):
 
-        r,g,b = color
+        # r,g,b = color
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task) )
-
-
-        with gzip.open(  os.path.join( './partial_monitoring/results', '{}_{}_{}_{}_{}.pkl.gz'.format(name, task, horizon, n_folds, label)  ), "wb" ) as f:
-            pkl.dump(result, f)
-
-        # with gzip.GzipFile(  './results/label_efficient/{}_{}_{}_{}_{}.pkl.gz'.format(name, task, horizon, n_folds, label)  ,'wb') as f:
-        #     pkl.dump(result,f)
-        
-        # np.save('./results/label_efficient/easy_{}_{}_{}'.format(horizon,n_folds, label), result)
+        np.save('./results/label_efficient/easy_{}_{}_{}'.format(horizon, n_folds, label), result)
         # result = np.load( './results/label_efficient/easy_{}_{}_{}.npy'.format(horizon,n_folds, label) )
 
-        final_regrets.append( result[:,-1] )
-        regret =  np.mean(result, 0) 
-        xcoords = np.arange(0,horizon,1).tolist()
-        std =  np.std(result,0) 
-        upper_regret = regret + std
+        # final_regrets.append( result[:,-1] )
+    #     regret =  np.mean(result, 0) 
+    #     xcoords = np.arange(0,horizon,1).tolist()
+    #     std =  np.std(result,0) 
+    #     upper_regret = regret + std
 
-        fig.add_trace(go.Scatter(x=xcoords, y=regret, line=dict(color='rgb({},{},{})'.format(r,g,b)), mode='lines',  name=label )) # 
+    #     fig.add_trace(go.Scatter(x=xcoords, y=regret, line=dict(color='rgb({},{},{})'.format(r,g,b)), mode='lines',  name=label )) # 
 
-        fig.add_trace(   go.Scatter( x=xcoords+xcoords[::-1], y=upper_regret.tolist()+regret.tolist()[::-1],  fill='toself', fillcolor='rgba({},{},{},0.2)'.format(r,g,b), 
-                            line=dict(color='rgba(255,255,255,0)'),   hoverinfo="skip",  showlegend=False )  )
+    #     fig.add_trace(   go.Scatter( x=xcoords+xcoords[::-1], y=upper_regret.tolist()+regret.tolist()[::-1],  fill='toself', fillcolor='rgba({},{},{},0.2)'.format(r,g,b), 
+    #                         line=dict(color='rgba(255,255,255,0)'),   hoverinfo="skip",  showlegend=False )  )
         
-    fig.update_xaxes( type="linear")
-    fig.update_yaxes( type="log",range=[0, 5] )
-    fig.update_layout(legend= dict(yanchor="top",y=0.98,xanchor="left",x=0.1), autosize=False,
-                    xaxis_title="Sequence", yaxis_title="Regret",  margin=go.layout.Margin( l=0,   r=0,   b=0,    t=0, ),   font=dict(size=13,) )
-    fig.write_image("./{}_{}.pdf".format(name, task) )
+    # fig.update_xaxes( type="linear")
+    # fig.update_yaxes( type="log",range=range )
+    # fig.update_layout(legend= dict(yanchor="top",y=0.98,xanchor="left",x=0.1), autosize=False,
+    #                 xaxis_title="Sequence", yaxis_title="Regret",  margin=go.layout.Margin( l=0,   r=0,   b=0,    t=0, ),   font=dict(size=13,) )
+    # fig.write_image("./{}_{}.pdf".format(name, task) )
 
-    fig.show()
-
-    final_regrets = np.array(final_regrets)
-    final = [ ( np.argmin(final_regrets[:,i]), i) for i in range(n_folds) ]
+    # fig.show()
+    # final_regrets = np.array(final_regrets)
+    # final = [ ( np.argmin(final_regrets[:,i]), i) for i in range(n_folds) ]
 
     return True
 
@@ -167,22 +158,21 @@ game = games.label_efficient(  )
 
 algos = [ random_algo.Random(  game, horizon, ), 
           cpb.CPB(  game, horizon, 1.01),  
-          cpb_gaussian.CPB_gaussian(  game, horizon, 1.01, True, 1/16, 10, False),
           PM_DMED.PM_DMED(  game, horizon, 100), 
           PM_DMED.PM_DMED(  game, horizon, 10), 
+          PM_DMED.PM_DMED(  game, horizon, 5), 
           PM_DMED.PM_DMED(  game, horizon, 1),
           PM_DMED.PM_DMED(  game, horizon, 0.1),  
           TSPM.TSPM_alg(  game, horizon, 1),
           TSPM.TSPM_alg(  game, horizon, 0),
           bpm.BPM(game, horizon) ]
 
-colors = [  [0,0,0], [250,0,0], [0,250,0], [0,150,0], [0,0,250], [0,0,200], [0,0,150], [0,0,100],  [225,0,225], [150 , 0, 150], [0 , 250, 250] ] 
-labels = [   'random', 'CBP', 'RandCBP', 'PM_DMEDc100', 'PM_DMEDc10', 'PM_DMEDc1', 'PM_DMEDc01', 'TSPM_R0', 'TSPM_R1', 'BPM_LEAST'  ]  
+colors = [  [0,0,0], [0,0,0], [250,0,0], [0,250,0], [0,150,0], [0,0,250], [0,0,200], [0,0,150], [0,0,100],  [225,0,225], [150 , 0, 150], [0 , 250, 250] ] 
+labels = [   'random', 'CBP', 'RandCBP', 'PM_DMEDc100', 'PM_DMEDc10', 'PM_DMEDc5', 'PM_DMEDc1', 'PM_DMEDc01', 'TSPM_R0', 'TSPM_R1', 'BPM_LEAST'  ]  
 
 run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels)
 
 run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels)
-
 
 ### Apple Tasting game:
 
