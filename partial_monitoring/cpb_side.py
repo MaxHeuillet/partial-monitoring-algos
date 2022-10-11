@@ -71,7 +71,7 @@ class CPB_side():
         if t < self.N:
             action = t
             self.d = len(X)
-            self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
+            # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
 
 
 
@@ -81,7 +81,6 @@ class CPB_side():
             q = []
             w = []
             
-            # X = np.atleast_2d(X)
             for i in range(self.N):
                 # # print( self.contexts[i]['weights'] )
                 # print('context shape', X.shape)
@@ -95,8 +94,9 @@ class CPB_side():
                 X_it = np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
                 # print('new Xit', X_it)
 
-                formule = X.T @ np.linalg.inv( self.lbd * np.identity(self.d) + X_it @ X_it.T  ) @ X 
-                # a = D * (  np.sqrt( (D+1) * np.log(t) ) + len(self.SignalMatrices[i]) )
+                factor = self.d * (  np.sqrt( (self.d+1) * np.log(t) ) + len(self.SignalMatrices[i]) )
+                width = X.T @ np.linalg.inv( self.lbd * np.identity(self.d) + X_it @ X_it.T  ) @ X 
+                formule = factor * width
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 #print('action {}, first component {}, second component, {}'.format(i, a, b  ) )
                 #print('Xit', X_it.shape  )
@@ -187,6 +187,7 @@ class CPB_side():
         
         Y_it = np.array( self.contexts[action]['labels'] )
         X_it =  np.array( self.contexts[action]['features'] )
+        # print(X_it)
         # print(X_it.shape)
         
         # print(Y_it.shape)

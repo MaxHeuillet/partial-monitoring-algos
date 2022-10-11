@@ -52,11 +52,11 @@ class CPB_gaussian():
         epsilon = self.epsilon #10e-7
         M_prim = self.M_prim
         sigma = self.sigma
-        U = np.sqrt( self.alpha  * np.log(t) ) 
-        
-        alphas = np.arange(0, U, U/M_prim )
 
+        U = np.sqrt( self.alpha  * np.log(t) ) 
+        alphas = np.arange(0, U, U/M_prim )
         p_m_hat =  np.array([ np.exp( -(alphas[i]**2) / 2*(sigma**2)  )  for i in range(len(alphas)-1) ] )
+
         p_m = (1 - epsilon) * p_m_hat / p_m_hat.sum()
         p_m = p_m.tolist()
         p_m.append(epsilon)

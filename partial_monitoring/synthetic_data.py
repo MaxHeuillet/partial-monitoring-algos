@@ -14,9 +14,9 @@ class LinearContexts:
         while True:
             context = np.random.uniform(-1, 1,  self.d )
             if   self.w.T @ context + self.b > self.margin and label == 0:
-                return context #/ norm(context, 1)
+                return np.array(context).reshape(2,1) #/ norm(context, 1)
             elif  self.w.T @ context  + self.b < -self.margin and label == 1:
-                return context #/ norm(context, 1)
+                return np.array(context).reshape(2,1) #/ norm(context, 1)
 
     def generate_unique_context(self,):
         self.context_A = []
@@ -24,9 +24,9 @@ class LinearContexts:
         while  len(self.context_A) == 0 or len(self.context_B) == 0:
             context = np.random.uniform(-1, 1, self.d)
             if self.w.T @ context + self.b > self.margin and len(self.context_A) == 0 :
-                self.context_A = context #/ norm(context, 1)
+                self.context_A = np.array(context).reshape(2,1) #/ norm(context, 1)
             elif self.w.T @ context + self.b < -self.margin and len(self.context_B) == 0:
-                self.context_B = context #/ norm(context, 1)
+                self.context_B = np.array(context).reshape(2,1) #/ norm(context, 1)
 
 
     def get_same_context(self, label):
