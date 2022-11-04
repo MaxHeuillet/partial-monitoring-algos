@@ -6,7 +6,7 @@ from multiprocessing import Pool
 from functools import partial
 import pickle as pkl
 import gzip
-import plotly.graph_objects as go
+# import plotly.graph_objects as go
 
 import games
 
