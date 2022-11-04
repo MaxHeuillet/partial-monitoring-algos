@@ -2,7 +2,7 @@
 import numpy as np
 import os
 
-from multiprocess import Pool
+from multiprocessing import Pool
 from functools import partial
 import pickle as pkl
 import gzip
