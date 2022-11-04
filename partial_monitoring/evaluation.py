@@ -43,7 +43,7 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
         distributions.append( [p, 1-p] )
 
         d = 2
-        margin =0.01
+        margin = 0.01
         contexts = synthetic_data.LinearContexts( np.array([0.5,0.5]), 0, d, margin) #synthetic_data.ToyContexts( )
         context_generators.append( contexts )
 
@@ -121,7 +121,7 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task) )
 
-        with gzip.open( '/home/mheuillet/Desktop/attack-detection/partial_monitoring/contextual_results/{}/{}_context_{}_{}_{}.pkl.gz'.format(name, task, horizon, n_folds, label) ,'wb') as f:
+        with gzip.open( './partial_monitoring/contextual_results/{}/{}_context_{}_{}_{}.pkl.gz'.format(name, task, horizon, n_folds, label) ,'wb') as f:
             pkl.dump(result,f)
 
     return True
