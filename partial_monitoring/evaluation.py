@@ -24,11 +24,13 @@ import synthetic_data
 import gzip
 import pickle as pkl
 
+from sklearn.preprocessing import PolynomialFeatures
+
 
 ######################
 ######################
 
-def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
+def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
     pool = Pool(processes = nbCores) 
     task = Evaluation(horizon, type)
@@ -36,28 +38,39 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
     np.random.seed(1)
     distributions = []
     context_generators = []
+    context_types = []
 
     for jobid in range(n_folds):
         
         p = np.random.uniform(0, 0.2) if type == 'easy' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
 
-        d = 2
-        margin = 0.01
-        contexts = synthetic_data.LinearContexts( np.array([0,1]), 0, d, margin) #synthetic_data.ToyContexts( )
-        context_generators.append( contexts )
+        if context_type == 'linear':
+            d = 2
+            margin = 0.01
+            contexts = synthetic_data.LinearContexts( np.array([0,1]), 0, d, margin) 
+            context_generators.append( contexts )
+            context_types.append('linear')
 
-    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,range(n_folds)) ) ) 
+        elif context_type == 'quintic':
+            contexts = synthetic_data.QuinticContexts( 2, 0.01)
+            context_generators.append( contexts )
+            context_types.append('quintic')
+
+        else: 
+            contexts = synthetic_data.ToyContexts( )
+            context_generators.append( contexts )
+            context_types.append('toy')
+        
+    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,context_types, range(n_folds) ) ) ) 
 
 class Evaluation:
 
-    def __init__(self, horizon,type ):
+    def __init__(self, horizon,type):
         self.type = type
         self.horizon = horizon
-        # self.outcome_distribution = outcome_distribution
 
     def get_outcomes(self, game, job_id):
-        # self.means = runif_in_simplex( self.game.n_outcomes )
         outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
         return outcomes
 
@@ -68,21 +81,30 @@ class Evaluation:
 
         alg.reset()
 
-        distribution, context_generator, jobid = job
+        distribution, context_generator, context_type, jobid = job
 
         np.random.seed(jobid)
 
-        # outcome_distribution =  {'spam':0.5,'ham':0.5}
         outcome_distribution =  {'spam':distribution[0],'ham':distribution[1]}
 
         game.set_outcome_distribution( outcome_distribution, jobid )
-        #print('optimal action', game.i_star)
 
         # action_counter = np.zeros( (game.n_actions, self.horizon) )
 
         # generate outcomes obliviously
         outcomes = self.get_outcomes(game, jobid)
         contexts = [ context_generator.get_context(outcome) for outcome in outcomes ]
+
+        if context_type == 'quintic':
+            contexts = np.array(contexts).squeeze()
+            contexts = PolynomialFeatures(6).fit_transform( contexts)
+            contexts = contexts.tolist()
+            dim = len(contexts[0])
+            contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
+            # contexts.reshape( shape[0], shape[1],1 )
+             
+
+
         # context_generator.generate_unique_context()
         # contexts = [ context_generator.get_same_context(outcome) for outcome in outcomes ]
         #print('theta', context_generator.w )
@@ -114,68 +136,46 @@ class Evaluation:
 
         return  np.cumsum( cumRegret ) #regret
 
-def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, labels):
+def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, labels, context_type):
     directory = os.getcwd()
 
     for alg, color, label in zip( algos, colors, labels):
 
-        result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task) )
+        result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
 
-        with gzip.open( './partial_monitoring/contextual_results/{}/{}_context_{}_{}_{}.pkl.gz'.format(name, task, horizon, n_folds, label) ,'wb') as f:
+        with gzip.open( './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(name, task, context_type, horizon, n_folds, label) ,'wb') as f:
             pkl.dump(result,f)
 
     return True
 
 
 ###################################
-# Contextual
+# Synthetic Contextual experiments
 ###################################
 
-import os
-
-# print(directory)
-
-### Label Efficient game:
-
-horizon = 100
-n_cores = 25
-n_folds = 100
-
-game = games.label_efficient(  )
-
-algos = [ random_algo.Random(  game, horizon, ),    
-          cpb.CPB(  game, horizon, 1.01),  
-          cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
-          cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
-          cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-          cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
-
-colors = [  [0,0,0], [250,0,0], [0,250,0] , [0,0,250],  [200,0,200]  ] #, [250,0,0]
-labels = [  'random',  'CBP', 'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
-
-run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels)
-run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels)
-
-### Apple Tasting game:
-
-horizon = 100
+horizon = 10
 n_cores = 1
 n_folds = 1
 
-game = games.apple_tasting(False)
+for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 
-algos = [ random_algo.Random(  game, horizon, ),    
-          cpb.CPB(  game, horizon, 1.01),  
-          cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
-          cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
-          cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-          cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
+    algos = [ random_algo.Random(  game, horizon, ),    
+            cpb.CPB(  game, horizon, 1.01),  
+            cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
+            cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
+            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
+            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
 
-colors = [  [0,0,0], [250,0,0], [0,250,0] , [0,0,250],  [200,0,200]  ] #, [250,0,0]
-labels = [  'random',  'CBP', 'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+    colors = [  [0,0,0], [250,0,0], [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
+    labels = [  'random',  'CBP', 'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
 
-run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels)
-run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels)
+    for context_type in [ 'quintic', 'linear']:
+
+        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+        run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+
+        run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+        run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
 
 
 # ###################################
