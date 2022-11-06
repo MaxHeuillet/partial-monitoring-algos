@@ -44,7 +44,7 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
 
         d = 2
         margin = 0.01
-        contexts = synthetic_data.LinearContexts( np.array([0.5,0.5]), 0, d, margin) #synthetic_data.ToyContexts( )
+        contexts = synthetic_data.LinearContexts( np.array([0,1]), 0, d, margin) #synthetic_data.ToyContexts( )
         context_generators.append( contexts )
 
     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,range(n_folds)) ) ) 
@@ -137,9 +137,9 @@ import os
 
 ### Label Efficient game:
 
-horizon = 10
-n_cores = 1
-n_folds = 1
+horizon = 100
+n_cores = 25
+n_folds = 100
 
 game = games.label_efficient(  )
 
@@ -158,7 +158,7 @@ run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors
 
 ### Apple Tasting game:
 
-horizon = 10
+horizon = 100
 n_cores = 1
 n_folds = 1
 
