@@ -189,7 +189,7 @@ class RandCPB_side():
 
         return action
 
-    def update(self, action, feedback, outcome, t, X):
+    def update(self, action, feedback, bandit_feedback, outcome, t, X):
 
         self.n[action] += 1
         

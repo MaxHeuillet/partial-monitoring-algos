@@ -5,13 +5,16 @@ import collections
 import geometry_v3
 from itertools import combinations, permutations
 
-
-
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V ,  mode = None):
+    def __init__(self, LossMatrix, FeedbackMatrix, banditLossMatrix,  banditFeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V ,  mode = None):
+        
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
+        
+        self.banditLossMatrix = banditLossMatrix
+        self.banditFeedbackMatrix = banditFeedbackMatrix
+        
         self.LinkMatrix = LinkMatrix
         self.SignalMatrices = SignalMatrices
         self.SignalMatricesAdim = signal_matrices_Adim
@@ -47,10 +50,15 @@ class Game():
         return ( self.LossMatrix[action,...] - self.LossMatrix[self.i_star,...] ).T @ list( self.outcome_dist.values() ) 
 
 
+
 def apple_tasting( restructure_game ):
+
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
     signal_matrices =  [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ] ) ]
+
+    bandit_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
+    bandit_FeedbackMatrix =  np.array([ [0, 0],[0, -1] ])
 
     A = geometry_v3.alphabet_size(init_FeedbackMatrix,  len(init_FeedbackMatrix),len(init_FeedbackMatrix[0]) )
     signal_matrices_Adim = calculate_signal_matrices(init_FeedbackMatrix, len(init_FeedbackMatrix),len(init_FeedbackMatrix[0]),A)
@@ -77,35 +85,20 @@ def apple_tasting( restructure_game ):
 
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+    game = Game( LossMatrix, FeedbackMatrix, bandit_LossMatrix, bandit_FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
 
     return game
 
-# def bandit( restructure_game, outcome_distribution ):
-#     init_LossMatrix = np.array( [ [0, 0], [-1, 1] ] )
-#     init_FeedbackMatrix =  np.array([ [0, 0],[-1, 1] ])
-#     signal_matrices = [  np.array( [ [1,1] ] ), np.array( [ [0,1],[1,0] ] ) ] 
-
-#     if restructure_game:
-#         FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
-#     else:
-#         FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
-
-#     if (FeedbackMatrix == LossMatrix).all():
-#         LinkMatrix = np.identity( len(init_LossMatrix[1] ) )
-#     else:
-#         LinkMatrix = np.linalg.lstsq(FeedbackMatrix.transpose(), LossMatrix.transpose(), rcond=None )[0].transpose()
-
-#     game = Game( LossMatrix, FeedbackMatrix, LinkMatrix,signal_matrices, outcome_distribution )
-
-#     return game
-
 
 def label_efficient(  ):
+
     LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
     signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
+
+    bandit_LossMatrix = np.array( [ [1, 1], [1, 0], [0, 1] ] )
+    bandit_FeedbackMatrix =  np.array([ [1,-1], [0,0], [0, 0] ])
 
     A = geometry_v3.alphabet_size(FeedbackMatrix,  len(FeedbackMatrix),len(FeedbackMatrix[0]) )
     signal_matrices_Adim = calculate_signal_matrices(FeedbackMatrix, len(FeedbackMatrix),len(FeedbackMatrix[0]),A)
@@ -122,7 +115,7 @@ def label_efficient(  ):
     V[2][1] = [ 0, 1, 2 ]
     V[1][2] = [ 0, 1, 2 ]
 
-    return Game( LossMatrix, FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+    return Game( LossMatrix, FeedbackMatrix, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
 
 def calculate_signal_matrices(FeedbackMatrix, N,M,A):
     signal_matrices = []
