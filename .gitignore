@@ -6,3 +6,5 @@ val.pt
 data
 partial_monitoring/results
 env
+*.out
+*.env

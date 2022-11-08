@@ -10,22 +10,16 @@ import gzip
 
 import games
 
-import cpb
-import bpm
 import random_algo
-import TSPM
-import cpb_gaussian
-import PM_DMED
-
 import cpb_side
 import cpb_side_gaussian
+
 import synthetic_data
 
 import gzip
 import pickle as pkl
 
 from sklearn.preprocessing import PolynomialFeatures
-
 
 ######################
 ######################
@@ -103,11 +97,9 @@ class Evaluation:
             contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
             # contexts.reshape( shape[0], shape[1],1 )
              
-
-
         # context_generator.generate_unique_context()
         # contexts = [ context_generator.get_same_context(outcome) for outcome in outcomes ]
-        #print('theta', context_generator.w )
+        # print('theta', context_generator.w )
 
         cumRegret =  np.zeros(self.horizon, dtype =float)
 
@@ -159,15 +151,14 @@ n_folds = 20
 
 for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 
-    algos = [ random_algo.Random(  game, horizon, ),    
-            cpb.CPB(  game, horizon, 1.01),  
+    algos = [ random_algo.Random(  game, horizon, ),     
             cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
             cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
             cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
             cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
 
-    colors = [  [0,0,0], [250,0,0], [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
-    labels = [  'random',  'CBP', 'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+    colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
+    labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
 
     for context_type in [ 'quintic', 'linear']:
 
