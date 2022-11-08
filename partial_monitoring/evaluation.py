@@ -153,9 +153,9 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 10
-n_cores = 1
-n_folds = 1
+horizon = 100
+n_cores = 25
+n_folds = 20
 
 for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 

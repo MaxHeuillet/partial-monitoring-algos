@@ -1,0 +1,31 @@
+Unloading StdEnv/2020
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.7.3.0       3) mii/1.1.2 => mii/1.1.1
+  2) imkl/2020.1.217 => imkl/2018.3.222
+
+
+Lmod is automatically replacing "gcc/7.3.0" with "intel/2016.4".
+
+
+Inactive Modules:
+  1) ampl-mp/3.1.0     2) ipopt/3.12.13
+
+The following have been reloaded with a version change:
+  1) gcccore/.7.3.0 => gcccore/.5.4.0     2) imkl/2018.3.222 => imkl/11.3.4.258
+
+Looking in links: /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/nix/avx512, /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/nix/avx2, /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/nix/generic, /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/generic
+Processing /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/generic/scikit_learn-0.23.0+computecanada-cp37-cp37m-linux_x86_64.whl
+Requirement already satisfied: numpy>=1.13.3 in /lustre03/project/6043437/mheuill/MYENV/lib/python3.7/site-packages (from scikit_learn) (1.20.2+computecanada)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /lustre03/project/6043437/mheuill/MYENV/lib/python3.7/site-packages (from scikit_learn) (3.1.0+computecanada)
+Requirement already satisfied: scipy>=0.19.1 in /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/scipy-stack/2019a/lib/python3.7/site-packages (from scikit_learn) (1.2.0)
+Processing /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/generic/joblib-1.2.0+computecanada-py3-none-any.whl
+ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory: '/lustre03/project/6043437/mheuill/MYENV/lib/python3.7/site-packages/threadpoolctl-3.1.0+computecanada.dist-info/METADATA'
+
+/lustre03/project/6043437/mheuill/MYENV/lib/python3.7/site-packages/setuptools/_importlib.py:23: UserWarning: `importlib-metadata` version is incompatible with `setuptools`.
+This problem is likely to be solved by installing an updated version of `importlib-metadata`.
+  warnings.warn(msg)  # Ensure a descriptive message is shown.
+Traceback (most recent call last):
+  File "./partial_monitoring/evaluation.py", line 27, in <module>
+    from sklearn.preprocessing import PolynomialFeatures
+ModuleNotFoundError: No module named 'sklearn'
