@@ -19,4 +19,4 @@ source /home/mheuill/projects/def-adurand/mheuill/MYENV/bin/activate
 
 echo "Threads ${SLURM_CPUS_ON_NODE:-1}" > gurobi.env   # set number of threads
 
-python3 ./partial_monitoring/evaluation.py
+python3 ./partial_monitoring/experiment.py

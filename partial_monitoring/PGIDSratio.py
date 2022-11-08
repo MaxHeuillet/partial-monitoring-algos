@@ -31,7 +31,7 @@ class PGIDSratio():
         for m in range(1,self.gibbsits):
             omega = np.zeros( len(outcomes) )
             for i in range(len(outcomes)):
-                omega[i] = random_polyagamma( 1 , features[i,] @ thetamat[:,m-1] , size=1 ) #- rpg(1,1,contexts[i,]%*%thetamat[,m])
+                omega[i] = random_polyagamma( 1 , features[i,] @ thetamat[:,m-1] , size=1 ) 
 
             Omegamat = np.diag( omega ) 
 
