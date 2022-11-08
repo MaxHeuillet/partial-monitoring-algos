@@ -1,0 +1,42 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig         4) imkl/2020.1.217    7) libfabric/1.10.1
+  2) gentoo/2020      5) intel/2020.1.217   8) openmpi/4.0.3
+  3) gcccore/.9.3.0   6) ucx/1.8.0          9) StdEnv/2020
+Unloading StdEnv/2020
+Using license file /cvmfs/restricted.computecanada.ca/config/licenses/gurobi/clusters/beluga.lic
+Using gurobi.env file
+Set parameter TokenServer to value license1.computecanada.ca
+Set parameter Threads to value 25
+weights [1. 0. 0.]
+nbCores: 25 nbFolds: 20 Horizon: 100
+/lustre03/project/6043437/mheuill/MYENV2/lib/python3.7/site-packages/setuptools/_importlib.py:23: UserWarning: `importlib-metadata` version is incompatible with `setuptools`.
+This problem is likely to be solved by installing an updated version of `importlib-metadata`.
+  warnings.warn(msg)  # Ensure a descriptive message is shown.
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/python/3.7.4/lib/python3.7/multiprocessing/pool.py", line 121, in worker
+    result = (True, func(*args, **kwds))
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/python/3.7.4/lib/python3.7/multiprocessing/pool.py", line 44, in mapstar
+    return list(map(*args))
+  File "./partial_monitoring/experiment.py", line 127, in eval_policy_once
+    alg.update(action, feedback, outcome, t, context )
+TypeError: update() missing 1 required positional argument: 't'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "./partial_monitoring/experiment.py", line 174, in <module>
+    run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+  File "./partial_monitoring/experiment.py", line 144, in run_experiment
+    result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
+  File "./partial_monitoring/experiment.py", line 65, in evaluate_parallel
+    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,context_types, range(n_folds) ) ) ) 
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/python/3.7.4/lib/python3.7/multiprocessing/pool.py", line 268, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/python/3.7.4/lib/python3.7/multiprocessing/pool.py", line 657, in get
+    raise self._value
+TypeError: update() missing 1 required positional argument: 't'
