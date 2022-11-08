@@ -1,4 +1,4 @@
-import games
+import partial_monitoring.utils.games as games
 from itertools import combinations, permutations
 import geometry_v3
 import numpy as np
