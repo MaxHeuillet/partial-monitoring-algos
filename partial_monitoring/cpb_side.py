@@ -3,10 +3,11 @@ import geometry_v3
 
 class CPB_side():
 
-    def __init__(self, game, horizon,alpha, lbd):
+    def __init__(self, game, d, horizon, alpha, lbd):
 
         self.game = game
         self.horizon = horizon
+        self.d = d
 
         self.N = game.n_actions
         self.M = game.n_outcomes
@@ -42,7 +43,8 @@ class CPB_side():
 
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[],'weights': None } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+
 
     def getConfidenceWidth(self, ):
         W = np.zeros(self.N)
@@ -61,19 +63,14 @@ class CPB_side():
         self.memory_neighbors = {}
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[],'weights': None } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
 
  
     def get_action(self, t, X):
 
-
-
         if t < self.N:
             action = t
-            self.d = len(X)
             # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
-
-
 
         else: 
 
@@ -88,6 +85,7 @@ class CPB_side():
                 
                 q.append( self.contexts[i]['weights'] @ X  )
 
+
                 X_it =  np.array( self.contexts[i]['features'] )
                 # print('init Xit', X_it)
                 # n, d, _ = X_it.shape
@@ -95,7 +93,7 @@ class CPB_side():
                 # print('new Xit', X_it)
 
                 factor = self.d * (  np.sqrt( (self.d+1) * np.log(t) ) + len(self.SignalMatrices[i]) )
-                width = X.T @ np.linalg.inv( self.lbd * np.identity(self.d) + X_it @ X_it.T  ) @ X 
+                width = X.T @ self.contexts[i]['V_it_inv'] @ X 
                 formule = factor * width
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 #print('action {}, first component {}, second component, {}'.format(i, a, b  ) )
@@ -129,7 +127,6 @@ class CPB_side():
             P_t = self.pareto_halfspace_memory(halfspace)
             N_t = self.neighborhood_halfspace_memory(halfspace)
 
-
             Nplus_t = []
             for pair in N_t:
                 Nplus_t.extend( self.N_plus[ pair[0] ][ pair[1] ] )
@@ -161,7 +158,6 @@ class CPB_side():
             # print('n', self.n,'nu', self.nu)
             # print()
 
-
         return action
 
     def update(self, action, feedback, outcome, t, X):
@@ -180,7 +176,7 @@ class CPB_side():
         #Y_t =  e_y.copy()  #self.game.SignalMatrices[action] @
         
         # print('e_y', e_y)
-        
+
         self.contexts[action]['labels'].append( Y_t )
         self.contexts[action]['features'].append( X )
         #print(self.contexts[action]['labels']) 
@@ -201,9 +197,9 @@ class CPB_side():
         
         # print(Y_it.shape)
         
-
-
-        weights = Y_it @ X_it.T @ np.linalg.inv( self.lbd * np.identity( self.d ) + X_it @ X_it.T )
+        V_it_inv = self.contexts[action]['V_it_inv']
+        self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
+        weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
         self.contexts[action]['weights'] = weights
         # print( 'weigts', weights )
         # print()
