@@ -145,9 +145,9 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 100
-n_cores = 25
-n_folds = 20
+horizon = 100000
+n_cores = 1
+n_folds = 1
 
 for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 
@@ -160,7 +160,7 @@ for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
     colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
     labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
 
-    for context_type in [ 'quintic', 'linear']:
+    for context_type in [ 'linear']: #'quintic'
 
         run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
         run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
