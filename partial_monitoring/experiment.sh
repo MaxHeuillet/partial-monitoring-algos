@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-adurand
-#SBATCH --cpus-per-task=25
-#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:30:00
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
 #SBATCH --mail-type=ALL

@@ -149,7 +149,7 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 1000
+horizon = 2000
 n_cores = 1
 n_folds = 1
 
