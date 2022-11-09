@@ -3,10 +3,11 @@ import geometry_v3
 
 class RandCPB_side():
 
-    def __init__(self, game, horizon, alpha, lbd, sigma, M_prim , uniform, epsilon):
+    def __init__(self, game,d, horizon, alpha, lbd, sigma, M_prim , uniform, epsilon):
 
         self.game = game
         self.horizon = horizon
+        self.d = d
 
         self.N = game.n_actions
         self.M = game.n_outcomes
@@ -48,7 +49,7 @@ class RandCPB_side():
 
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[],'weights': None } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
 
     def getConfidenceWidth(self, ):
         W = np.zeros(self.N)
@@ -92,14 +93,10 @@ class RandCPB_side():
  
     def get_action(self, t, X):
 
-
-
         if t < self.N:
             action = t
             self.d = len(X)
             # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
-
-
 
         else: 
 
@@ -122,7 +119,7 @@ class RandCPB_side():
                 # print('new Xit', X_it)
 
                 factor = self.d * (  Z + len(self.SignalMatrices[i]) )
-                width = X.T @ np.linalg.inv( self.lbd * np.identity(self.d) + X_it @ X_it.T  ) @ X 
+                width = X.T @ self.contexts[i]['V_it_inv'] @ X 
                 formule = factor * width
 
                 w.append( formule )
@@ -223,18 +220,10 @@ class RandCPB_side():
         Y_it =  np.squeeze(Y_it, 2).T # Y_it.reshape( (sigma, n) )
         X_it =  np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
 
-        # print(X_it.shape)
-        
-        # print(Y_it.shape)
-        
-
-
-        weights = Y_it @ X_it.T @ np.linalg.inv( self.lbd * np.identity( self.d ) + X_it @ X_it.T )
+        V_it_inv = self.contexts[action]['V_it_inv']
+        self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
+        weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
         self.contexts[action]['weights'] = weights
-        # print( 'weigts', weights )
-        # print()
-        # print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
-        # self.nu[action] += Y_t
 
         
 
