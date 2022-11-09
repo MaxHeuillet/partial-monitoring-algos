@@ -2,11 +2,14 @@
 import numpy as np
 import os
 
-from multiprocessing import Pool
+import multiprocessing as mp
+
 from functools import partial
 import pickle as pkl
 import gzip
 # import plotly.graph_objects as go
+import os
+
 
 import games
 
@@ -26,7 +29,9 @@ from sklearn.preprocessing import PolynomialFeatures
 
 def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
-    pool = Pool(processes = nbCores) 
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    print(ncpus)
+    pool = mp.Pool( processes = ncpus ) 
     task = Evaluation(horizon, type)
 
     np.random.seed(1)
@@ -35,6 +40,7 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
     context_types = []
 
     for jobid in range(n_folds):
+        print('prepare job {}'.format(jobid) )
         
         p = np.random.uniform(0, 0.2) if type == 'easy' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
@@ -73,9 +79,13 @@ class Evaluation:
 
     def eval_policy_once(self, alg, game, job):
 
+        #print('reset alg')
+
         alg.reset()
 
         distribution, context_generator, context_type, jobid = job
+
+        #print('job info received')
 
         np.random.seed(jobid)
 
@@ -88,6 +98,8 @@ class Evaluation:
         # generate outcomes obliviously
         outcomes = self.get_outcomes(game, jobid)
         contexts = [ context_generator.get_context(outcome) for outcome in outcomes ]
+
+        #print('contexts generated')
 
         if context_type == 'quintic':
             contexts = np.array(contexts).squeeze()
@@ -103,8 +115,9 @@ class Evaluation:
 
         cumRegret =  np.zeros(self.horizon, dtype =float)
 
+        #print('starting the time counter')
         for t in range(self.horizon):
-
+            #print(t)
             if t % 1000 == 0 :
                 print(t)
 
@@ -135,7 +148,7 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 
     for alg, color, label in zip( algos, colors, labels):
 
-        print(label)
+        #print(label)
 
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
 
@@ -149,28 +162,36 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 2000
-n_cores = 1
-n_folds = 1
+horizon = 1000
+n_cores = None 
+n_folds = 40
 
 for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
+   # print('starting experiment with {}'.format(game) )
+   # algos = [ random_algo.Random(  game, horizon, ),     
+   #         cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
+   #         cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
+   #         cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
+   #         cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
 
-    algos = [ random_algo.Random(  game, horizon, ),     
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
-
-    colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
-    labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+   # colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
+   # labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+    algos = [ cpb_side.CPB_side(  game, horizon, 1.01, 0.05)  ]
+    colors = [  [0,0,0] ]
+    labels = [  'CBP_side' ]
 
     for context_type in [ 'linear']: #'quintic'
 
-        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+       # print('start easy LE  experiment')
 
-        run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+       # print('start difficult LE experiment')
+
+        #run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+
+        #print('AT experiments')
+        #run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+        #run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
 
 
 # ###################################
