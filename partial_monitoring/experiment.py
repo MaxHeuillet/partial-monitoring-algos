@@ -105,6 +105,9 @@ class Evaluation:
 
         for t in range(self.horizon):
 
+            if t % 1000 == 0 :
+                print(t)
+
             # Environment chooses one outcome and one context associated to this outcome
             outcome = outcomes[t]
             context = contexts[t]
@@ -129,9 +132,10 @@ class Evaluation:
         return  np.cumsum( cumRegret ) #regret
 
 def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, labels, context_type):
-    directory = os.getcwd()
 
     for alg, color, label in zip( algos, colors, labels):
+
+        print(label)
 
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
 
@@ -145,9 +149,9 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 100
-n_cores = 25
-n_folds = 20
+horizon = 1000
+n_cores = 1
+n_folds = 1
 
 for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 
@@ -160,7 +164,7 @@ for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
     colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
     labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
 
-    for context_type in [ 'quintic', 'linear']:
+    for context_type in [ 'linear']: #'quintic'
 
         run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
         run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
