@@ -105,6 +105,9 @@ class Evaluation:
 
         for t in range(self.horizon):
 
+            if t % 1000 == 0 :
+                print(t)
+
             # Environment chooses one outcome and one context associated to this outcome
             outcome = outcomes[t]
             context = contexts[t]
@@ -129,9 +132,10 @@ class Evaluation:
         return  np.cumsum( cumRegret ) #regret
 
 def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, labels, context_type):
-    directory = os.getcwd()
 
     for alg, color, label in zip( algos, colors, labels):
+
+        print(label)
 
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
 
@@ -145,7 +149,7 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-horizon = 100000
+horizon = 2000
 n_cores = 1
 n_folds = 1
 
