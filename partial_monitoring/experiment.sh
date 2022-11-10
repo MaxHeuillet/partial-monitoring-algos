@@ -1,8 +1,13 @@
 #!/bin/bash
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
+<<<<<<< HEAD
 #SBATCH --cpus-per-task=60
 #SBATCH --time=03:00:00
+=======
+#SBATCH --cpus-per-task=100
+#SBATCH --time=02:00:00
+>>>>>>> 4614a26dd63e419e54b2c894341b05fd158a19c6
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
 #SBATCH --mail-type=ALL
