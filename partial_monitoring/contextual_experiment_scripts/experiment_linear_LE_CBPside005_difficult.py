@@ -158,25 +158,19 @@ args = parser.parse_args()
 
 horizon = args.horizon
 n_folds = args.n_folds
+n_cores = None
 
-for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
+context_type = 'linear'
 
-    algos = [ random_algo.Random(  game, horizon, ),     
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
+game = games.label_efficient(  ) 
 
-    colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
-    labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+algos = [ cpb_side.CPB_side(  game, horizon, 1.01, 0.05) ]    
 
-    for context_type in [ 'linear']: #'quintic'
+colors = [  [0,0,0]  ] 
+labels = [  'CBPside005' ] 
 
-        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
 
-        run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
 
 
 # ###################################

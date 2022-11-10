@@ -68,7 +68,7 @@ class RandCPB_side():
         self.memory_neighbors = {}
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[],'weights': None } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
 
     def obtain_probability(self, t):
 

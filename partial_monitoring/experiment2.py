@@ -154,30 +154,31 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--horizon", required=True, help="horizon of each realization of the experiment")
 parser.add_argument("--n_folds", required=True, help="number of folds")
+parser.add_argument("--game", required=True, help="game")
+parser.add_argument("--task", required=True, help="task")
+parser.add_argument("--context_type", required=True, help="context type")
+parser.add_argument("--algo", required=True, help="algorithme")
 args = parser.parse_args()
 
-horizon = args.horizon
-n_folds = args.n_folds
+n_cores = None
+horizon = int(args.horizon)
+n_folds = int(args.n_folds)
 
-for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
+games = {'LE':games.label_efficient(  ),'AT':games.apple_tasting(False)}
+game = games[args.game]
 
-    algos = [ random_algo.Random(  game, horizon, ),     
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
-            cpb_side.CPB_side(  game, horizon, 1.01, 0.001), 
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-            cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)   ]
+dim = 2
 
-    colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
-    labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
+algos_dico = { 'random':random_algo.Random(  game, horizon, ), 
+          'RandCBPside005': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
+          'RandCBPside0001': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7),
+          'CBPside005': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.05),
+          'CBPside0001': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.001) }
+algos = [ algos_dico[ args.algo ] ]
+labels = [  args.algo ] 
+colors = [  [0,0,0]  ] 
 
-    for context_type in [ 'linear']: #'quintic'
-
-        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-
-        run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-
+run_experiment(args.game, args.task, n_cores, n_folds, horizon, game, algos, colors, labels, args.context_type)
 
 # ###################################
 # # Non-contextual
