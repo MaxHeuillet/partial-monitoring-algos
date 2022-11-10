@@ -24,6 +24,8 @@ source /home/mheuill/projects/def-adurand/mheuill/MYENV2/bin/activate
 
 #pip install scikit-learn --no-index
 
+echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAME' ${GAME} 'TASK' ${TASK} 'ALG' ${ALG}
+
 echo "Threads ${SLURM_CPUS_ON_NODE:-1}" > gurobi.env   # set number of threads
 
 python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}

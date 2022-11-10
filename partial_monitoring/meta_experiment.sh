@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-horizon  = 50
-nfolds = 1
+horizon=100000
+nfolds=100
 
 for context_type in 'linear' #'quintic'
 
@@ -19,8 +19,9 @@ for context_type in 'linear' #'quintic'
                 for alg in 'random' 'CBPside005' 'CBPside0001' 'RandCBPside005' 'RandCBPside0001'
 
                     do
+		    echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg
     
-                    sbatch ./partial_monitoring/experiment.sh --export=HORIZON=horizon,NFOLDS=nfolds,CONTEXT_TYPE=context_type,GAME=game,TASK=task,ALG=alg
+                    sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,CONTEXT_TYPE=$context_type,GAME=$game,TASK=$task,ALG=$alg ./partial_monitoring/experiment.sh 
 
                     done
                 
