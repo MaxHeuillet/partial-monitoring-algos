@@ -163,7 +163,7 @@ horizon = 100000
 n_cores = None 
 n_folds = 100
 
-for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
+game = games.label_efficient(  ) # games.apple_tasting(False) 
 
    # algos = [ random_algo.Random(  game, horizon, ),     
    #         cpb_side.CPB_side(  game, horizon, 1.01, 0.05), 
@@ -173,17 +173,27 @@ for game in [ games.label_efficient(  ), games.apple_tasting(False) ]:
 
    # colors = [  [0,0,0],  [0,250,0] , [0,0,250],  [200,0,200], [150,0,150]  ] 
    # labels = [  'random',  'CBPside005',  'CPBside0001', 'RandCBPside005', 'RandCBPside0001' ] 
-    algos = [ cpb_side.CPB_side(  game, 2, horizon, 1.01, 0.05)  ]
-    colors = [  [0,0,0] ]
-    labels = [  'CBP_side005' ]
 
-    for context_type in [ 'linear']: #'quintic'
+context_type = 'linear' #'quintic'
 
-        run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+#algos = [ random_algo.Random(  game, horizon, )  ]
+#labels = ['random']
+algos = [ cpb_side.CPB_side(  game, 2, horizon, 1.01, 0.05)  ]
+labels = ['CBPside005']
+#algos = [ cpb_side.CPB_side(  game, 2, horizon, 1.01, 0.001)  ]
+#labels = ['CBPside0001']
+#algos = [ cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7)  ]
+#labels = ['RandCBPside005']
+#algos = [ cpb_side_gaussian.RandCPB_side(game, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7)  ]
+#labels = ['CBPside0001']
 
-        run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
-        run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+colors = [  [0,0,0] ]
+
+#run_experiment('LE', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+run_experiment('LE', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+
+#run_experiment('AT', 'easy', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
+#run_experiment('AT', 'difficult', n_cores, n_folds, horizon, game, algos, colors, labels, context_type)
 
 
 # ###################################
