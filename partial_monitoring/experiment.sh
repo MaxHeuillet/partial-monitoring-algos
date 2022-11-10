@@ -2,11 +2,10 @@
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=60
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
 #SBATCH --mail-type=ALL
-
 
 
 module --force purge
@@ -27,4 +26,4 @@ source /home/mheuill/projects/def-adurand/mheuill/MYENV2/bin/activate
 
 echo "Threads ${SLURM_CPUS_ON_NODE:-1}" > gurobi.env   # set number of threads
 
-python3 ./partial_monitoring/experiment.py
+python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
