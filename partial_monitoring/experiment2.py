@@ -139,7 +139,12 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 
         result = evaluate_parallel(n_cores, n_folds, horizon, alg, game, '{}'.format(task), context_type )
 
-        with gzip.open( '/home/mheuill/projects/def-adurand/mheuill/attack-detection/partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(name, task, context_type, horizon, n_folds, label) ,'wb') as f:
+        import os
+        #to get the current working directory
+        directory = os.getcwd()
+        print(directory)
+
+        with gzip.open( './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(name, task, context_type, horizon, n_folds, label) ,'wb') as f:
             pkl.dump(result,f)
 
     return True
