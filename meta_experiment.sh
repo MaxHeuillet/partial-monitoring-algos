@@ -2,7 +2,7 @@
 
 
 horizon=100000
-nfolds=100
+nfolds=2
 
 for context_type in 'linear' #'quintic'
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=60
-#SBATCH --time=03:00:00
-#SBATCH --mem-per-cpu=550M
+#SBATCH --cpus-per-task=2
+#SBATCH --time=00:30:00
+#SBATCH --mem-per-cpu=500M
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
 #SBATCH --mail-type=ALL
@@ -32,7 +32,7 @@ source /home/mheuill/projects/def-adurand/mheuill/MYENV2/bin/activate
 #cd $EBROOTGUROBI
 #python setup.py build --build-base /tmp/${USER} install
 
-#echo "Threads 10" > gurobi.env   # set number of threads
+echo "Threads 1" > gurobi.env   # set number of threads
 
 #echo "$PWD"
 #cd ~/projects/def-adurand/mheuill/attack-detection

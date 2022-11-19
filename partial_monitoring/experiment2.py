@@ -27,8 +27,9 @@ from sklearn.preprocessing import PolynomialFeatures
 def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
     pool = Pool(processes = nbCores) 
+    print('before')
     task = Evaluation(horizon, type)
-
+    print('after')
     np.random.seed(1)
     distributions = []
     context_generators = []
@@ -56,6 +57,7 @@ def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
             context_generators.append( contexts )
             context_types.append('toy')
         
+    print('hello')
     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,context_types, range(n_folds) ) ) ) 
 
 class Evaluation:
