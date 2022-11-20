@@ -268,3 +268,4 @@ class CPB_side():
             elif feedback == 2:
                 idx = 1
         return idx
+
