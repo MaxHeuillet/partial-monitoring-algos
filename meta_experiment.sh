@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-horizon=100
-nfolds=1
+horizon=100000
+nfolds=96
 var=1
 
 for context_type in 'linear' #'quintic'
