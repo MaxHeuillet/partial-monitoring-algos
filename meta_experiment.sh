@@ -5,7 +5,7 @@ horizon=100000
 nfolds=96
 var=1
 
-for context_type in 'linear' #'quintic'
+for context_type in 'quintic'
 
     do
 
