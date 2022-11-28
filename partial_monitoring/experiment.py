@@ -169,11 +169,6 @@ args = parser.parse_args()
 
 horizon = args.horizon
 n_folds = args.n_folds
-=======
-horizon = 100000
-n_cores = None 
-n_folds = 100
->>>>>>> 4614a26dd63e419e54b2c894341b05fd158a19c6
 
 game = games.label_efficient(  ) # games.apple_tasting(False) 
 
