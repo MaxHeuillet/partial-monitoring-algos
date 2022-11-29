@@ -166,7 +166,7 @@ def run_experiment(game_name, task, n_cores, n_folds, horizon, game, algos, colo
 
                 pkl.dump( r, g)
                 
-                bashCommand = 'rm ./partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
+                bashCommand = 'rm ./partial_monitoring/contextual_results/{}/benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
                 process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
                 output, error = process.communicate()
     
