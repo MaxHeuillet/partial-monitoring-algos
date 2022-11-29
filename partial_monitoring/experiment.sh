@@ -2,7 +2,7 @@
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=48
-#SBATCH --time=48:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mem-per-cpu=300M
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
@@ -38,4 +38,4 @@ echo "Threads 1" > gurobi.env   # set number of threads
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
 
-python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
+python3 ./partial_monitoring/benchmark_randcbp.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
