@@ -143,7 +143,7 @@ class Evaluation:
 
         print('dump {}'.format(jobid))
         result = np.cumsum( cumRegret)
-        with gzip.open( './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
+        with gzip.open( './partial_monitoring/contextual_results/{}/benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
             pkl.dump(result,f)
 
         return True
@@ -157,11 +157,11 @@ def run_experiment(game_name, task, n_cores, n_folds, horizon, game, algos, colo
 
         result = evaluate_parallel(evaluator, alg, game)
         
-        with gzip.open( './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
+        with gzip.open( './partial_monitoring/contextual_results/{}/benchmark_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
 
             for jobid in range(n_folds):
 
-                with gzip.open(  './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
+                with gzip.open(  './partial_monitoring/contextual_results/{}/benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
                     r = pkl.load(f)
 
                 pkl.dump( r, g)
@@ -202,7 +202,7 @@ n_folds = int(args.n_folds)
 games = {'LE':games.label_efficient(  ),'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 2
+dim = 28
 
 algos_dico = {
           'RandCBPside005_1_5_07':cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.05, 1, 5, False, 10e-7),
