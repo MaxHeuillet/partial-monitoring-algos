@@ -3,7 +3,7 @@ import geometry_v3
 
 class RandCPB_side():
 
-    def __init__(self, game,d, horizon, alpha, lbd, sigma, M_prim , uniform, epsilon):
+    def __init__(self, game, d, horizon, alpha, lbd, sigma, M_prim , uniform, epsilon):
 
         self.game = game
         self.horizon = horizon
@@ -95,7 +95,7 @@ class RandCPB_side():
 
         if t < self.N:
             action = t
-            self.d = len(X)
+            # self.d = len(X)
             # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
 
         else: 
@@ -164,7 +164,8 @@ class RandCPB_side():
 
             R_t = []
             for k in V_t:
-              if self.n[k] <= self.eta[k] * geometry_v3.f(t, self.alpha) :
+              if self.n[k] <= self.eta[k] * geometry_v3.f(t, self.alpha) : 
+                # print('action', k, 'threshold', self.eta[k] * geometry_v3.f(t, self.alpha), 'constant', self.eta[k], 'value', geometry_v3.f(t, self.alpha)  )
                 R_t.append(k)
 
             union1= np.union1d(  P_t, Nplus_t )
@@ -193,7 +194,6 @@ class RandCPB_side():
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1
         Y_t =  self.game.SignalMatrices[action] @ e_y 
-
         # print('Yt', Y_t)
         # sigma_i = len( np.unique(self.game.FeedbackMatrix[action] ) )
         # print('sigma_i',sigma_i)
@@ -207,9 +207,11 @@ class RandCPB_side():
         self.contexts[action]['labels'].append( Y_t )
         self.contexts[action]['features'].append( X )
         #print(self.contexts[action]['labels']) 
+
         
         Y_it = np.array( self.contexts[action]['labels'] )
         X_it =  np.array( self.contexts[action]['features'] )
+
         # print(X_it)
         # print(X_it.shape)
         
@@ -221,9 +223,12 @@ class RandCPB_side():
         X_it =  np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
 
         V_it_inv = self.contexts[action]['V_it_inv']
-        self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
+        low =  1 + X.T @ V_it_inv @ X  
+        high =  V_it_inv @ X @ X.T @ V_it_inv 
+        self.contexts[action]['V_it_inv'] = V_it_inv - high / low
         weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
         self.contexts[action]['weights'] = weights
+
 
         
 

@@ -2,6 +2,51 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.linalg import norm
+from torchvision import datasets, transforms
+import torch
+import numpy as np
+# from mnist_c import corruptions
+
+class MNISTcontexts():
+
+    def __init__(self, replacements, sampling_indexes):
+
+        self.horizon = len( sampling_indexes )
+        self.replacements = replacements 
+        self.sampling_indexes = sampling_indexes
+
+        self.switches = { '0':[6, 8, 9], '1':[4, 7], '2':[3], '3':[8, 9], '4':[8], '5':[6, 8], '6':[8], '7':[4, 8],'8':[0], '9':[8] }
+        
+        # if digit_distribution == 'uniform':
+        self.digit_distribution =  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        # elif digit_distribution == 'gaussian':
+        #     self.digit_distribution = [0.00938744, 0.02826442, 0.06660327, 0.12284535, 0.17736299, 0.2004605, 0.17736299, 0.12284535, 0.06660327, 0.02826442]
+        # else:
+        #     self.digit_distribution = [3.03931336e-02, 1.21241604e-01, 1.92058772e-01, 1.21241604e-01, 3.03931336e-02, 2.99782587e-03, 1.15116446e-04, 5.01558658e-01, 1.53276385e-07, 2.01265511e-11]
+        
+    def get_contexts(self, data, outcomes):
+        contexts = np.empty( ( self.horizon, 784) )
+        # stream = np.empty( ( horizon, 785) )
+        labels = np.zeros( self.horizon)
+        outcomes = np.zeros( self.horizon)
+
+        for i, index, in enumerate( range( len(self.sampling_indexes) ) ) :
+
+            outcome = outcomes[i]
+            X, y =  data[index]
+            X = X.numpy()
+
+            if outcome == 1:
+                #attacked_digit =  np.random.choice( [0,1,2,3,4,5,6,7,8,9], p= digit_distribution )
+                candidates = self.switches[str(y)]
+                replacement_digit = np.random.choice( candidates , p= np.ones( len(candidates)  ) / len(candidates) )
+                choice = np.random.randint( 0, len(self.replacements[ replacement_digit ])-1 )
+                replaced_image = self.replacements[replacement_digit][choice]
+                X = replaced_image
+            contexts[i] = X.flatten()
+            labels[i] = y
+
+        return contexts
 
 
 class QuinticContexts:
@@ -37,19 +82,19 @@ class QuinticContexts:
                 return self.context_B
 
 class LinearContexts:
-    def __init__(self, w,b, d, margin):
+    def __init__(self, w, b, d, margin):
         self.d = d #number of features
         self.margin = margin #np.random.uniform(0,0.5) # decision boundary
         self.b = b #np.random.uniform(-1,1)
-        self.w = w #np.random.uniform(-1,1, self.d) 
+        self.w = w
 
     def get_context(self, label):
         while True:
             context = np.random.uniform(-1, 1,  self.d )
             if   self.w.T @ context + self.b > self.margin and label == 0:
-                return np.array(context).reshape(2,1) #/ norm(context, 1)
+                return np.array(context).reshape(self.d,1) #/ norm(context, 1)
             elif  self.w.T @ context  + self.b < -self.margin and label == 1:
-                return np.array(context).reshape(2,1) #/ norm(context, 1)
+                return np.array(context).reshape(self.d,1) #/ norm(context, 1)
 
     def generate_unique_context(self,):
         self.context_A = []
@@ -57,9 +102,9 @@ class LinearContexts:
         while  len(self.context_A) == 0 or len(self.context_B) == 0:
             context = np.random.uniform(-1, 1, self.d)
             if self.w.T @ context + self.b > self.margin and len(self.context_A) == 0 :
-                self.context_A = np.array(context).reshape(2,1) #/ norm(context, 1)
+                self.context_A = np.array(context).reshape(self.d,1) #/ norm(context, 1)
             elif self.w.T @ context + self.b < -self.margin and len(self.context_B) == 0:
-                self.context_B = np.array(context).reshape(2,1) #/ norm(context, 1)
+                self.context_B = np.array(context).reshape(self.d,1) #/ norm(context, 1)
 
 
     def get_same_context(self, label):
