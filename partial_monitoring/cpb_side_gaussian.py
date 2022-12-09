@@ -68,7 +68,7 @@ class RandCPB_side():
         self.memory_neighbors = {}
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d)  } )
 
     def obtain_probability(self, t):
 
@@ -94,6 +94,7 @@ class RandCPB_side():
     def get_action(self, t, X):
 
         if t < self.N:
+            print(t)
             action = t
             # self.d = len(X)
             # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
