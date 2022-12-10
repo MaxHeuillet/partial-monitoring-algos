@@ -5,6 +5,8 @@ class RandCPB_side():
 
     def __init__(self, game, d, horizon, alpha, lbd, sigma, M_prim , uniform, epsilon):
 
+        self.name = 'randcbpside'
+
         self.game = game
         self.horizon = horizon
         self.d = d
