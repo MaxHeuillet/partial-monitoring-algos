@@ -292,8 +292,8 @@ args = parser.parse_args()
 
 game = games.apple_tasting(False)
 
-n_trials = args.n_trials
-n_labels = args.n_labels
+n_trials = int(args.n_trials)
+n_labels = int(args.n_labels)
 algo = args.algo
 
 algo = 'random'
