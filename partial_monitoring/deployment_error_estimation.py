@@ -67,82 +67,6 @@ class FakeIds():
                 
         return outcome, context
 
-class Evaluation:
-
-    def __init__(self, test):
-        self.test = test
-        pass
-
-    def get_feedback(self, game, action, outcome):
-        return game.FeedbackMatrix[ action ][ outcome ]
-
-    def eval_policy_once(self, alg, game, job):
-        print('try')
-        
-        context_generator, ground_truth, n_labels, jobid = job
-
-        alg.set_nlabels(n_labels)
-        alg.reset()
-        
-        np.random.seed(jobid)
-
-        epsilon = 0.025
-        t = 0
-        queries_counter = 0
-        latest_estimate = np.ones(len( ground_truth )) * 1000
-        # print('ground truth', self.ground_truth )
-        status = True
-
-        start = time.time()
-
-        while status == True:
-            
-            outcome, context = context_generator.get_context() 
-            context = context.reshape((-1,1))
-
-            if t % 10000 == 0 and t>0 :
-                print(t, 'latest estimate', latest_estimate)
-
-            if t>2 and alg.name == 'randcbpside':
-                estimates = []
-                for i in range( n_labels ):
-                    sim = np.zeros( n_labels )
-                    sim[i] = 1
-                    estimate = alg.contexts[1]['weights'] @ sim
-                    estimates.append( estimate[0] )
-                latest_estimate = estimates
-
-            elif t>2 and alg.name == 'random':
-                latest_estimate = alg.weights[:,0]
-
-        
-            if ( abs( ground_truth - latest_estimate  ) <= epsilon ).all() :
-                status = False            
-
-            # policy chooses one action
-            #print('t', t,  'outcome', outcome, 'context', context)
-            action = alg.get_action(t, context)
-
-            # print('t', t, 'action', action, 'outcome', outcome, )
-            feedback =  self.get_feedback( game, action, outcome )
-
-            alg.update(action, feedback, outcome, t, context )
-
-            t = t+1
-            if action == 1:
-                queries_counter += 1
-
-            end = time.time()
-            if end - start >= 60: #7200
-                status = False 
-                t, queries_counter = -1, -1  
-            
-        result = [t, queries_counter]
-        print('hey')
-
-        return result
-
-
 class Random():
 
     def __init__(self, game, ):
@@ -221,26 +145,126 @@ def get_ground_truth(M, imbalance):
     final_probas = probas_incorrect / (  probas_correct + probas_incorrect )
     return final_probas
 
+def optimal_action(game, ground_truth):
+        deltas = {}
+        optim_action = {}
 
-def evaluate_parallel( alg, game):
+        for lb in range( len(ground_truth) ):
+
+            distribution = [ 1- ground_truth[lb],  ground_truth[lb] ]
+            delts = []
+            for i in range(len(game.LossMatrix)):
+                delts.append( game.LossMatrix[i,...].T @ distribution  )
+            deltas[lb] = delts
+            optim_action[lb] = np.argmin(deltas[lb])
+
+        return deltas , optim_action
+
+class Evaluation:
+
+    def __init__(self, test):
+        self.test = test
+        self.epsilon = 0.01
+
+    def get_feedback(self, game, action, outcome):
+        return game.FeedbackMatrix[ action ][ outcome ]
+
+    def eval_policy_once(self, alg, game, job):
+        print('try')
+        
+        context_generator, ground_truth, n_labels, deltas, optim_actions, jobid = job
+
+        alg.set_nlabels(n_labels)
+        alg.reset()
+        
+        np.random.seed(jobid)
+
+        t = 0
+        latest_estimate = np.ones(len( ground_truth )) * 1000
+
+        # print('ground truth', self.ground_truth )
+        status = True
+        # start = time.time()
+
+        cumRegret =  []
+        start = time.time()
+        # action_counter = np.zeros( (game.n_actions, self.horizon) )
+
+        while status == True:
+            
+            outcome, context = context_generator.get_context() 
+            lb =  np.argmax(context)
+            context = context.reshape((-1,1))
+
+            if t % 1000 == 0 and t>0 :
+                print(t, 'latest estimate', latest_estimate)
+
+            if t>2 and alg.name == 'randcbpside':
+                estimates = []
+                for i in range( n_labels ):
+                    sim = np.zeros( n_labels )
+                    sim[i] = 1
+                    estimate = alg.contexts[1]['weights'] @ sim
+                    estimates.append( estimate[0] )
+                latest_estimate = estimates
+
+            elif t>2 and alg.name == 'random':
+                latest_estimate = alg.weights[:,0]
+
+            if ( abs( ground_truth - latest_estimate  ) <= self.epsilon ).all() :
+                status = False            
+
+            # policy chooses one action
+            #print('t', t,  'outcome', outcome, 'context', context)
+            action = alg.get_action(t, context)
+
+            # print('t', t, 'action', action, 'outcome', outcome, )
+            feedback =  self.get_feedback( game, action, outcome )
+
+            alg.update(action, feedback, outcome, t, context )
+            
+            #distrib = np.array( [ ground_truth[lb], 1 - ground_truth[lb] ] )
+            # regret =  game.LossMatrix[action, ] - game.LossMatrix[i_star, ] #) @ distrib
+
+            regret = deltas[lb][action] 
+            # print(regret)
+            cumRegret.append( regret )
+            t = t+1
+
+            end = time.time()
+            if end - start >= 60: #7200
+                status = False 
+                cumRegret.append( None )
+
+            # regret = self.deltas[i_star] #np.array( [ self.deltas[i_star] ).T @ action_counter
+            # regret = np.array( [ game.delta(i) for i in range(game.n_actions) ] ).T @ action_counter
+            
+        return  cumRegret
+
+
+
+def evaluate_parallel( alg, game, n_trials, n_labels ):
 
     ncpus = 5#int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     print('ncpus',ncpus)
     
     pool = Pool(processes=ncpus)
 
-    np.random.seed(1)
+    np.random.seed(3)
 
     list_groundtruth = []
     list_generators = []
     list_nlabels = []
+    list_deltas = []
+    list_optim_action = []
+
 
     evaluator = Evaluation( None ) 
-    n_trials = 5
-    print('hye')
+
+
     for jobid in range(n_trials):
 
-        n_labels = np.random.randint(3, 10)
+        
         list_nlabels.append(n_labels)
 
         imbalance = np.array( [ np.random.uniform(50, 75) if np.random.uniform(0,1)<0.1 else np.random.uniform(0,25) for _ in range(n_labels) ] )
@@ -252,12 +276,15 @@ def evaluate_parallel( alg, game):
         
         ground_truth = get_ground_truth(M, imbalance)
 
+        deltas , optim_action = optimal_action(game, ground_truth)
+        list_deltas.append(deltas)
+        list_optim_action.append(optim_action)
+
         list_groundtruth.append( ground_truth )
 
         list_generators.append( FakeIds(M, imbalance ) )
 
-    print('launch')
-    return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip( list_generators, list_groundtruth, list_nlabels, range(n_trials) ) ) 
+    return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip( list_generators, list_groundtruth, list_nlabels, list_deltas, list_optim_action, range(n_trials) ) ) 
 
 import time 
 import os
@@ -268,14 +295,18 @@ os.environ["OMP_NUM_THREADS"] = "1"
 
 game = games.apple_tasting(False)
 
-n_trials = 5
+n_trials = 1
+n_labels = 5
 
-results_steps = np.zeros( (n_trials, 2) )
-results_queries = np.zeros( (n_trials, 2) )
+algo = 'random'
 
-alg = Random(  game,  )
-# algo =  cpb_side_gaussian.RandCPB_side(game , None, 1.01, 0.001, 1/8, 10, False, 10e-7) 
+if algo == 'random':
+    alg = Random(  game,  )
+elif algo == 'randcbpside':
+    alg =  cpb_side_gaussian.RandCPB_side(game , None, None, 1.01, 0.001, 1/8, 10, False, 10e-7) 
 
-result = evaluate_parallel( alg,  game)
+result = evaluate_parallel( alg,  game, n_trials, n_labels)
+print('final')
 
-print(result)
+with gzip.open( './partial_monitoring/use_case_results/{}_{}.pkl.gz'.format(algo, n_labels),'wb') as f:
+    pkl.dump(result,f)
