@@ -5,8 +5,8 @@ import gzip
 import pickle as pkl
 
 import games
-import synthetic_data
-import random_algo
+# import synthetic_data
+# import random_algo
 
 
 import cpb_side
