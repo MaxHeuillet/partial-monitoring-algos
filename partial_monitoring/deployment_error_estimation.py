@@ -245,7 +245,7 @@ class Evaluation:
 
 def evaluate_parallel( alg, game, n_trials, n_labels ):
 
-    ncpus = 5#int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     print('ncpus',ncpus)
     
     pool = Pool(processes=ncpus)
