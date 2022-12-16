@@ -292,11 +292,18 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1" 
 os.environ["OMP_NUM_THREADS"] = "1" 
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--n_trials", required=True, help="number of trials")
+parser.add_argument("--n_labels", required=True, help="number of labels")
+parser.add_argument("--algo", required=True, help="algo")
+args = parser.parse_args()
 
 game = games.apple_tasting(False)
 
-n_trials = 1
-n_labels = 5
+n_trials = args.n_trials
+n_labels = args.n_labels
+algo = args.algo
 
 algo = 'random'
 

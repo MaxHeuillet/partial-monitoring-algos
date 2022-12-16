@@ -34,4 +34,4 @@ echo "Threads 1" > gurobi.env   # set number of threads
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
 
-python3 ./partial_monitoring/deployment_error_estimation.py 
+python3 ./partial_monitoring/deployment_error_estimation.py --n_trials 1 --n_labels 5 --algo 'random'
