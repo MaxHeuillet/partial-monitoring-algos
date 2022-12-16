@@ -155,7 +155,7 @@ class Evaluation:
 
     def __init__(self, test):
         self.test = test
-        self.epsilon = 0.01
+        self.epsilon = 0.005
 
     def get_feedback(self, game, action, outcome):
         return game.FeedbackMatrix[ action ][ outcome ]
@@ -223,7 +223,7 @@ class Evaluation:
             t = t+1
 
             end = time.time()
-            if end - start >= 60: #7200
+            if end - start >= 7200: #7200
                 status = False 
                 cumRegret.append( None )
 
@@ -296,12 +296,12 @@ n_trials = int(args.n_trials)
 n_labels = int(args.n_labels)
 algo = args.algo
 
-algo = 'random'
+
 
 if algo == 'random':
     alg = Random(  game,  )
 elif algo == 'randcbpside':
-    alg =  cpb_side_gaussian.RandCPB_side(game , None, None, 1.01, 0.001, 1/8, 10, False, 10e-7) 
+    alg =  cpb_side_gaussian.RandCPB_side(game , None, None, 1.01, 0.001, 1, 5, False, 10e-7) 
 
 result = evaluate_parallel( alg,  game, n_trials, n_labels)
 print('final')
