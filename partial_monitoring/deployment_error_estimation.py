@@ -1,7 +1,6 @@
 import numpy as np
 from multiprocess import Pool
 from functools import partial
-import plotly.graph_objects as go
 import gzip
 import pickle as pkl
 
@@ -12,15 +11,7 @@ import random_algo
 
 import cpb_side
 import cpb_side_gaussian
-import linucb
 
-
-import PGIDSratio
-import synthetic_data
-import numpy as np
-from torchvision import datasets, transforms
-
-import matplotlib.pyplot as plt
 
 
 class FakeIds():
