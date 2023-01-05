@@ -68,7 +68,8 @@ class CPB():
                     c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 # print('pair', pair, 'tdelta', tdelta, 'confidence', c)
                 #print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
-                if( abs(tdelta) >= c):
+                if( abs(tdelta) >= 0 ):
+                    #print('hey')
                     halfspace.append( ( pair, np.sign(tdelta)[0] ) ) #[0]
                 # else:
                 #     halfspace.append( ( pair, 0 ) )
@@ -85,8 +86,10 @@ class CPB():
 
             R_t = []
             for k in range(self.N):
-              if self.n[k] <=  self.eta[k] * geometry_v3.f(t, self.alpha) :
-                R_t.append(k)
+                # print('time', t, 'action', k, 'nb samples', self.n[k], 'taux',  self.eta[k] * geometry_v3.f(t, self.alpha), 'eta', self.eta[k] )
+                # print('test', self.eta[k] * t**(2/3) * ( np.log(t) * self.alpha )**(1/3) )
+                if self.n[k] <=  self.eta[k] * geometry_v3.f(t, self.alpha) :
+                    R_t.append(k)
 
             V_t = []
             for pair in N_t:

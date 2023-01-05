@@ -216,7 +216,7 @@ def getConfidenceWidth( mathcal_N, V, v,  N):
 
   
 def f(t, alpha):
-    return   (t** 2/3) * ( alpha * np.log(t) )**1/3 
+    return   (t**(2/3) ) * ( alpha * np.log(t) )**(1/3)
 
 def f_v2(t, alpha, Z):
     return   (t** 2/3) * Z**1/3

@@ -49,8 +49,6 @@ class Game():
     def delta(self, action):
         return ( self.LossMatrix[action,...] - self.LossMatrix[self.i_star,...] ).T @ list( self.outcome_dist.values() ) 
 
-
-
 def apple_tasting( restructure_game ):
 
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )

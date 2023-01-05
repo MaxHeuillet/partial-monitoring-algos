@@ -142,7 +142,7 @@ def optimal_action(game, ground_truth):
 
         for lb in range( len(ground_truth) ):
 
-            distribution = [ 1- ground_truth[lb],  ground_truth[lb] ]
+            distribution = [ ground_truth[lb],  1-ground_truth[lb] ]
             delts = []
             for i in range(len(game.LossMatrix)):
                 delts.append( game.LossMatrix[i,...].T @ distribution  )
@@ -205,7 +205,7 @@ class Evaluation:
             if ( abs( ground_truth - latest_estimate  ) <= self.epsilon ).all() :
                 status = False            
 
-            # policy chooses one action
+            # policy chooses fina_regret1one action
             #print('t', t,  'outcome', outcome, 'context', context)
             action = alg.get_action(t, context)
 

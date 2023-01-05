@@ -120,21 +120,21 @@ class ToyContexts:
 
     def get_context(self, label):
         while True:
-            context =   np.random.uniform(0, 1 ) # np.random.randint(2)
+            context =   np.random.randint(2) # np.random.uniform(0, 1 )
             if   context >= 0.5 and label == 0:
                 return np.array([1,context]).reshape(2,1) #/ norm(context, 1)
             elif  context < 0.5 and label == 1:
-                return np.array([1,context]).reshape(2,1) #/ norm(context, 1)
+                return np.array([1,context-1]).reshape(2,1) #/ norm(context, 1)
 
     def generate_unique_context(self,):
         self.context_A = []
         self.context_B = []
         while  len(self.context_A) == 0 or len(self.context_B) == 0:
-            context =  np.random.uniform(0, 1) #np.random.randint(2)
+            context =  np.random.randint(2) # np.random.uniform(0, 1) #
             if context >= 0.5 and len(self.context_A) == 0 :
                 self.context_A = np.array([1,context]).reshape(2,1) #/ norm(context, 1)
             elif context < 0.5 and len(self.context_B) == 0:
-                self.context_B = np.array([1,context]).reshape(2,1) #/ norm(context, 1)
+                self.context_B = np.array([1,context-1]).reshape(2,1) #/ norm(context, 1)
 
     def get_same_context(self, label):
         if label == 0:
