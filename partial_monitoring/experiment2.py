@@ -14,8 +14,8 @@ import gzip
 import games
 
 import random_algo
-import cpb_side
-import cpb_side_gaussian
+# import cpb_side
+# import cpb_side_gaussian
 import PGIDSratio
 
 import synthetic_data
@@ -206,12 +206,12 @@ game = games[args.game]
 
 dim = 28 if args.context_type == 'quintic' else 2
 
-algos_dico = { 'random':random_algo.Random(  game, horizon, ), 
-          'RandCBPside005': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-          'RandCBPside0001': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7),
-          'CBPside005': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.05),
-          'CBPside0001': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.001),
-          'PGIDSratio': PGIDSratio.PGIDSratio(game, horizon, dim) }
+algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, horizon, dim) }
+# 'random':random_algo.Random(  game, horizon, ), 
+#           'RandCBPside005': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
+#           'RandCBPside0001': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7),
+#           'CBPside005': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.05),
+#           'CBPside0001': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.001),
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 

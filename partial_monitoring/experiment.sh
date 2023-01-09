@@ -14,15 +14,14 @@ echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAM
 
 module --force purge
 
-#module load gurobi/StdEnv2020
-module load nixpkgs/16.09
+module load gurobi/StdEnv2020
+# module load nixpkgs/16.09
 #gcc/7.3.0 ipopt/3.12.13
 
-module load python/3.7
+module load python/3.10
 module load scipy-stack
 
-module load StdEnv/2016
-module load gurobi/9.0.1
+module load gurobi/9.5.0
 
 source /home/mheuill/projects/def-adurand/mheuill/MYENV2/bin/activate
 
