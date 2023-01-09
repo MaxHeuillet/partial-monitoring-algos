@@ -93,7 +93,7 @@ class PGIDSratio():
 
         return action
 
-    def update(self,action, feedback, bandit_feedback, outcome, t, context):
+    def update(self,action, feedback, outcome, t, context):
 
         if action ==1 :
             self.contexts['features'].append( context )
