@@ -20,7 +20,7 @@ module load python/3.10
 
 module load scipy-stack
 
-module load gurobipy
+module load gurobi
 
 source /home/mheuill/projects/def-adurand/mheuill/ENV_nogurobi/bin/activate
 
