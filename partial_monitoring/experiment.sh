@@ -14,7 +14,7 @@ echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAM
 
 module --force purge
 
-module load StdEnv2020
+module load StdEnv/2020
 # module load nixpkgs/16.09
 #gcc/7.3.0 ipopt/3.12.13
 
