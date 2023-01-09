@@ -1,6 +1,6 @@
 from math import log, exp, pow
 import numpy as np
-import geometry
+# import geometry
 import collections
 import geometry_v3
 from itertools import combinations, permutations
@@ -308,66 +308,66 @@ def dynamic_pricing( mode ):
     return game
 
 
-def general_algorithm(F, L):
-    # print(F)
+# def general_algorithm(F, L):
+#     # print(F)
 
-    N, M = F.shape
+#     N, M = F.shape
 
-    Fdash_list = []
-    Ldash_list = []
-    # We use the lists sizes for z in paper
-    h = {} # pseudo-action to action map
-    s = {} # pseudo-action to symbol map
+#     Fdash_list = []
+#     Ldash_list = []
+#     # We use the lists sizes for z in paper
+#     h = {} # pseudo-action to action map
+#     s = {} # pseudo-action to symbol map
 
-    for j in range(N):
+#     for j in range(N):
 
-        for v in set(F[j,...]):
+#         for v in set(F[j,...]):
                 
-            Fiv = geometry.signal_vec( j, v, F )
+#             Fiv = geometry.signal_vec( j, v, F )
 
-            if not Fdash_list or not geometry.is_linear_comb(Fiv, Fdash_list):
-                h[len(Fdash_list)] = j # h(z)=i in FeedExp3 paper
-                s[len(Fdash_list)] = v # not in FeedExp3 paper ??
-                Fdash_list.append(Fiv)
-                Ldash_list.append(L[j,...])
-                bool_fiv_added = True
+#             if not Fdash_list or not geometry.is_linear_comb(Fiv, Fdash_list):
+#                 h[len(Fdash_list)] = j # h(z)=i in FeedExp3 paper
+#                 s[len(Fdash_list)] = v # not in FeedExp3 paper ??
+#                 Fdash_list.append(Fiv)
+#                 Ldash_list.append(L[j,...])
+#                 bool_fiv_added = True
 
-        if not bool_fiv_added:
-            h[len(Fdash_list)] = j # h(z)=j in the paper
-            s[len(Fdash_list)] = v # not in FeedExp3 paper ??
-            Fdash_list.append( np.zeros(M) )
-            Ldash_list.append(L[j,...])
+#         if not bool_fiv_added:
+#             h[len(Fdash_list)] = j # h(z)=j in the paper
+#             s[len(Fdash_list)] = v # not in FeedExp3 paper ??
+#             Fdash_list.append( np.zeros(M) )
+#             Ldash_list.append(L[j,...])
 
-    # Build F' and H' matrices
-    FdashMatrix = np.vstack(Fdash_list)
-    LdashMatrix = np.vstack(Ldash_list)
+#     # Build F' and H' matrices
+#     FdashMatrix = np.vstack(Fdash_list)
+#     LdashMatrix = np.vstack(Ldash_list)
 
-    Ndash, Mdash = FdashMatrix.shape
-    assert FdashMatrix.shape == LdashMatrix.shape # just in case
+#     Ndash, Mdash = FdashMatrix.shape
+#     assert FdashMatrix.shape == LdashMatrix.shape # just in case
 
-    # Search for strictly-dominating pseudo-actions 
-    NonEmptyCells = []
-    EmptyCells = []
-    for iv in range(Ndash):
-        if geometry.isStrictlyNonDominated(iv, LdashMatrix):
-            NonEmptyCells.append(iv)
-        else:
-            EmptyCells.append(iv)
+#     # Search for strictly-dominating pseudo-actions 
+#     NonEmptyCells = []
+#     EmptyCells = []
+#     for iv in range(Ndash):
+#         if geometry.isStrictlyNonDominated(iv, LdashMatrix):
+#             NonEmptyCells.append(iv)
+#         else:
+#             EmptyCells.append(iv)
             
-    if len(NonEmptyCells)>0: # An empty nonEmptyCells is a problem!
-        # Pick one non-dominated action
-        b = np.random.choice(NonEmptyCells)      # Choose any action from the set of actions with nonempty cells
-    else:
-        print("WARNING: no strictly dominant cell found")
-        #b = random.choice(range(Ndash))  # Choose any action
-        b = 0
+#     if len(NonEmptyCells)>0: # An empty nonEmptyCells is a problem!
+#         # Pick one non-dominated action
+#         b = np.random.choice(NonEmptyCells)      # Choose any action from the set of actions with nonempty cells
+#     else:
+#         print("WARNING: no strictly dominant cell found")
+#         #b = random.choice(range(Ndash))  # Choose any action
+#         b = 0
 
-    # Translate the loss relatively to pseudo-action b. Recall that loss transposition does not impact the policy regret.
-    LdashMatrix = LdashMatrix - LdashMatrix[b,...]
+#     # Translate the loss relatively to pseudo-action b. Recall that loss transposition does not impact the policy regret.
+#     LdashMatrix = LdashMatrix - LdashMatrix[b,...]
     
-    # Makes the dominated actions as bad as possible i.e. with worst possible loss
-    for iv in EmptyCells:
-        if not geometry.isNonDominated(iv, LdashMatrix):
-            LdashMatrix[iv,...] =  max(LdashMatrix[iv,...])
+#     # Makes the dominated actions as bad as possible i.e. with worst possible loss
+#     for iv in EmptyCells:
+#         if not geometry.isNonDominated(iv, LdashMatrix):
+#             LdashMatrix[iv,...] =  max(LdashMatrix[iv,...])
         
-    return FdashMatrix, LdashMatrix
+#     return FdashMatrix, LdashMatrix
