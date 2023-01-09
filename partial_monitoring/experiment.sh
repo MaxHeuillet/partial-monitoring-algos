@@ -2,7 +2,7 @@
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=48
-#SBATCH --time=48:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mem-per-cpu=300M
 
 #SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
@@ -14,7 +14,7 @@ echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAM
 
 module --force purge
 
-module load gurobi/StdEnv2020
+module load StdEnv2020
 # module load nixpkgs/16.09
 #gcc/7.3.0 ipopt/3.12.13
 
