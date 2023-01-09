@@ -5,7 +5,7 @@ horizon=100000
 nfolds=96
 var=1
 
-for context_type in 'quintic'
+for context_type in 'linear'
 
     do
 
@@ -17,7 +17,7 @@ for context_type in 'quintic'
 
                 do
 
-                for alg in 'random' 'CBPside005' 'CBPside0001' 'RandCBPside005' 'RandCBPside0001'
+                for alg in 'PGIDSratio'
 
                     do
 		            echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg 'VAR' $var

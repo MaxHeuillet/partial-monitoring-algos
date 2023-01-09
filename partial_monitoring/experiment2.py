@@ -16,6 +16,7 @@ import games
 import random_algo
 import cpb_side
 import cpb_side_gaussian
+import PGIDSratio
 
 import synthetic_data
 
@@ -24,6 +25,7 @@ import pickle as pkl
 
 import subprocess
 from sklearn.preprocessing import PolynomialFeatures
+
 
 ######################
 ######################
@@ -202,13 +204,15 @@ n_folds = int(args.n_folds)
 games = {'LE':games.label_efficient(  ),'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 28
+dim = 28 if args.context_type == 'quintic' else 2
 
 algos_dico = { 'random':random_algo.Random(  game, horizon, ), 
           'RandCBPside005': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
           'RandCBPside0001': cpb_side_gaussian.RandCPB_side(game, dim, horizon, 1.01, 0.001, 1/8, 10, False, 10e-7),
           'CBPside005': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.05),
-          'CBPside0001': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.001) }
+          'CBPside0001': cpb_side.CPB_side(  game, dim, horizon, 1.01, 0.001),
+          'PGIDSratio': PGIDSratio.PGIDSratio(game, horizon, dim) }
+
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 
 colors = [  [0,0,0]  ] 

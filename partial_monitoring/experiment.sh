@@ -38,4 +38,4 @@ echo "Threads 1" > gurobi.env   # set number of threads
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
 
-python3 ./partial_monitoring/benchmark_randcbp.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
+python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
