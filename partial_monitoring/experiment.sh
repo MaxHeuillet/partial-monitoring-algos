@@ -22,9 +22,9 @@ module load scipy-stack
 
 module load gurobi/9.5.0
 
-source /home/mheuill/projects/def-adurand/mheuill/MYENV2/bin/activate
+source /home/mheuill/projects/def-adurand/mheuill/ENV/bin/activate
 
-pip install polyagamma
+
 
 # module load nixpkgs/16.09
 #gcc/7.3.0 ipopt/3.12.13
