@@ -36,13 +36,9 @@ source /home/mheuill/projects/def-adurand/mheuill/ENV/bin/activate
 
 echo "Threads 1" > gurobi.env   # set number of threads
 
-python -c "import numpy as np"
-
-python -c "import polyagamma"
-
 
 #echo "$PWD"
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
 
-# python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
+python3 ./partial_monitoring/experiment2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
