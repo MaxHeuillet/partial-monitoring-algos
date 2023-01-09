@@ -20,9 +20,22 @@ module load python/3.10
 
 module load scipy-stack
 
-module load gurobi/9.5.0
+module load gurobipy
 
-source /home/mheuill/projects/def-adurand/mheuill/ENV/bin/activate
+source /home/mheuill/projects/def-adurand/mheuill/ENV_nogurobi/bin/activate
+
+
+# module --force purge
+
+# module load nixpkgs/16.09
+
+# module load python/3.7
+
+# module load scipy-stack
+
+# module load gurobi/9.0.1
+
+# source /home/mheuill/projects/def-adurand/mheuill/ENV_gurobi/bin/activate
 
 
 
@@ -34,7 +47,7 @@ source /home/mheuill/projects/def-adurand/mheuill/ENV/bin/activate
 #cd $EBROOTGUROBI
 #python setup.py build --build-base /tmp/${USER} install
 
-echo "Threads 1" > gurobi.env   # set number of threads
+# echo "Threads 1" > gurobi.env   # set number of threads
 
 
 #echo "$PWD"
