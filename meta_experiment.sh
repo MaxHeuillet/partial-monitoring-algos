@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-horizon=25000
+horizon=100
 nfolds=96
 var=1
 
@@ -9,7 +9,7 @@ for context_type in 'linear'
 
     do
 
-    for game in 'LE' 'AT' 
+    for game in  'AT' 
 
         do 
 
