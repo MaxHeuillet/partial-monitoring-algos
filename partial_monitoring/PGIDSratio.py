@@ -35,7 +35,11 @@ class PGIDSratio():
                 omega[i] = random_polyagamma( 1 , thetamat[m-1] @ features[i,] , size=1 ) 
             Omegamat = np.diag( omega ) 
 
-            Vomega   = np.linalg.inv(  features.T @ Omegamat @ features + self.pcovar ) #variance
+            test = features.T @ Omegamat
+            # print( 'features', features.shape, 'omega matrix', Omegamat.shape, 'both', test.shape  )
+            Vomega = self.pcovar_inv - ( self.pcovar_inv @ test @ features @ self.pcovar_inv ) / ( 1 + features @ self.pcovar_inv @ test )
+            # Vomega   = np.linalg.inv(  features.T @ Omegamat @ features + self.pcovar ) #variance
+            # print( 'test', Vomega_test, 'real', Vomega )
             momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
             thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
 
@@ -95,6 +99,7 @@ class PGIDSratio():
             self.contexts['features'].append( context )
             self.contexts['labels'].append( 1-outcome )
             self.contexts['Vmat'] += context @ context.T
+
 
 
     def reset(self,):
