@@ -17,26 +17,31 @@ class PGIDSratio():
         self.pcovar_inv = np.linalg.inv(self.pcovar)
 
         self.contexts = {'features':[], 'labels':[] } 
+        self.current_thetamat = np.zeros( ( self.gibbsits, self.d ) )
 
-    def thetagibbs(self, contexts, outcomes):
-        # print('initial sample', self.initial_sample)
+    def renew_cache(self, t):
+      return (t>500) and ( (t%10)==0 )
 
-        thetamat = np.zeros( ( self.gibbsits, self.d ) )
-        thetamat[0] = self.initial_sample
-        kappa = np.array(outcomes) - 0.5
-        features = np.array(contexts)
-        features = np.squeeze(features, 2)
+    def thetagibbs(self, contexts, outcomes,t):
 
-        for m in range(1,self.gibbsits):
-            comp =  features @ thetamat[m-1]
-            omega = random_polyagamma( 1 , comp )
-            Omegamat = np.diag( omega ) 
-            matrix = features.T @ Omegamat @ features + self.pcovar
-            Vomega   = np.linalg.inv( matrix ) #variance
-            momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
-            thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
+        if self.renew_cache(t): 
+            thetamat = np.zeros( ( self.gibbsits, self.d ) )
+            thetamat[0] = self.initial_sample
+            kappa = np.array(outcomes) - 0.5
+            features = np.array(contexts)
+            features = np.squeeze(features, 2)
 
-        return thetamat
+            for m in range(1,self.gibbsits):
+                comp =  features @ thetamat[m-1]
+                omega = random_polyagamma( 1 , comp )
+                Omegamat = np.diag( omega ) 
+                matrix = features.T @ Omegamat @ features + self.pcovar
+                Vomega   = np.linalg.inv( matrix ) #variance
+                momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
+                thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
+            self.current_thetamat = thetamat
+
+        return self.current_thetamat
 
     def rewfunc(self, action, param, context):
         # print('estimation', param.T @ context, 'sampled param', param, 'context', context, 'logit', expit( param.T @ context )  )
@@ -57,7 +62,7 @@ class PGIDSratio():
 
         else:
             # Gibbs sampling
-            self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'] )
+            self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
             self.initial_sample = self.thetasamples[-1]
             # print('samples', self.thetasamples)
             # Compute gap estimates

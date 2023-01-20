@@ -32,7 +32,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 def evaluate_parallel( evaluator, alg, game):
 
-    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', default=1))
     print('ncpus',ncpus)
     
     pool = Pool(processes=ncpus)
