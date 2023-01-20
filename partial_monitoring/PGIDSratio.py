@@ -16,27 +16,23 @@ class PGIDSratio():
         self.pcovar = np.identity( self.d )
         self.pcovar_inv = np.linalg.inv(self.pcovar)
 
-        self.contexts = {'features':[], 'labels':[],'Vmat': np.identity(self.d) } 
+        self.contexts = {'features':[], 'labels':[] } 
 
     def thetagibbs(self, contexts, outcomes):
         # print('initial sample', self.initial_sample)
 
         thetamat = np.zeros( ( self.gibbsits, self.d ) )
         thetamat[0] = self.initial_sample
-        
         kappa = np.array(outcomes) - 0.5
-
         features = np.array(contexts)
         features = np.squeeze(features, 2)
 
         for m in range(1,self.gibbsits):
-            omega = np.zeros( len(outcomes) )
-            for i in range(len(outcomes)):
-                omega[i] = random_polyagamma( 1 , thetamat[m-1] @ features[i,] , size=1 ) 
+            comp =  features @ thetamat[m-1]
+            omega = random_polyagamma( 1 , comp )
             Omegamat = np.diag( omega ) 
-
-            Vomega   = np.linalg.inv(  features.T @ Omegamat @ features + self.pcovar ) #variance
-            # print( 'test', Vomega_test, 'real', Vomega )
+            matrix = features.T @ Omegamat @ features + self.pcovar
+            Vomega   = np.linalg.inv( matrix ) #variance
             momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
             thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
 
@@ -95,9 +91,8 @@ class PGIDSratio():
         if action ==1 :
             self.contexts['features'].append( context )
             self.contexts['labels'].append( 1-outcome )
-            self.contexts['Vmat'] += context @ context.T
 
     def reset(self,):
         self.n = np.zeros( self.N )
-        self.contexts = {'features':[], 'labels':[],'Vmat': np.identity(self.d) } 
+        self.contexts = {'features':[], 'labels':[] } 
 
