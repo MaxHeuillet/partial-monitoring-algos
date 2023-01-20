@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-horizon=100000
+horizon=100
 nfolds=96
 var=1
 
-for context_type in 'quintic'
+for context_type in 'linear'
 
     do
 
@@ -13,7 +13,7 @@ for context_type in 'quintic'
 
         do 
 
-            for task in 'easy' 'difficult'
+            for task in 'difficult'
 
                 do
 
