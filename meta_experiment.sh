@@ -12,7 +12,7 @@ for context_type in 'linear' 'quintic'
 
         do 
 
-            for task in  'easy' 'difficult'
+            for task in 'difficult'
 
                 do
 

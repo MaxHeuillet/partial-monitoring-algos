@@ -116,7 +116,7 @@ class Evaluation:
 
         for t in range(self.horizon):
 
-            if t % 1000 == 0 :
+            if t % 100 == 0 and jobid == 0 :
                 with gzip.open( './{}.pkl.gz'.format(t) ,'wb') as f:
                     pkl.dump([t],f)
 
