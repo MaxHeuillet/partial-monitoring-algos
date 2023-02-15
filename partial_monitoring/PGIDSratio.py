@@ -84,7 +84,7 @@ class PGIDSratio():
 
             #Compute expected information gain
             tuneidsparam2 = min(1, deltazero / ( abs(deltaone-deltazero) ) ) 
-            print(tuneidsparam2)
+            # print(tuneidsparam2)
             p= max(0, tuneidsparam2 )
 
             action = np.random.choice( [0, 1], p=[1-p, p] )
@@ -101,4 +101,5 @@ class PGIDSratio():
     def reset(self,):
         self.n = np.zeros( self.N )
         self.contexts = {'features':[], 'labels':[] } 
+        self.current_thetamat = np.zeros( ( self.gibbsits, self.d ) )
 
