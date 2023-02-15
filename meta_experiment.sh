@@ -4,15 +4,15 @@
 horizon=20000
 nfolds=96
 
-for context_type in 'linear' 'quintic'
+for context_type in 'quintic'
 
     do
 
-    for game in  'AT' 
+    for game in 'AT' 
 
         do 
 
-            for task in 'easy' 'difficult'
+            for task in 'difficult'
 
                 do
 
