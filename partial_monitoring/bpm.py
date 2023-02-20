@@ -10,10 +10,10 @@ class BPM:
 
       self.N = game.n_actions
       self.M = game.n_outcomes
-      self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
-      print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
+      # self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
+      print('n-actions', self.N, 'n-outcomes', self.M)
 
-      self.SignalMatrices = self.game.SignalMatrices  #geometry_v3.calculate_signal_matrices(game.FeedbackMatrix, self.N, self.M, self.A)
+      self.SignalMatrices = self.game.SignalMatrices  
       self.sstInvs = [  np.linalg.inv( s @ s.T ) for s in  self.SignalMatrices ] 
       self.Ps = [ self.SignalMatrices[i].T @  self.sstInvs[i] @ self.SignalMatrices[i] for i in range(self.N) ] 
 
@@ -46,10 +46,11 @@ class BPM:
       self.n[action] += 1
 
       curr_sigmaInv = self.sigmaInv
-      self.sigmaInv = curr_sigmaInv + self.SignalMatrices[action].T @ np.linalg.inv( self.SignalMatrices[action] @ self.SignalMatrices[action].T ) @ self.SignalMatrices[action]
+      self.sigmaInv = curr_sigmaInv + self.Ps[action]
       self.sigma = np.linalg.inv(  self.sigmaInv )
 
-      new_p = self.sigma @ ( curr_sigmaInv @ self.p + self.SignalMatrices[action].T  @ np.linalg.inv( self.SignalMatrices[action] @ self.SignalMatrices[action].T ) @ self.SignalMatrices[action] @ np.eye(self.M)[outcome]  )
+      Y_t = self.SignalMatrices[action] @ np.eye(self.M)[outcome]
+      new_p = self.sigma @ ( curr_sigmaInv @ self.p + self.SignalMatrices[action].T  @ self.sstInvs[action] @ Y_t  )
       new_p = abs(new_p)
       self.p = new_p/sum(new_p)
       # print('probability', self.p, 'counter', self.n, 'sigma', self.sigma, 'means', self.p, 'new_p', new_p)
@@ -70,7 +71,6 @@ class BPM:
           self.samples[ 2 * i * self.numC + 2 * j + 1 ] = samp2.T
 
     def getCells(self,):
-
       cInequality = [ ]
       for i in range(self.N):
         res = []
