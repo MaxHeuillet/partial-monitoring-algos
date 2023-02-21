@@ -84,3 +84,8 @@ plt.plot(range(horizon), result_tspm, label = 'tspm' )
 ```
 
 ![Alt text](./partial_monitoring/tutorial.png "Example")
+
+Note: this figure represents the performance of the agents on one realization of randomness and one outcome distribution.
+To represent the average regret, you can use the method ```evaluate_parallel()``` used in some scripts.
+
+**Contextual partial monitoring:** The contextual agents receive at each timestep a vector of observation before playing an action. The script ```synthetic_data.py``` includes simulators of features. The class ```ToyContexts``` can be used to debug, ```LinearContexts``` represents 2-dimensional contexts split over a linear decision boundary and ```QuinticContexts``` are split over a non-linear decision boundary. 
