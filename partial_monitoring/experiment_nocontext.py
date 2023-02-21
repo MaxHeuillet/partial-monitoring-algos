@@ -105,7 +105,7 @@ n_folds = int(args.n_folds)
 
 game = games.label_efficient(  ) if args.game == 'LE' else games.apple_tasting(False) 
 
-algo_name = args.algo_name.plit('_')
+algo_name = args.algo_name.split('_')
 
 if algo_name[1] == '1':
     sigma = 1

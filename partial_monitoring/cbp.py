@@ -3,7 +3,7 @@ import geometry_v3
 # import geometry
 import collections
 
-class CPB():
+class CBP():
 
     def __init__(self, game, horizon, alpha ):
 
@@ -33,8 +33,7 @@ class CPB():
         self.v = game.v 
 
         self.W = geometry_v3.getConfidenceWidth(self.mathcal_N, self.V, self.v, self.N)
-        print('weights', self.W)
-        self.alpha = alpha #1.01
+        self.alpha = alpha 
 
         self.eta =  self.W **2/3 
 
