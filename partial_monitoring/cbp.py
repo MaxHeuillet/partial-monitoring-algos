@@ -46,7 +46,7 @@ class CBP():
         self.memory_pareto = {}
         self.memory_neighbors = {}
  
-    def get_action(self, t, X = None):
+    def get_action(self, t, context = None):
 
         if(t< 1* self.N):
 

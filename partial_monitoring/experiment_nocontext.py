@@ -73,7 +73,7 @@ class Evaluation:
 
             # policy chooses one action
             # print('t', t,  'outcome', outcome, 'context', context)
-            action = alg.get_action(t, None)
+            action = alg.get_action(t)
 
             # print('t', t, 'action', action, 'outcome', outcome, )
             feedback =  self.get_feedback( game, action, outcome )

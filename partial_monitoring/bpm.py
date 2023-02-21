@@ -55,7 +55,7 @@ class BPM:
       self.p = new_p/sum(new_p)
       # print('probability', self.p, 'counter', self.n, 'sigma', self.sigma, 'means', self.p, 'new_p', new_p)
 
-    def populateSamples(self, t):
+    def populateSamples(self, t, context = None):
 
       for i in range(self.sample_size):
         x = np.random.uniform(0, 1, self.M)
@@ -84,7 +84,7 @@ class BPM:
     def use_cache(self, t):
       return t%10 !=0 
 
-    def get_action(self, t):
+    def get_action(self, t, context = None):
 
       if self.use_cache(t): #use previous p
         self.populateSamples(t)

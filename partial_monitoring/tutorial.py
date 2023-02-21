@@ -2,8 +2,7 @@ import numpy as np
 
 class Evaluation:
 
-    def __init__(self, horizon,type ):
-        self.type = type
+    def __init__(self, horizon, ):
         self.horizon = horizon
 
     def get_outcomes(self, game):
@@ -31,7 +30,7 @@ class Evaluation:
         for t in range(self.horizon):
 
             # policy chooses one action
-            action = alg.get_action(t)
+            action = alg.get_action(t, None)
 
             # Environment chooses one outcome
             outcome = outcomes[t]
