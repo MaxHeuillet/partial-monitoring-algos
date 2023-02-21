@@ -85,7 +85,7 @@ class Evaluation:
             regret = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
 
             result = np.cumsum( regret)
-            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.type,  self.horizon, nfolds, label, jobid) ,'wb') as f:
+            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.type,  self.horizon, nfolds, label, jobid) ,'wb') as f:
                 pkl.dump(result,f)
 
         return  True 
@@ -142,11 +142,11 @@ with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.p
 
     for jobid in range(n_folds):
 
-        with gzip.open(  './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
+        with gzip.open(  './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
             r = pkl.load(f)
 
         pkl.dump( r, g)
                 
-        bashCommand = 'rm ./partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid)
+        bashCommand = 'rm ./partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid)
         process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
