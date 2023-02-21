@@ -15,7 +15,7 @@ import games
 
 import random_algo
 import cpb_side
-import cpb_side_gaussian
+import partial_monitoring.randcbpside as randcbpside
 
 import synthetic_data
 

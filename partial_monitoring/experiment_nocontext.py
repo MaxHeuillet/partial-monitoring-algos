@@ -14,7 +14,7 @@ import os
 import games
 
 import randcbp
-import cpb_side_gaussian
+import partial_monitoring.randcbpside as randcbpside
 
 import gzip
 import pickle as pkl
@@ -73,7 +73,7 @@ class Evaluation:
 
             # policy chooses one action
             # print('t', t,  'outcome', outcome, 'context', context)
-            action = alg.get_action(t, None)
+            action = alg.get_action(t)
 
             # print('t', t, 'action', action, 'outcome', outcome, )
             feedback =  self.get_feedback( game, action, outcome )

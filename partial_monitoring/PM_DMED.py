@@ -36,7 +36,7 @@ class PM_DMED:
       for _ in range(self.N):
           self.feedback.append(  np.ones( self.A ) ) # ones and not zeros for avoiding infeasible models
 
-    def get_action(self, t):
+    def get_action(self, t, context = None):
     #   print('current set', self.ZC)
       action = self.ZC.pop()
       return action 

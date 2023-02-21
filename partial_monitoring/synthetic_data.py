@@ -48,10 +48,12 @@ import numpy as np
 #         return contexts
 
 
-class QuinticContexts:
+class PolynomialContexts:
     def __init__(self, d, margin):
         self.d = d #number of features
         self.margin = margin #np.random.uniform(0,0.5) # decision boundary
+        self.type = 'polynomial'
+        self.d_context = 28
 
     def get_context(self, label):
         while True:
@@ -86,6 +88,8 @@ class LinearContexts:
         self.margin = margin #np.random.uniform(0,0.5) # decision boundary
         self.b = b #np.random.uniform(-1,1)
         self.w = w
+        self.type = 'linear'
+        self.d_context = 2
 
     def get_context(self, label):
         while True:
@@ -115,7 +119,8 @@ class LinearContexts:
 class ToyContexts:
 
     def __init__(self, ):
-        pass
+        self.type = 'toy'
+        self.d_context = 2
 
     def get_context(self, label):
         while True:

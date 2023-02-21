@@ -121,7 +121,7 @@ class TSPM_alg:
         
         return result
 
-    def get_action(self, t):
+    def get_action(self, t, context = None):
         
         if t < self.N :
             action = t
