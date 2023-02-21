@@ -32,7 +32,7 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
     nfolds = []
 
     for _ in range(n_folds):
-        p = np.random.uniform(0, 0.2) if task == 'easy' else np.random.uniform(0.4,0.5)
+        p = np.random.uniform(0, 0.2) if task == 'imbalanced' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
         labels.append( label )
         nfolds.append(n_folds)
@@ -81,6 +81,12 @@ class Evaluation:
             feedback =  self.get_feedback( game, action, outcome )
 
             alg.update(action, feedback, outcome, t, None )
+
+            for i in range(game.n_actions):
+                if i == action:
+                    action_counter[i][t] = action_counter[i][t-1] +1
+                else:
+                    action_counter[i][t] = action_counter[i][t-1]
             
             regret = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
 

@@ -7,7 +7,7 @@ for game in 'LE' 'AT'
 
     do 
 
-        for task in 'easy' 'difficult'
+        for task in 'imbalanced' 'balanced'
 
             do
 
