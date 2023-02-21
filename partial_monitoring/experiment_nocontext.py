@@ -83,7 +83,7 @@ class Evaluation:
             regret = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
 
             result = np.cumsum( regret)
-            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task,  self.horizon, self.n_folds, label, jobid) ,'wb') as f:
+            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(self.type, self.task,  self.horizon, self.n_folds, label, jobid) ,'wb') as f:
                 pkl.dump(result,f)
 
         return  True 
