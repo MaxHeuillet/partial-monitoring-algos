@@ -7,8 +7,9 @@ from itertools import combinations, permutations
 
 class Game():
     
-    def __init__(self, LossMatrix, FeedbackMatrix,FeedbackMatrix_PMDMED, banditLossMatrix,  banditFeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V ,  mode = None):
+    def __init__(self, name, LossMatrix, FeedbackMatrix,FeedbackMatrix_PMDMED, banditLossMatrix,  banditFeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V ,  mode = None):
         
+        self.name = name
         self.LossMatrix = LossMatrix
         self.FeedbackMatrix = FeedbackMatrix
         self.FeedbackMatrix_PMDMED = FeedbackMatrix_PMDMED
@@ -51,6 +52,7 @@ class Game():
 
 def apple_tasting( restructure_game ):
 
+    name = 'AT'
     init_LossMatrix = np.array( [ [1, 0], [0, 1] ] )
     init_FeedbackMatrix =  np.array([ [1, 1],[1, 0] ])
     signal_matrices =  [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ] ) ]
@@ -84,13 +86,14 @@ def apple_tasting( restructure_game ):
 
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+    game = Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
 
     return game
 
 
 def label_efficient(  ):
 
+    name = 'LE'
     LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
     FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
     LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
@@ -115,7 +118,7 @@ def label_efficient(  ):
     V[2][1] = [ 0, 1, 2 ]
     V[1][2] = [ 0, 1, 2 ]
 
-    return Game( LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+    return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
 
 def calculate_signal_matrices(FeedbackMatrix, N,M,A):
     signal_matrices = []

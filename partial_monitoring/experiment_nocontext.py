@@ -29,13 +29,15 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
     np.random.seed(1)
     distributions = []
     labels = []
+    nfolds = []
 
     for _ in range(n_folds):
         p = np.random.uniform(0, 0.2) if task == 'easy' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
         labels.append( label )
+        n_folds.append(n_folds)
         
-    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels ) ) ) 
+    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
 
 class Evaluation:
 
@@ -53,7 +55,7 @@ class Evaluation:
     def eval_policy_once(self, alg, game, job):
 
         alg.reset()
-        distribution, jobid, label = job
+        distribution, jobid, label, nfolds = job
         np.random.seed(jobid)
 
         outcome_distribution =  {'spam':distribution[0], 'ham':distribution[1]}
@@ -83,7 +85,7 @@ class Evaluation:
             regret = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
 
             result = np.cumsum( regret)
-            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(self.type, self.task,  self.horizon, self.n_folds, label, jobid) ,'wb') as f:
+            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.type,  self.horizon, nfolds, label, jobid) ,'wb') as f:
                 pkl.dump(result,f)
 
         return  True 
