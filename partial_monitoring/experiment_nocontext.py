@@ -35,7 +35,7 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
         p = np.random.uniform(0, 0.2) if task == 'easy' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
         labels.append( label )
-        n_folds.append(n_folds)
+        nfolds.append(n_folds)
         
     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
 
