@@ -14,7 +14,7 @@ import os
 import games
 
 import randcbp
-import cpb_side_gaussian
+import partial_monitoring.randcbpside as randcbpside
 
 import gzip
 import pickle as pkl
