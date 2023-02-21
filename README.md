@@ -1,7 +1,7 @@
 # partial_monitoring_algorithms
 
 ---
-title: "My Document"
+title: "Partial Monitoring tutorial"
 bibliography: references.bib
 link-citations: true
 ---
