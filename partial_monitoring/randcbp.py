@@ -69,7 +69,7 @@ class RandCBP():
         self.memory_neighbors = {}
 
  
-    def get_action(self, t):
+    def get_action(self, t, context):
 
         if t <  1 * self.N:
             action = t 
