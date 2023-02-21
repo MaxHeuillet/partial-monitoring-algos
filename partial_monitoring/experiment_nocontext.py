@@ -24,7 +24,7 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
 
     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     pool = mp.Pool( processes = ncpus ) 
-    task = Evaluation(horizon, type)
+    task = Evaluation(horizon, task)
 
     np.random.seed(1)
     distributions = []
@@ -138,15 +138,15 @@ alg =  randcbp.RandCBP(  game, horizon, alpha, sigma, K, epsilon)
 
 result = evaluate_parallel(n_folds, horizon, alg, game, args.task , args.algo_name )
 
-with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name) ,'wb') as g:
+with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name) ,'wb') as g:
 
     for jobid in range(n_folds):
 
-        with gzip.open(  './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
+        with gzip.open(  './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
             r = pkl.load(f)
 
         pkl.dump( r, g)
                 
-        bashCommand = 'rm ./partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name, jobid)
+        bashCommand = 'rm ./partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, args.task, horizon, n_folds,  args.algo_name, jobid)
         process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
