@@ -2,6 +2,32 @@ from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
 
 
+
+# def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
+#     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
+#     pool = Pool(processes = nbCores) 
+#     task = Evaluation(horizon, type)
+
+#     np.random.seed(1)
+#     distributions = []
+#     context_generators = []
+
+#     for jobid in range(n_folds):
+        
+#         p = np.random.uniform(0, 0.2) if type == 'easy' else np.random.uniform(0.4,0.5)
+#         distributions.append( [p, 1-p] )
+
+#         contexts = synthetic_data.QuinticContexts( 2, 0.01)
+#         context_generators.append( contexts )
+
+#         # d = 2
+#         # margin =0.01
+#         # contexts = synthetic_data.LinearContexts( np.array([0.5,0.5]), 0, d, margin) #synthetic_data.ToyContexts( )
+
+#     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,range(n_folds)) ) ) 
+
+
+
 class Evaluation_contextual:
 
     def __init__(self, horizon, ):

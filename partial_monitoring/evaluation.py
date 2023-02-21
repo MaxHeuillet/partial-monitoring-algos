@@ -1,5 +1,26 @@
 import numpy as np
 
+
+# def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type):
+#     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
+#     pool = Pool(processes = nbCores) 
+#     task = Evaluation(horizon, type)
+
+#     np.random.seed(1)
+#     distributions = []
+
+#     for jobid in range(n_folds):
+        
+#         if type == 'easy' :
+#             p = np.random.uniform(0, 0.2) 
+#         else:
+#             p = np.random.uniform(0.4,0.5)
+#         distributions.append( [p, 1-p] )
+
+#     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions ,range(n_folds)) ) ) 
+
+
+
 class Evaluation:
 
     def __init__(self, horizon, ):

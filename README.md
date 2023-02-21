@@ -162,4 +162,4 @@ plt.savefig('tutorial.png')
 ```
 ![Alt text](./partial_monitoring/tutorial_context.png "Example")
 
-Note: The agent PG-IDS
+Note: The agent PG-IDS is hardcoced for the Apple Tasting game.

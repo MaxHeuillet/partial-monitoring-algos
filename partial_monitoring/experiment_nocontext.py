@@ -1,28 +1,26 @@
 
 import numpy as np
-import os
 
 import multiprocessing as mp
 
 from functools import partial
 import pickle as pkl
 import gzip
-# import plotly.graph_objects as go
 import os
-
 
 import games
 
 import randcbp
-import partial_monitoring.randcbpside as randcbpside
 
 import gzip
 import pickle as pkl
 
+import subprocess
+
 ######################
 ######################
 
-def evaluate_parallel(n_folds, horizon, alg, game, task):
+def evaluate_parallel(n_folds, horizon, alg, game, task, label):
 
     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     pool = mp.Pool( processes = ncpus ) 
@@ -30,12 +28,14 @@ def evaluate_parallel(n_folds, horizon, alg, game, task):
 
     np.random.seed(1)
     distributions = []
+    labels = []
 
     for _ in range(n_folds):
         p = np.random.uniform(0, 0.2) if task == 'easy' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
+        labels.append( label )
         
-    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds) ) ) ) 
+    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels ) ) ) 
 
 class Evaluation:
 
@@ -53,7 +53,7 @@ class Evaluation:
     def eval_policy_once(self, alg, game, job):
 
         alg.reset()
-        distribution, jobid = job
+        distribution, jobid, label = job
         np.random.seed(jobid)
 
         outcome_distribution =  {'spam':distribution[0], 'ham':distribution[1]}
@@ -82,7 +82,11 @@ class Evaluation:
             
             regret = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
 
-        return  np.cumsum( regret ) 
+            result = np.cumsum( regret)
+            with gzip.open( './partial_monitoring/result/benchmarkcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task,  self.horizon, self.n_folds, label, jobid) ,'wb') as f:
+                pkl.dump(result,f)
+
+        return  True 
 
 
 ###################################
@@ -130,7 +134,17 @@ alpha = 1.01
 
 alg =  randcbp.RandCBP(  game, horizon, alpha, sigma, K, epsilon)  
 
-result = evaluate_parallel(n_folds, horizon, alg, game, args.task  )
+result = evaluate_parallel(n_folds, horizon, alg, game, args.task , args.algo_name )
 
-with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/_{}_{}_{}.pkl.gz'.format(args.game, args.task, args.horizon, args.n_folds, args.algo_name) ,'wb') as f:
-    pkl.dump(result,f)
+with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name) ,'wb') as g:
+
+    for jobid in range(n_folds):
+
+        with gzip.open(  './partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
+            r = pkl.load(f)
+
+        pkl.dump( r, g)
+                
+        bashCommand = 'rm ./partial_monitoring/contextual_results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(args.game, args.task, horizon, n_folds,  args.algo_name, jobid)
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
