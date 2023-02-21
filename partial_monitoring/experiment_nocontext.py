@@ -58,12 +58,12 @@ class Evaluation:
 
         outcome_distribution =  {'spam':distribution[0], 'ham':distribution[1]}
 
-        game.set_outcome_distribution( outcome_distribution )
+        game.set_outcome_distribution( outcome_distribution , jobid )
 
         action_counter = np.zeros( (game.n_actions, self.horizon) )
 
         # generate outcomes obliviously
-        outcomes = self.get_outcomes(game, jobid)
+        outcomes = self.get_outcomes(game )
 
         for t in range(self.horizon):
             #print(t)

@@ -40,7 +40,7 @@ class TSPM_alg:
         lower = np.zeros(self.M)
         upper = np.ones(self.M)
         # print(self.b.squeeze(), self.B)
-        mvn = multivariate_normal(mean=self.b.squeeze(), cov=self.B )
+        mvn = multivariate_normal(mean=np.zeros(self.M), cov=self.lbd * np.identity(self.M) ) #(mean=self.b.squeeze(), cov=self.B )
         lower_cdf = mvn.cdf(lower)
         upper_cdf = mvn.cdf(upper)
         normalization_constant = upper_cdf - lower_cdf
@@ -122,9 +122,12 @@ class TSPM_alg:
         return result
 
     def get_action(self, t):
-
-        p_tilde = self.accept_reject(t)
-        action = np.argmin(  self.game.LossMatrix @ p_tilde  ) 
+        
+        if t < self.N :
+            action = t
+        else:
+            p_tilde = self.accept_reject(t)
+            action = np.argmin(  self.game.LossMatrix @ p_tilde  ) 
         # print('action', action, p_tilde)
 
         return action
@@ -138,7 +141,7 @@ class TSPM_alg:
       e_y = np.zeros( (self.A, 1) )
       e_y[ feedback ] = 1
 
-      value = self.SignalMatrices[action].T @ e_y
+    #   value = self.SignalMatrices[action].T @ e_y
     #   print('value', value, value.shape, self.b.shape )
       self.b = self.b + self.SignalMatrices[action].T @ e_y 
 
