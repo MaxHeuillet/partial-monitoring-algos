@@ -1,10 +1,4 @@
-# partial_monitoring_algorithms
-
----
-title: "Partial Monitoring tutorial"
-bibliography: references.bib
-link-citations: true
----
+# Partial Monitoring tutorial
 
 This repository contains implementations of multiple stochastic partial monitoring agents.
 
@@ -14,7 +8,7 @@ pip install numpy
 pip install scipy
 ```
 
-**First step:** identify the partial monitoring game you need. We have implemented the Apple Tasting @helmbold2000apple and the Label Efficient @helmbold1997some ganes as well as all the quantities required by the proposed agents. 
+**First step:** identify the partial monitoring game you need. We have implemented the Apple Tasting and the Label Efficient games as well as all the quantities required by the proposed agents. 
 
 ```python
 import games
