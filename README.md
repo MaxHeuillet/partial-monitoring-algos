@@ -34,11 +34,11 @@ job = [p, 1-p], seed
 
 ```python
 import evaluation
-import TSPM
-import PM_DMED
-import cbp
-import randcbp
-import bpm
+import partial_monitoring.TSPM as TSPM
+import partial_monitoring.PM_DMED as PM_DMED
+import partial_monitoring.cbp as cbp
+import partial_monitoring.randcbp as randcbp
+import partial_monitoring.bpm as bpm
 
 horizon = 100
 evaluation.Evaluation(horizon)
@@ -89,7 +89,7 @@ plt.plot(range(horizon), result_bpmts, label = 'bpm-ts' )
 plt.plot(range(horizon), result_tspm, label = 'tspm' )
 ```
 
-![Alt text](./partial_monitoring/tutorial.png "Example")
+![Alt text](./tutorial.png "Example")
 
 Note: this figure represents the performance of the agents on one realization of randomness and one outcome distribution.
 To represent the average regret, you can use the method ```evaluate_parallel()``` used in some scripts.
@@ -99,10 +99,10 @@ To represent the average regret, you can use the method ```evaluate_parallel()``
 ```python
 
 import evaluation_contextual
-import synthetic_data
-import cbpside
-import randcbpside
-import PGIDSratio
+import partial_monitoring.synthetic_data as synthetic_data
+import partial_monitoring.cbpside as cbpside
+import partial_monitoring.randcbpside as randcbpside
+import partial_monitoring.PGIDSratio as PGIDSratio
 
 fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(15, 15))
 
@@ -160,6 +160,6 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.savefig('tutorial.png')
 
 ```
-![Alt text](./partial_monitoring/tutorial_context.png "Example")
+![Alt text](./tutorial_context.png "Example")
 
 Note: The agent PG-IDS is hardcoced for the Apple Tasting game.

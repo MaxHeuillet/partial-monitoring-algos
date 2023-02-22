@@ -73,7 +73,7 @@ class Evaluation:
         self.context_type = context_type
         
 
-    def get_outcomes(self, game, job_id):
+    def get_outcomes(self, game, ):
         outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
         return outcomes
 
@@ -95,7 +95,7 @@ class Evaluation:
         # action_counter = np.zeros( (game.n_actions, self.horizon) )
 
         # generate outcomes obliviously
-        outcomes = self.get_outcomes(game, jobid)
+        outcomes = self.get_outcomes(game, )
         contexts = [ context_generator.get_context(outcome) for outcome in outcomes ]
 
         if self.context_type == 'quintic':
@@ -148,9 +148,9 @@ class Evaluation:
 
         return True
 
-def run_experiment(game_name, task, n_cores, n_folds, horizon, game, algos, colors, labels, context_type):
+def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, context_type):
 
-    for alg, color, label in zip( algos, colors, labels):
+    for alg, label in zip( algos, labels):
 
         print(label)
         evaluator = Evaluation(game_name, '{}'.format(task), n_folds, horizon, game, label, context_type)
@@ -194,7 +194,6 @@ parser.add_argument("--context_type", required=True, help="context type")
 parser.add_argument("--algo", required=True, help="algorithme")
 args = parser.parse_args()
 
-n_cores = None
 horizon = int(args.horizon)
 n_folds = int(args.n_folds)
 
@@ -247,6 +246,5 @@ algos_dico = {
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 
-colors = [  [0,0,0]  ] 
 
-run_experiment(args.game, args.task, n_cores, n_folds, horizon, game, algos, colors, labels, args.context_type)
+run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
