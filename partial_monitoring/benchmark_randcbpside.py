@@ -41,7 +41,7 @@ def evaluate_parallel( evaluator, alg, game):
 
     for jobid in range(evaluator.n_folds):
         
-        p = np.random.uniform(0, 0.2) if evaluator.task == 'easy' else np.random.uniform(0.4,0.5)
+        p = np.random.uniform(0, 0.2) if evaluator.task == 'imbalanced' else np.random.uniform(0.4,0.5)
         distributions.append( [p, 1-p] )
 
         if evaluator.context_type == 'linear':
