@@ -13,7 +13,7 @@ import gzip
 
 import games
 
-import partial_monitoring.randcbpside as randcbpside
+import randcbpside
 
 import synthetic_data
 
