@@ -16,7 +16,7 @@ for game in 'LE' 'AT'
                     do
 		            echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg
     
-                    sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,GAME=$game,TASK=$task,ALG=$alg, ./partial_monitoring/experiment_nocontext.sh 
+                    sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,GAME=$game,TASK=$task,ALG=$alg, ./partial_monitoring/benchmark_randcbp.sh 
                     done
                 
                 done
