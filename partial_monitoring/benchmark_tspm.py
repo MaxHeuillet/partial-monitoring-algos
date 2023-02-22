@@ -1,0 +1,142 @@
+
+import numpy as np
+
+import multiprocessing as mp
+
+from functools import partial
+import pickle as pkl
+import gzip
+import os
+
+import games
+
+import TSPM
+
+import gzip
+import pickle as pkl
+
+import subprocess
+
+######################
+######################
+
+def evaluate_parallel(n_folds, horizon, alg, game, task, label):
+
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    pool = mp.Pool( processes = ncpus ) 
+    task = Evaluation(horizon, task)
+
+    np.random.seed(1)
+    distributions = []
+    labels = []
+    nfolds = []
+
+    for _ in range(n_folds):
+        p = np.random.uniform(0, 0.2) if task == 'imbalanced' else np.random.uniform(0.4,0.5)
+        distributions.append( [p, 1-p] )
+        labels.append( label )
+        nfolds.append(n_folds)
+        
+    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
+
+class Evaluation:
+
+    def __init__(self, horizon,type):
+        self.type = type
+        self.horizon = horizon
+
+    def get_outcomes(self, game):
+        outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
+        return outcomes
+
+    def get_feedback(self, game, action, outcome):
+        return game.FeedbackMatrix[ action ][ outcome ]
+
+    def eval_policy_once(self, alg, game, job):
+
+        alg.reset()
+        distribution, jobid, label, nfolds = job
+        np.random.seed(jobid)
+
+        outcome_distribution =  {'spam':distribution[0], 'ham':distribution[1]}
+
+        game.set_outcome_distribution( outcome_distribution , jobid )
+
+        action_counter = np.zeros( (game.n_actions, self.horizon) )
+
+        # generate outcomes obliviously
+        outcomes = self.get_outcomes(game )
+
+        for t in range(self.horizon):
+            #print(t)
+
+            # Environment chooses one outcome and one context associated to this outcome
+            outcome = outcomes[t]
+
+            # policy chooses one action
+            # print('t', t,  'outcome', outcome, 'context', context)
+            action = alg.get_action(t)
+
+            # print('t', t, 'action', action, 'outcome', outcome, )
+            feedback =  self.get_feedback( game, action, outcome )
+
+            alg.update(action, feedback, outcome, t, None )
+
+            for i in range(game.n_actions):
+                if i == action:
+                    action_counter[i][t] = action_counter[i][t-1] +1
+                else:
+                    action_counter[i][t] = action_counter[i][t-1]
+            
+            result = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
+            
+            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.type,  self.horizon, nfolds, label, jobid) ,'wb') as f:
+                pkl.dump(result,f)
+
+        return  True 
+
+
+###################################
+# Synthetic Experiments
+###################################
+
+import argparse
+parser = argparse.ArgumentParser()
+
+
+parser.add_argument("--horizon", required=True, help="horizon of each realization of the experiment")
+parser.add_argument("--n_folds", required=True, help="number of folds")
+parser.add_argument("--game", required=True, help="game")
+parser.add_argument("--task", required=True, help="task") #easy of difficult
+parser.add_argument("--algo_name", required=True, help="algorithme")
+args = parser.parse_args()
+
+horizon = int(args.horizon)
+n_folds = int(args.n_folds)
+
+game = games.label_efficient(  ) if args.game == 'LE' else games.apple_tasting(False) 
+
+algo_name = args.algo_name.split('_')
+
+if algo_name[1] == '0':
+    R = 0
+else:
+    R = 1
+
+
+alg =  TSPM.TSPM( game, horizon, R )
+
+result = evaluate_parallel(n_folds, horizon, alg, game, '{}'.format(args.task) , args.algo_name )
+
+with gzip.open( './partial_monitoring/results/{}/{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task) , horizon, n_folds,  args.algo_name) ,'wb') as g:
+
+    for jobid in range(n_folds):
+
+        with gzip.open(  './partial_monitoring/results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
+            r = pkl.load(f)
+
+        pkl.dump( r, g)
+                
+        bashCommand = 'rm ./partial_monitoring/results/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid)
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
