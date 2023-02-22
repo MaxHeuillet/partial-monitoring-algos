@@ -12,8 +12,6 @@ import games
 
 import TSPM
 
-import gzip
-import pickle as pkl
 
 import subprocess
 
@@ -124,7 +122,7 @@ else:
     R = 1
 
 
-alg =  TSPM.TSPM( game, horizon, R )
+alg =  TSPM.TSPM_alg( game, horizon, R )
 
 result = evaluate_parallel(n_folds, horizon, alg, game, '{}'.format(args.task) , args.algo_name )
 
