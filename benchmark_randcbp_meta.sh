@@ -19,8 +19,6 @@ for game in 'LE' 'AT'
                     sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,GAME=$game,TASK=$task,ALG=$alg, ./partial_monitoring/benchmark_randcbp.sh 
                     done
                 
-                done
-        
-        done
+            done
 
     done
