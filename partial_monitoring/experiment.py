@@ -159,7 +159,7 @@ def run_experiment(name, task, n_cores, n_folds, horizon, game, algos, colors, l
 # Synthetic Contextual experiments
 ###################################
 
-<<<<<<< HEAD
+
 import argparse
 parser = argparse.ArgumentParser()
 
