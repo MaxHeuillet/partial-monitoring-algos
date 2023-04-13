@@ -74,20 +74,18 @@ class RandCPBside():
         for i in range(self.N):
             self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d)  } )
 
-    def obtain_probability(self, t):
+    def obtain_probability(self,t):
 
-        epsilon = self.epsilon 
-        M_prim = self.M_prim
-        sigma = self.sigma
+        U = np.sqrt( self.alpha  * np.log(t) ) 
+          
+        rhos = list( np.arange(0, U, U / (self.K-1) ) )
+        p_m_hat =  np.array( [ 1/np.sqrt(2*np.pi )*np.exp( -(rho**2) / (2*self.sigma**2)  ) for rho in rhos ] )
+        rhos.append(U)
 
-        U = np.sqrt( (self.d+1) * np.log(t) ) 
-        rhos = np.arange(0, U, U/M_prim )
-        p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / 2*(sigma**2)  )  for i in range(len(rhos)-1) ] )
-
-        p_m = (1 - epsilon) * p_m_hat / p_m_hat.sum()
+        p_m = (1 - self.epsilon) * p_m_hat / p_m_hat.sum()
         p_m = p_m.tolist()
-        p_m.append(epsilon)
-        
+        p_m.append(self.epsilon)
+
         Z = np.random.choice(rhos, p= p_m)
 
         return Z
