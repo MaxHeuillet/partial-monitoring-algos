@@ -50,7 +50,7 @@ class RandCBP():
         U = np.sqrt( self.alpha  * np.log(t) ) 
         mean = 0
 
-        if np.random.uniform([0,1]) < self.epsilon:
+        if np.random.uniform(0,1) < self.epsilon:
             Z = U
         else:
             Z = truncnorm( (0 - mean) / self.sigma , (U - mean) / self.sigma , loc=mean, scale=self.sigma).rvs() 
