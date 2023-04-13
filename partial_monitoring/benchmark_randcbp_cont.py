@@ -10,7 +10,7 @@ import os
 
 import games
 
-import randcbp
+import randcbp_cont
 
 import gzip
 import pickle as pkl
@@ -131,7 +131,7 @@ elif algo_name[1] == '132':
 epsilon = 10e-7
 alpha = 1.01
 
-alg =  randcbp.RandCBP(  game, horizon, alpha, sigma, epsilon)  
+alg =  randcbp_cont.RandCBP(  game, horizon, alpha, sigma, epsilon)  
 
 result = evaluate_parallel(n_folds, horizon, alg, game, '{}'.format(args.task) , args.algo_name )
 
