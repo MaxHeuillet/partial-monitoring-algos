@@ -3,7 +3,7 @@ import geometry_v3
 
 class RandCPBside():
 
-    def __init__(self, game, d, horizon, alpha, lbd, sigma, M_prim , epsilon):
+    def __init__(self, game, d, horizon, alpha, lbd, sigma, K , epsilon):
 
         self.name = 'randcbpside'
 
@@ -16,7 +16,7 @@ class RandCPBside():
         self.A = geometry_v3.alphabet_size(game.FeedbackMatrix, self.N, self.M)
 
         self.sigma = sigma
-        self.M_prim = M_prim
+        self.K = K
         self.epsilon = epsilon
 
         # print('n-actions', self.N, 'n-outcomes', self.M, 'alphabet', self.A)
@@ -193,31 +193,13 @@ class RandCPBside():
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1
         Y_t =  self.game.SignalMatrices[action] @ e_y 
-        # print('Yt', Y_t)
-        # sigma_i = len( np.unique(self.game.FeedbackMatrix[action] ) )
-        # print('sigma_i',sigma_i)
-        # Y_t = np.zeros( sigma_i )
-        # Y_t[ self.feedback_idx(feedback) ] = 1
-        #print('Y_t', Y_t)
-        #Y_t =  e_y.copy()  #self.game.SignalMatrices[action] @
-        
-        # print('e_y', e_y)
         
         self.contexts[action]['labels'].append( Y_t )
         self.contexts[action]['features'].append( X )
-        #print(self.contexts[action]['labels']) 
-
         
         Y_it = np.array( self.contexts[action]['labels'] )
         X_it =  np.array( self.contexts[action]['features'] )
 
-        # print(X_it)
-        # print(X_it.shape)
-        
-        # print(Y_it.shape)
-
-        # n, d, _ = X_it.shape
-        # n, sigma, _ = Y_it.shape
         Y_it =  np.squeeze(Y_it, 2).T # Y_it.reshape( (sigma, n) )
         X_it =  np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
 

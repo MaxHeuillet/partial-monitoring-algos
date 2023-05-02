@@ -5,10 +5,9 @@ import collections
 
 class RandCBP():
 
-    def __init__(self, game, horizon, alpha, sigma, K, epsilon):
+    def __init__(self, game, alpha, sigma, K, epsilon):
 
         self.game = game
-        self.horizon = horizon
         self.sigma = sigma
         self.K = K
         self.epsilon = epsilon
@@ -180,4 +179,3 @@ class RandCBP():
             self.memory_neighbors[code ] =result
  
         return result
-

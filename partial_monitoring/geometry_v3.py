@@ -3,6 +3,8 @@ import gurobipy as gp
 from gurobipy import GRB
 import collections
 
+
+
 def alphabet_size(FeedbackMatrix, N,M):
     alphabet = []
     for i in range(N):
@@ -159,11 +161,12 @@ def getVij(LossMatrix, N, M, FeedbackMatrix, SignalMatrices, V, i1, i2):
             obj += vars[k][a]**2
     m.setObjective(obj, GRB.MINIMIZE)
 
-    expression = None
+    expression = 0
     for k in  V[i1][i2] :
-        print('signal',SignalMatrices[k].shape,'vars', vars[k] )
+        # print('signal', SignalMatrices[k].shape,'vars', vars[k] )
         expression += SignalMatrices[k].T @ vars[k]
     for l in range(len(ldiff)):
+        # print( ldiff[l],  )
         m.addConstr( expression[l] == ldiff[l],  'constraint{}'.format(l) )
 
     m.optimize()

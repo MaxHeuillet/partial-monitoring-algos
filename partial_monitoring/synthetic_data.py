@@ -145,3 +145,16 @@ class ToyContexts:
                 return self.context_A
         elif label == 1:
                 return self.context_B
+        
+
+class OrthogonalContexts:
+
+    def __init__(self, d):
+        self.type = 'orthogonal'
+        self.d = d
+
+    def get_context(self, label):
+        idx = np.random.randint(self.d)
+        context = np.zeros( (self.d,1) )
+        context[idx] = 1
+        return context

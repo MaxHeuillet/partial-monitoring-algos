@@ -114,12 +114,10 @@ class Evaluation:
         # print('theta', context_generator.w )
 
         cumRegret =  np.zeros(self.horizon, dtype =float)
-
         
         for t in range(self.horizon):
             #print(t)
             
-
             # Environment chooses one outcome and one context associated to this outcome
             outcome = outcomes[t]
             context = contexts[t]

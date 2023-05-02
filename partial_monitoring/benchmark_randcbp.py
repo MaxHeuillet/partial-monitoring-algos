@@ -24,7 +24,7 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
 
     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     pool = mp.Pool( processes = ncpus ) 
-    task = Evaluation(horizon, task)
+    ev = Evaluation(horizon, task)
 
     np.random.seed(1)
     distributions = []
@@ -32,17 +32,20 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
     nfolds = []
 
     for _ in range(n_folds):
-        p = np.random.uniform(0, 0.2) if task == 'imbalanced' else np.random.uniform(0.4,0.5)
+        if ev.task == 'imbalanced':
+            p = np.random.uniform(0, 0.2)
+        else:
+            p = np.random.uniform(0.4, 0.5)
         distributions.append( [p, 1-p] )
         labels.append( label )
         nfolds.append(n_folds)
-        
-    return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
+    return None
+    # return np.asarray(  pool.map( partial( ev.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
 
 class Evaluation:
 
-    def __init__(self, horizon,type):
-        self.type = type
+    def __init__(self, horizon,task):
+        self.task = task
         self.horizon = horizon
 
     def get_outcomes(self, game):
@@ -90,7 +93,7 @@ class Evaluation:
             
             result = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
             
-            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.type,  self.horizon, nfolds, label, jobid) ,'wb') as f:
+            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.task,  self.horizon, nfolds, label, jobid) ,'wb') as f:
                 pkl.dump(result,f)
 
         return  True 
@@ -107,7 +110,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--horizon", required=True, help="horizon of each realization of the experiment")
 parser.add_argument("--n_folds", required=True, help="number of folds")
 parser.add_argument("--game", required=True, help="game")
-parser.add_argument("--task", required=True, help="task") #easy of difficult
+parser.add_argument("--task", required=True, help="task") #balanced, imbalanced
 parser.add_argument("--algo_name", required=True, help="algorithme")
 args = parser.parse_args()
 
@@ -139,9 +142,9 @@ elif algo_name[2] == '100':
 epsilon = 10e-7
 alpha = 1.01
 
-alg =  randcbp.RandCBP(  game, horizon, alpha, sigma, K, epsilon)  
+alg =  randcbp.RandCBP(  game, alpha, sigma, K, epsilon)  
 
-result = evaluate_parallel(n_folds, horizon, alg, game, '{}'.format(args.task) , args.algo_name )
+result = evaluate_parallel(n_folds, horizon, alg, game, args.task , args.algo_name )
 
 with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task) , horizon, n_folds,  args.algo_name) ,'wb') as g:
 

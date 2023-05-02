@@ -90,6 +90,35 @@ def apple_tasting( restructure_game ):
 
     return game
 
+def label_efficient2(  ):
+
+    name = 'LE2'
+    LossMatrix = np.array( [ [0.5, 0.5], [1, 0] ] )
+    FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4] ] )
+    LinkMatrix = None
+    signal_matrices = [ np.array( [ [0,1], [1,0] ]), np.array( [ [1,1] ] )  ] 
+
+    bandit_LossMatrix = None
+    bandit_FeedbackMatrix =  None
+
+    FeedbackMatrix_PMDMED =  None
+    A = None
+    signal_matrices_Adim =  None
+    
+    mathcal_N = [  [0, 1],  [1, 0] ] 
+
+    v = {0: {1: [ np.array([-1.,  1.]), np.array([0]), np.array([0])]}, 1: {0: [np.array([ 1., -1.]), np.array([0.]), np.array([0.])]}}
+    
+    N_plus =  collections.defaultdict(dict)
+    N_plus[1][0] = [ 0, 1 ]
+    N_plus[0][1] = [ 1, 0 ]
+
+    V = collections.defaultdict(dict)
+    V[1][0] = [ 0, 1 ]
+    V[0][1] = [ 0, 1 ]
+
+    return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+
 
 def label_efficient(  ):
 
