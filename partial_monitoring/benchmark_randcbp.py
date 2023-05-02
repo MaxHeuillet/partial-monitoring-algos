@@ -39,8 +39,8 @@ def evaluate_parallel(n_folds, horizon, alg, game, task, label):
         distributions.append( [p, 1-p] )
         labels.append( label )
         nfolds.append(n_folds)
-    return None
-    # return np.asarray(  pool.map( partial( ev.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
+
+    return np.asarray(  pool.map( partial( ev.eval_policy_once, alg, game ), zip(distributions, range(n_folds), labels, nfolds ) ) ) 
 
 class Evaluation:
 
