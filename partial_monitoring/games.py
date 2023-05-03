@@ -90,35 +90,6 @@ def apple_tasting( restructure_game ):
 
     return game
 
-def label_efficient2(  ):
-
-    name = 'LE2'
-    LossMatrix = np.array( [ [0.5, 0.5], [1, 0] ] )
-    FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4] ] )
-    LinkMatrix = None
-    signal_matrices = [ np.array( [ [0,1], [1,0] ]), np.array( [ [1,1] ] )  ] 
-
-    bandit_LossMatrix = None
-    bandit_FeedbackMatrix =  None
-
-    FeedbackMatrix_PMDMED =  None
-    A = None
-    signal_matrices_Adim =  None
-    
-    mathcal_N = [  [0, 1],  [1, 0] ] 
-
-    v = {0: {1: [ np.array([-1.,  1.]), np.array([0]), np.array([0])]}, 1: {0: [np.array([ 1., -1.]), np.array([0.]), np.array([0.])]}}
-    
-    N_plus =  collections.defaultdict(dict)
-    N_plus[1][0] = [ 0, 1 ]
-    N_plus[0][1] = [ 1, 0 ]
-
-    V = collections.defaultdict(dict)
-    V[1][0] = [ 0, 1 ]
-    V[0][1] = [ 0, 1 ]
-
-    return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
-
 
 def label_efficient(  ):
 
@@ -148,6 +119,75 @@ def label_efficient(  ):
     V[1][2] = [ 0, 1, 2 ]
 
     return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+
+
+from scipy.optimize import fsolve
+
+def objective_fn(b, a, T):
+    return a/b - T
+
+def solve_system(a, T):
+    def objective(b):
+        return objective_fn(b, a, T)
+
+    b_opt = fsolve(objective, x0=1.0)
+    return b_opt
+
+def label_efficient2( threshold ):
+
+    name = 'LE2'
+    a = 1
+    b_opt = int( np.round( solve_system(a, threshold)[0] ) )
+    LossMatrix = np.array( [ [a,a], [b_opt, 0] ] )
+    FeedbackMatrix = np.array(  [ [1, 0], [1, 1]  ] )
+    signal_matrices = [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ])  ] 
+
+    bandit_LossMatrix = None
+    bandit_FeedbackMatrix =  None
+
+    FeedbackMatrix_PMDMED =  None
+    A = None
+    signal_matrices_Adim =  None
+
+    mathcal_N = [  [0, 1],  [1, 0] ] 
+
+    V = collections.defaultdict(dict)
+    V[1][0] = [ 0, 1 ]
+    V[0][1] = [ 0, 1 ]
+
+    N_plus =  collections.defaultdict(dict)
+    N_plus[1][0] = [ 0, 1 ]
+    N_plus[0][1] = [ 1, 0 ]
+
+    LossMatrix = np.array( [ [1, 0], [0.5, 0.5] ] )
+    FeedbackMatrix = np.array(  [ [1, 0], [1, 1]  ] )
+    LinkMatrix = None
+    signal_matrices = [ np.array( [ [1,1] ] ), np.array( [ [0,1], [1,0] ])  ] 
+
+    bandit_LossMatrix = None
+    bandit_FeedbackMatrix =  None
+
+    FeedbackMatrix_PMDMED =  None
+    A = None
+    signal_matrices_Adim =  None
+    
+    mathcal_N = [  [0, 1],  [1, 0] ] 
+
+    v = {0: {1: {0: np.array([ 0.5, -0.5]), 1: np.array([0.])}},
+             1: {0: {0: np.array([-0.5,  0.5]), 1: np.array([0.])}}} 
+
+    N_plus =  collections.defaultdict(dict)
+    N_plus[1][0] = [ 0, 1 ]
+    N_plus[0][1] = [ 1, 0 ]
+
+    V = collections.defaultdict(dict)
+    V[1][0] = [ 0, 1 ]
+    V[0][1] = [ 0, 1 ]
+
+    v = geometry_v3.getV(LossMatrix, 2, 2, FeedbackMatrix, signal_matrices, mathcal_N, V)
+
+    return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
+
 
 def calculate_signal_matrices(FeedbackMatrix, N,M,A):
     signal_matrices = []
@@ -204,142 +244,142 @@ def feedback_idx_label_efficient(feedback):
     return idx
     
     
-def dynamic_pricing( mode ):
-    c = 2
-    LossMatrix = np.array( [ [0,1,2,3,4], [c,0,1,2,3],[c,c,0,1,2],[c,c,c,0,1],[c,c,c,c,0] ] )
-    FeedbackMatrix = np.array( [ [2,2,2,2,2], [1,2,2,2,2], [1,1,2,2,2], [1,1,1,2,2], [1,1,1,1,2] ] )
+# def dynamic_pricing( mode ):
+#     c = 2
+#     LossMatrix = np.array( [ [0,1,2,3,4], [c,0,1,2,3],[c,c,0,1,2],[c,c,c,0,1],[c,c,c,c,0] ] )
+#     FeedbackMatrix = np.array( [ [2,2,2,2,2], [1,2,2,2,2], [1,1,2,2,2], [1,1,1,2,2], [1,1,1,1,2] ] )
 
-    SignalMatrices = [  np.array( [  [1,1,1,1,1] ] ), 
-                        np.array( [ [1,0,0,0,0],[0,1,1,1,1] ] ), 
-                        np.array( [ [1,1,0,0,0],[0,0,1,1,1] ] ),
-                        np.array( [ [1,1,1,0,0],[0,0,0,1,1] ] ),
-                        np.array( [ [1,1,1,1,0],[0,0,0,0,1] ] ) ] 
+#     SignalMatrices = [  np.array( [  [1,1,1,1,1] ] ), 
+#                         np.array( [ [1,0,0,0,0],[0,1,1,1,1] ] ), 
+#                         np.array( [ [1,1,0,0,0],[0,0,1,1,1] ] ),
+#                         np.array( [ [1,1,1,0,0],[0,0,0,1,1] ] ),
+#                         np.array( [ [1,1,1,1,0],[0,0,0,0,1] ] ) ] 
 
-    A = geometry_v3.alphabet_size( FeedbackMatrix,  len(FeedbackMatrix),len(FeedbackMatrix[0]) )
-    signal_matrices_Adim = calculate_signal_matrices(FeedbackMatrix, len(FeedbackMatrix),len(FeedbackMatrix[0]), A)
+#     A = geometry_v3.alphabet_size( FeedbackMatrix,  len(FeedbackMatrix),len(FeedbackMatrix[0]) )
+#     signal_matrices_Adim = calculate_signal_matrices(FeedbackMatrix, len(FeedbackMatrix),len(FeedbackMatrix[0]), A)
 
-    mathcal_N = [(0, 1),  (0, 2),  (0, 3),  (0, 4),  (1, 0),  (1, 2),  (1, 3),  (1, 4),  (2, 0),  (2, 1),  
-                 (2, 3),  (2, 4),  (3, 0), (3, 1), (3, 2), (3, 4), (4, 0), (4, 1), (4, 2),  (4, 3)]
+#     mathcal_N = [(0, 1),  (0, 2),  (0, 3),  (0, 4),  (1, 0),  (1, 2),  (1, 3),  (1, 4),  (2, 0),  (2, 1),  
+#                  (2, 3),  (2, 4),  (3, 0), (3, 1), (3, 2), (3, 4), (4, 0), (4, 1), (4, 2),  (4, 3)]
 
-    v = {0: {1: {0: np.array([-0.33333333]), 1: np.array([-1.66666667,  1.33333333])},
-              2: {0: np.array([0]),
-               1: np.array([-0.5,  0.5]),
-               2: np.array([-1.5,  1.5]),
-               3: np.array([0,  0]),
-               4: np.array([0, 0])},
-              3: {0: np.array([0.16666667]),
-               1: np.array([-0.41666667,  0.58333333]),
-               2: np.array([-0.41666667,  0.58333333]),
-               3: np.array([-1.41666667,  1.58333333]),
-               4: np.array([0.08333333, 0.08333333])},
-              4: {0: np.array([0.33333333]),
-               1: np.array([-0.33333333,  0.66666667]),
-               2: np.array([-0.33333333,  0.66666667]),
-               3: np.array([-0.33333333,  0.66666667]),
-               4: np.array([-1.33333333,  1.66666667])}},
-             1: {0: {1: np.array([ 1.66666667, -1.33333333]),
-               0: np.array([0.33333333])},
-              2: {1: np.array([ 1.25, -0.75]), 2: np.array([-1.25,  1.75])},
-              3: {0: np.array([0.33333333]),
-               1: np.array([ 1.16666667, -0.83333333]),
-               2: np.array([-0.33333333,  0.66666667]),
-               3: np.array([-1.33333333,  1.66666667]),
-               4: np.array([0.16666667, 0.16666667])},
-              4: {0: np.array([0.5]),
-               1: np.array([ 1.25, -0.75]),
-               2: np.array([-0.25,  0.75]),
-               3: np.array([-0.25,  0.75]),
-               4: np.array([-1.25,  1.75])}},
-             2: {0: {0: np.array([0]),
-               1: np.array([ 0.5, -0.5]),
-               2: np.array([ 1.5, -1.5]),
-               3: np.array([0, 0]),
-               4: np.array([ 0, 0])},
-              1: {2: np.array([ 1.25, -1.75]), 1: np.array([-1.25,  0.75])},
-              3: {2: np.array([ 1.25, -0.75]), 3: np.array([-1.25,  1.75])},
-              4: {0: np.array([0.33333333]),
-               1: np.array([0.16666667, 0.16666667]),
-               2: np.array([ 1.16666667, -0.83333333]),
-               3: np.array([-0.33333333,  0.66666667]),
-               4: np.array([-1.33333333,  1.66666667])}},
-             3: {0: {0: np.array([-0.16666667]),
-               1: np.array([ 0.41666667, -0.58333333]),
-               2: np.array([ 0.41666667, -0.58333333]),
-               3: np.array([ 1.41666667, -1.58333333]),
-               4: np.array([-0.08333333, -0.08333333])},
-              1: {0: np.array([-0.33333333]),
-               1: np.array([-1.16666667,  0.83333333]),
-               2: np.array([ 0.33333333, -0.66666667]),
-               3: np.array([ 1.33333333, -1.66666667]),
-               4: np.array([-0.16666667, -0.16666667])},
-              2: {3: np.array([ 1.25, -1.75]), 2: np.array([-1.25,  0.75])},
-              4: {3: np.array([ 1.25, -0.75]), 4: np.array([-1.25,  1.75])}},
-             4: {0: {0: np.array([-0.33333333]),
-               1: np.array([ 0.33333333, -0.66666667]),
-               2: np.array([ 0.33333333, -0.66666667]),
-               3: np.array([ 0.33333333, -0.66666667]),
-               4: np.array([ 1.33333333, -1.66666667])},
-              1: {0: np.array([-0.5]),
-               1: np.array([-1.25,  0.75]),
-               2: np.array([ 0.25, -0.75]),
-               3: np.array([ 0.25, -0.75]),
-               4: np.array([ 1.25, -1.75])},
-              2: {0: np.array([-0.33333333]),
-               1: np.array([-0.16666667, -0.16666667]),
-               2: np.array([-1.16666667,  0.83333333]),
-               3: np.array([ 0.33333333, -0.66666667]),
-               4: np.array([ 1.33333333, -1.66666667])},
-              3: {4: np.array([ 1.25, -1.75]), 3: np.array([-1.25,  0.75])}}}
+#     v = {0: {1: {0: np.array([-0.33333333]), 1: np.array([-1.66666667,  1.33333333])},
+#               2: {0: np.array([0]),
+#                1: np.array([-0.5,  0.5]),
+#                2: np.array([-1.5,  1.5]),
+#                3: np.array([0,  0]),
+#                4: np.array([0, 0])},
+#               3: {0: np.array([0.16666667]),
+#                1: np.array([-0.41666667,  0.58333333]),
+#                2: np.array([-0.41666667,  0.58333333]),
+#                3: np.array([-1.41666667,  1.58333333]),
+#                4: np.array([0.08333333, 0.08333333])},
+#               4: {0: np.array([0.33333333]),
+#                1: np.array([-0.33333333,  0.66666667]),
+#                2: np.array([-0.33333333,  0.66666667]),
+#                3: np.array([-0.33333333,  0.66666667]),
+#                4: np.array([-1.33333333,  1.66666667])}},
+#              1: {0: {1: np.array([ 1.66666667, -1.33333333]),
+#                0: np.array([0.33333333])},
+#               2: {1: np.array([ 1.25, -0.75]), 2: np.array([-1.25,  1.75])},
+#               3: {0: np.array([0.33333333]),
+#                1: np.array([ 1.16666667, -0.83333333]),
+#                2: np.array([-0.33333333,  0.66666667]),
+#                3: np.array([-1.33333333,  1.66666667]),
+#                4: np.array([0.16666667, 0.16666667])},
+#               4: {0: np.array([0.5]),
+#                1: np.array([ 1.25, -0.75]),
+#                2: np.array([-0.25,  0.75]),
+#                3: np.array([-0.25,  0.75]),
+#                4: np.array([-1.25,  1.75])}},
+#              2: {0: {0: np.array([0]),
+#                1: np.array([ 0.5, -0.5]),
+#                2: np.array([ 1.5, -1.5]),
+#                3: np.array([0, 0]),
+#                4: np.array([ 0, 0])},
+#               1: {2: np.array([ 1.25, -1.75]), 1: np.array([-1.25,  0.75])},
+#               3: {2: np.array([ 1.25, -0.75]), 3: np.array([-1.25,  1.75])},
+#               4: {0: np.array([0.33333333]),
+#                1: np.array([0.16666667, 0.16666667]),
+#                2: np.array([ 1.16666667, -0.83333333]),
+#                3: np.array([-0.33333333,  0.66666667]),
+#                4: np.array([-1.33333333,  1.66666667])}},
+#              3: {0: {0: np.array([-0.16666667]),
+#                1: np.array([ 0.41666667, -0.58333333]),
+#                2: np.array([ 0.41666667, -0.58333333]),
+#                3: np.array([ 1.41666667, -1.58333333]),
+#                4: np.array([-0.08333333, -0.08333333])},
+#               1: {0: np.array([-0.33333333]),
+#                1: np.array([-1.16666667,  0.83333333]),
+#                2: np.array([ 0.33333333, -0.66666667]),
+#                3: np.array([ 1.33333333, -1.66666667]),
+#                4: np.array([-0.16666667, -0.16666667])},
+#               2: {3: np.array([ 1.25, -1.75]), 2: np.array([-1.25,  0.75])},
+#               4: {3: np.array([ 1.25, -0.75]), 4: np.array([-1.25,  1.75])}},
+#              4: {0: {0: np.array([-0.33333333]),
+#                1: np.array([ 0.33333333, -0.66666667]),
+#                2: np.array([ 0.33333333, -0.66666667]),
+#                3: np.array([ 0.33333333, -0.66666667]),
+#                4: np.array([ 1.33333333, -1.66666667])},
+#               1: {0: np.array([-0.5]),
+#                1: np.array([-1.25,  0.75]),
+#                2: np.array([ 0.25, -0.75]),
+#                3: np.array([ 0.25, -0.75]),
+#                4: np.array([ 1.25, -1.75])},
+#               2: {0: np.array([-0.33333333]),
+#                1: np.array([-0.16666667, -0.16666667]),
+#                2: np.array([-1.16666667,  0.83333333]),
+#                3: np.array([ 0.33333333, -0.66666667]),
+#                4: np.array([ 1.33333333, -1.66666667])},
+#               3: {4: np.array([ 1.25, -1.75]), 3: np.array([-1.25,  0.75])}}}
 
-    N_plus =  collections.defaultdict(dict)
-    N_plus[0][1] = [ 0, 1 ]
-    N_plus[0][2] = [ 0, 2 ]
-    N_plus[0][3] = [ 0, 3 ]
-    N_plus[0][4] = [ 0, 4 ]
-    N_plus[1][0] = [ 1, 0 ]
-    N_plus[1][2] = [ 1, 2 ]
-    N_plus[1][3] = [ 1, 3 ]
-    N_plus[1][4] = [ 1, 4 ]
-    N_plus[2][0] = [ 2, 0 ]
-    N_plus[2][1] = [ 2, 1 ]
-    N_plus[2][3] = [ 2, 3 ]
-    N_plus[2][4] = [ 2, 4 ]
-    N_plus[3][0] = [ 3, 0 ]
-    N_plus[3][1] = [ 3, 1 ]
-    N_plus[3][2] = [ 3, 2 ]
-    N_plus[3][4] = [ 3, 4 ]
-    N_plus[4][0] = [ 4, 0 ]
-    N_plus[4][1] = [ 4, 1 ]
-    N_plus[4][2] = [ 4, 2 ]
-    N_plus[4][3] = [ 4, 3 ]
+#     N_plus =  collections.defaultdict(dict)
+#     N_plus[0][1] = [ 0, 1 ]
+#     N_plus[0][2] = [ 0, 2 ]
+#     N_plus[0][3] = [ 0, 3 ]
+#     N_plus[0][4] = [ 0, 4 ]
+#     N_plus[1][0] = [ 1, 0 ]
+#     N_plus[1][2] = [ 1, 2 ]
+#     N_plus[1][3] = [ 1, 3 ]
+#     N_plus[1][4] = [ 1, 4 ]
+#     N_plus[2][0] = [ 2, 0 ]
+#     N_plus[2][1] = [ 2, 1 ]
+#     N_plus[2][3] = [ 2, 3 ]
+#     N_plus[2][4] = [ 2, 4 ]
+#     N_plus[3][0] = [ 3, 0 ]
+#     N_plus[3][1] = [ 3, 1 ]
+#     N_plus[3][2] = [ 3, 2 ]
+#     N_plus[3][4] = [ 3, 4 ]
+#     N_plus[4][0] = [ 4, 0 ]
+#     N_plus[4][1] = [ 4, 1 ]
+#     N_plus[4][2] = [ 4, 2 ]
+#     N_plus[4][3] = [ 4, 3 ]
 
-    V = collections.defaultdict(dict)
-    V[0][1] = [ 0, 1 ]
-    V[0][2] = [0, 1, 2 ,3 ,4]
-    V[0][3] = [0, 1, 2 ,3 ,4]
-    V[0][4] = [0, 1, 2 ,3 ,4]
-    V[1][0] = [ 1, 0 ]
-    V[1][2] = [ 1, 2 ]
-    V[1][3] = [0, 1, 2 ,3 ,4]
-    V[1][4] = [0, 1, 2 ,3 ,4]
-    V[2][0] = [0, 1, 2 ,3 ,4]
-    V[2][1] = [ 2, 1 ]
-    V[2][3] = [ 2, 3 ]
-    V[2][4] = [0, 1, 2 ,3 ,4]
-    V[3][0] = [0, 1, 2 ,3 ,4]
-    V[3][1] = [0, 1, 2 ,3 ,4]
-    V[3][2] = [ 3, 2 ]
-    V[3][4] = [ 3, 4 ]
-    V[4][0] = [0, 1, 2 ,3 ,4]
-    V[4][1] = [0, 1, 2 ,3 ,4]
-    V[4][2] = [0, 1, 2 ,3 ,4]
-    V[4][3] = [ 4, 3 ]
+#     V = collections.defaultdict(dict)
+#     V[0][1] = [ 0, 1 ]
+#     V[0][2] = [0, 1, 2 ,3 ,4]
+#     V[0][3] = [0, 1, 2 ,3 ,4]
+#     V[0][4] = [0, 1, 2 ,3 ,4]
+#     V[1][0] = [ 1, 0 ]
+#     V[1][2] = [ 1, 2 ]
+#     V[1][3] = [0, 1, 2 ,3 ,4]
+#     V[1][4] = [0, 1, 2 ,3 ,4]
+#     V[2][0] = [0, 1, 2 ,3 ,4]
+#     V[2][1] = [ 2, 1 ]
+#     V[2][3] = [ 2, 3 ]
+#     V[2][4] = [0, 1, 2 ,3 ,4]
+#     V[3][0] = [0, 1, 2 ,3 ,4]
+#     V[3][1] = [0, 1, 2 ,3 ,4]
+#     V[3][2] = [ 3, 2 ]
+#     V[3][4] = [ 3, 4 ]
+#     V[4][0] = [0, 1, 2 ,3 ,4]
+#     V[4][1] = [0, 1, 2 ,3 ,4]
+#     V[4][2] = [0, 1, 2 ,3 ,4]
+#     V[4][3] = [ 4, 3 ]
 
-    LinkMatrix = np.linalg.inv( FeedbackMatrix ) @ LossMatrix 
+#     LinkMatrix = np.linalg.inv( FeedbackMatrix ) @ LossMatrix 
 
-    game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V , mode )
+#     game = Game( LossMatrix, FeedbackMatrix, LinkMatrix, SignalMatrices, signal_matrices_Adim, mathcal_N, v, N_plus, V , mode )
 
-    return game
+#     return game
 
 
 # def general_algorithm(F, L):

@@ -24,10 +24,6 @@ module load gurobi
 
 source /home/mheuill/projects/def-adurand/mheuill/ENV_nogurobi/bin/activate
 
-python3 ./partial_monitoring/benchmark_randcbp_cont.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --task ${TASK} --alg ${ALG} 
-
-
-
 
 # module --force purge
 
@@ -57,3 +53,5 @@ python3 ./partial_monitoring/benchmark_randcbp_cont.py --horizon ${HORIZON} --n_
 #echo "$PWD"
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
+
+python3 ./partial_monitoring/benchmark_randcbpside2.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE}
