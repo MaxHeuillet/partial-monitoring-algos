@@ -37,8 +37,6 @@ source /home/mheuill/projects/def-adurand/mheuill/ENV_nogurobi/bin/activate
 
 # source /home/mheuill/projects/def-adurand/mheuill/ENV_gurobi/bin/activate
 
-
-
 # module load nixpkgs/16.09
 #gcc/7.3.0 ipopt/3.12.13
 #virtualenv --no-download ./env${VAR}

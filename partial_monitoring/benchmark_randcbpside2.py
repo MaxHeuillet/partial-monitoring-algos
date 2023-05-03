@@ -199,7 +199,7 @@ n_folds = int(args.n_folds)
 games = {'LE':games.label_efficient(  ),'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 28
+dim = 28 if args.context_type == 'quintic' else 2
 
 algos_dico = {
           'RandCBPside2005_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, False, 10e-7),
