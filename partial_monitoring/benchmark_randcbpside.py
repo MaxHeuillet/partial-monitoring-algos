@@ -199,48 +199,48 @@ n_folds = int(args.n_folds)
 games = {'LE':games.label_efficient(  ),'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 28
+dim = 28 if args.context_type == 'quintic' else 2
 
 algos_dico = {
-          'RandCBPside005_1_5_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 5, False, 10e-7),
-          'RandCBPside005_18_5_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 5, False, 10e-7),
-          'RandCBPside005_116_5_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 5, False, 10e-7),
-          'RandCBPside005_132_5_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 5, False, 10e-7), 
+          'RandCBPside005_1_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 5,   10e-7),
+          'RandCBPside005_18_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 5,  10e-7),
+          'RandCBPside005_116_5_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 5,   10e-7),
+          'RandCBPside005_132_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 5,   10e-7), 
 
-          'RandCBPside005_1_10_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 10, False, 10e-7),
-          'RandCBPside005_18_10_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 10e-7),
-          'RandCBPside005_116_10_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 10, False, 10e-7),
-          'RandCBPside005_132_10_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 10, False, 10e-7), 
+          'RandCBPside005_1_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 10,  10e-7),
+          'RandCBPside005_18_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 10,   10e-7),
+          'RandCBPside005_116_10_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 10,   10e-7),
+          'RandCBPside005_132_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 10,   10e-7), 
 
-          'RandCBPside005_1_20_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 20, False, 10e-7),
-          'RandCBPside005_18_20_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 20, False, 10e-7),
-          'RandCBPside005_116_20_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 20, False, 10e-7),
-          'RandCBPside005_132_20_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 20, False, 10e-7), 
+          'RandCBPside005_1_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 20,   10e-7),
+          'RandCBPside005_18_20_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 20,   10e-7),
+          'RandCBPside005_116_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 20,   10e-7),
+          'RandCBPside005_132_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 20,   10e-7), 
 
-          'RandCBPside005_1_100_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 100, False, 10e-7),
-          'RandCBPside005_18_100_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 100, False, 10e-7),
-          'RandCBPside005_116_100_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 100, False, 10e-7),
-          'RandCBPside005_132_100_07':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 100, False, 10e-7), 
+          'RandCBPside005_1_100_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1, 100,   10e-7),
+          'RandCBPside005_18_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 100,  10e-7),
+          'RandCBPside005_116_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 100,   10e-7),
+          'RandCBPside005_132_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 100,   10e-7), 
 
-          'RandCBPside005_1_5_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 5, False, 0.1),
-          'RandCBPside005_18_5_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 5, False, 0.1),
-          'RandCBPside005_116_5_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 5, False, 0.1),
-          'RandCBPside005_132_5_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 5, False, 0.1), 
+          'RandCBPside005_1_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 5,   0.1),
+          'RandCBPside005_18_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 5,   0.1),
+          'RandCBPside005_116_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 5,   0.1),
+          'RandCBPside005_132_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 5,   0.1), 
 
-          'RandCBPside005_1_10_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 10, False, 0.1),
-          'RandCBPside005_18_10_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 10, False, 0.1),
-          'RandCBPside005_116_10_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 10, False, 0.1),
-          'RandCBPside005_132_10_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 10, False, 0.1), 
+          'RandCBPside005_1_10_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 10,   0.1),
+          'RandCBPside005_18_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 10,   0.1),
+          'RandCBPside005_116_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 10,   0.1),
+          'RandCBPside005_132_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/32, 10,  0.1), 
 
-          'RandCBPside005_1_20_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 20, False, 0.1),
-          'RandCBPside005_18_20_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 20, False, 0.1),
-          'RandCBPside005_116_20_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 20, False, 0.1),
-          'RandCBPside005_132_20_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 20, False, 0.1), 
+          'RandCBPside005_1_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1, 20,   0.1),
+          'RandCBPside005_18_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 20,   0.1),
+          'RandCBPside005_116_20_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 20,   0.1),
+          'RandCBPside005_132_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/32, 20,   0.1), 
 
-          'RandCBPside005_1_100_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1, 100, False, 0.1),
-          'RandCBPside005_18_100_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/8, 100, False, 0.1),
-          'RandCBPside005_116_100_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/16, 100, False, 0.1),
-          'RandCBPside005_132_100_01':randcbpside.RandCPBside(game, dim, horizon, 1.01, 0.05, 1/32, 100, False, 0.1) }
+          'RandCBPside005_1_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 100,   0.1),
+          'RandCBPside005_18_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 100,   0.1),
+          'RandCBPside005_116_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 100,   0.1),
+          'RandCBPside005_132_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 100,   0.1) }
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 

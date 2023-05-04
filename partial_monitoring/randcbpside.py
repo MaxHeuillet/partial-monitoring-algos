@@ -3,12 +3,11 @@ import geometry_v3
 
 class RandCPBside():
 
-    def __init__(self, game, d, horizon, alpha, lbd, sigma, K , epsilon):
+    def __init__(self, game, d, alpha, lbd, sigma, K , epsilon):
 
         self.name = 'randcbpside'
 
         self.game = game
-        self.horizon = horizon
         self.d = d
 
         self.N = game.n_actions
