@@ -50,7 +50,7 @@ def evaluate_parallel( evaluator, alg, game):
 
         elif evaluator.context_type == 'quintic':
             d = 2
-            contexts = synthetic_data.QuinticContexts( d, 0.01)
+            contexts = synthetic_data.PolynomialContexts( d, 0.01)
             context_generators.append( contexts )
 
         else: 
