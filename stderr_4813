@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 248, in <module>
+    run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 156, in run_experiment
+    result = evaluate_parallel(evaluator, alg, game)
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 53, in evaluate_parallel
+    contexts = synthetic_data.QuinticContexts( d, 0.01)
+AttributeError: module 'synthetic_data' has no attribute 'QuinticContexts'. Did you mean: 'LinearContexts'?

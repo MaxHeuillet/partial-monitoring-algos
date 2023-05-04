@@ -1,0 +1,28 @@
+multiprocess.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/project/6043437/mheuill/ENV_nogurobi/lib/python3.10/site-packages/multiprocess/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/project/6043437/mheuill/ENV_nogurobi/lib/python3.10/site-packages/multiprocess/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 132, in eval_policy_once
+    alg.update(action, feedback, outcome, t, context )
+  File "/project/6043437/mheuill/attack-detection/partial_monitoring/randcbpside2.py", line 210, in update
+    low =  1 + X.T @ V_it_inv @ X
+ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 28 is different from 2)
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 248, in <module>
+    run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 156, in run_experiment
+    result = evaluate_parallel(evaluator, alg, game)
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 60, in evaluate_parallel
+    return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(distributions , context_generators, range(n_folds) ) ) 
+  File "/project/6043437/mheuill/ENV_nogurobi/lib/python3.10/site-packages/multiprocess/pool.py", line 367, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/project/6043437/mheuill/ENV_nogurobi/lib/python3.10/site-packages/multiprocess/pool.py", line 774, in get
+    raise self._value
+ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 28 is different from 2)

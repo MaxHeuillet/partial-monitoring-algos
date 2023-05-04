@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/project/6043437/mheuill/attack-detection/./partial_monitoring/benchmark_randcbpside2.py", line 205, in <module>
+    'RandCBPside2005_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, False, 10e-7),
+TypeError: RandCPBside.__init__() takes 8 positional arguments but 9 were given
