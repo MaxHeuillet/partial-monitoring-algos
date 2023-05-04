@@ -8,3 +8,7 @@ env
 *.out
 *.env
 .venv/
+
+slurm-*
+stdout*
+stderr*
