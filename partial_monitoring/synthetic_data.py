@@ -49,7 +49,7 @@ class LinearContexts:
         self.d_context = 2
 
     def get_context(self, ):
-        context = np.random.uniform(-1, 1,  self.d )
+        context = np.random.uniform(0, 1,  self.d )
         return np.array(context).reshape(self.d,1)
     
     def get_distribution(self,cont):
