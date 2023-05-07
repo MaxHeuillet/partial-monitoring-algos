@@ -3,10 +3,9 @@ import geometry_v3
 
 class CBPside():
 
-    def __init__(self, game, d, horizon, alpha, lbd):
+    def __init__(self, game, d, alpha, lbd):
 
         self.game = game
-        self.horizon = horizon
         self.d = d
 
         self.N = game.n_actions
@@ -138,9 +137,20 @@ class CBPside():
             V_t = np.unique(V_t)
 
             R_t = []
+            # for k in V_t:
+            #   if self.n[k] <= self.eta[k] * geometry_v3.f(t, self.alpha) :
+            #     R_t.append(k)
+
             for k in V_t:
-              if self.n[k] <= self.eta[k] * geometry_v3.f(t, self.alpha) :
-                R_t.append(k)
+              val =  X.T @ self.contexts[k]['V_it_inv'] @ X
+              t_prime = t
+              with np.errstate(divide='ignore'): 
+                rate = np.sqrt( self.eta[k] * self.N**2 * 4 *  self.d**2  *(t_prime**(2/3) ) * ( self.alpha * np.log(t_prime) )**(1/3) ) 
+                # print(k, val[0][0], 1/rate)
+                if val[0][0] > 1/rate : 
+                    # print('append action ', k)
+                    # print('action', k, 'threshold', self.eta[k] * geometry_v3.f(t, self.alpha), 'constant', self.eta[k], 'value', geometry_v3.f(t, self.alpha)  )
+                    R_t.append(k)
 
             union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)

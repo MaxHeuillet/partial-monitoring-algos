@@ -164,11 +164,15 @@ class RandCPBside():
             
             for k in V_t:
               val =  X.T @ self.contexts[k]['V_it_inv'] @ X
-              rate = np.sqrt( self.eta[k] *  (t**(2/3) ) * ( self.alpha * np.log(t) )**(1/3) )
-              if val[0][0] <= 1/rate : 
-                # print('action', k, 'threshold', self.eta[k] * geometry_v3.f(t, self.alpha), 'constant', self.eta[k], 'value', geometry_v3.f(t, self.alpha)  )
-                R_t.append(k)
-
+              t_prime = t
+              with np.errstate(divide='ignore'): 
+                rate = np.sqrt( self.eta[k] * self.N**2 * 4 *  self.d**2  *(t_prime**(2/3) ) * ( self.alpha * np.log(t_prime) )**(1/3) ) 
+                # print(k, val[0][0], 1/rate)
+                if val[0][0] > 1/rate : 
+                    # print('append action ', k)
+                    # print('action', k, 'threshold', self.eta[k] * geometry_v3.f(t, self.alpha), 'constant', self.eta[k], 'value', geometry_v3.f(t, self.alpha)  )
+                    R_t.append(k)
+    
             union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)
             # print('union1', union1)
