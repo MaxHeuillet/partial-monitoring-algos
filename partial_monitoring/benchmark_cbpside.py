@@ -202,7 +202,7 @@ game = games[args.game]
 dim = 28 if args.context_type == 'quintic' else 2
 
 
-algos_dico = { 'CBPside005':cbpside.CPBside(game, dim, 1.01, 0.05),  }
+algos_dico = { 'CBPside005':cbpside.CBPside(game, dim, 1.01, 0.05),  }
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 
