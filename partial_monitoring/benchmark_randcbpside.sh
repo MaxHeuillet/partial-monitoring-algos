@@ -9,7 +9,8 @@
 #SBATCH --mail-type=ALL
 
 
-echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAME' ${GAME} 'TASK' ${TASK} 
+echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAME' ${GAME} 'TASK' ${TASK} 'ALG' ${ALG} 
+
 
 module --force purge
 
@@ -53,4 +54,4 @@ source /home/mheuill/projects/def-adurand/mheuill/ENV_nogurobi/bin/activate
 #cd ~/projects/def-adurand/mheuill/attack-detection
 #echo "$PWD"
 
-python3 ./partial_monitoring/benchmark_randcbpside.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg 'CBPside005' --task ${TASK} --context_type ${CONTEXT_TYPE} > stdout_$SLURM_JOB_ID 2>stderr_$SLURM_JOB_ID
+python3 ./partial_monitoring/benchmark_randcbpside.py --horizon ${HORIZON} --n_folds ${NFOLDS} --game ${GAME} --alg ${ALG} --task ${TASK} --context_type ${CONTEXT_TYPE} > stdout_$SLURM_JOB_ID 2>stderr_$SLURM_JOB_ID
