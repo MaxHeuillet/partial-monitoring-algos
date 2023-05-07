@@ -3,7 +3,7 @@
 horizon=20000
 nfolds=96
 var=1
-alg = 'CBPside005'
+
 
 for context_type in 'quintic' 'linear'
 
@@ -17,9 +17,9 @@ for context_type in 'quintic' 'linear'
 
                 do
     
-		        echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg 'VAR' $var
+		        echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task  
     
-                sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,CONTEXT_TYPE=$context_type,GAME=$game,TASK=$task,ALG=$alg,VAR=$var ./partial_monitoring/benchmark_cbpside.sh 
+                sbatch --export=ALL,HORIZON=$horizon,NFOLDS=$nfolds,CONTEXT_TYPE=$context_type,GAME=$game,TASK=$task ./partial_monitoring/benchmark_cbpside.sh 
                 ((var++))
                 
                 done
