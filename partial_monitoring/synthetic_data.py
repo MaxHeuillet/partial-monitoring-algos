@@ -48,7 +48,7 @@ class LinearContexts:
         self.type = 'linear'
         self.d_context = 2
 
-    def get_context(self, label):
+    def get_context(self, ):
         context = np.random.uniform(-1, 1,  self.d )
         return np.array(context).reshape(self.d,1)
     
