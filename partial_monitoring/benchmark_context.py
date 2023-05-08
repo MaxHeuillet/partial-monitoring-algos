@@ -38,7 +38,7 @@ def evaluate_parallel( evaluator, alg, game):
 
     np.random.seed(1)
     context_generators = []
-    w = np.random.uniform(0,0.1)
+    w = np.random.uniform(0,0.1, 10)
     w = w / w.sum()
 
     for seed in range(evaluator.n_folds):
