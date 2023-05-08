@@ -67,7 +67,7 @@ class PGIDSratio():
 
         else:
             # Gibbs sampling, Start the timer
-            allowed_time = 60 #(in seconds)
+            allowed_time = 10 #(in seconds)
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(allowed_time)
 
