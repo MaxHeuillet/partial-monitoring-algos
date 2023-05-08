@@ -3,10 +3,9 @@ from polyagamma import random_polyagamma
 from scipy.special import expit
 
 class PGIDSratio():
-    def __init__(self, game, horizon, d):
+    def __init__(self, game, d):
 
         self.game = game
-        self.horizon = horizon
         self.N = game.n_actions
 
         self.gibbsits = 10

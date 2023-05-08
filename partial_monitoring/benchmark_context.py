@@ -16,6 +16,7 @@ import games
 import cbpside
 import randcbpside2
 import randcbpside
+import PGIDSratio
 
 import synthetic_data
 
@@ -180,10 +181,12 @@ n_folds = int(args.n_folds)
 games = {'LE': games.label_efficient(  ),'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 28 if args.context_type == 'quintic' else 2
+dim = 10 #28 if args.context_type == 'quintic' else 2
 
 
 algos_dico = {
+
+          'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
           
           'CBPside005':cbpside.CBPside(game, dim, 1.01, 0.05),
 
