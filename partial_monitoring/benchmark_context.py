@@ -98,9 +98,9 @@ class Evaluation:
             contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
              
         cumRegret =  np.zeros(self.horizon, dtype =float)
-
+        compteur = None
         for t in range(self.horizon):
-
+            compteur = t
             if t % 1000 == 0 :
                 print(t)
 
@@ -109,6 +109,8 @@ class Evaluation:
             outcome = np.random.choice( 2 , p = distribution )
 
             action = alg.get_action(t, context)
+            if action == None:
+                break
 
             # print('t', t, 'action', action, 'outcome', outcome, )
             feedback =  self.get_feedback( game, action, outcome )
@@ -119,6 +121,9 @@ class Evaluation:
             loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
             val = loss_diff @ np.array( distribution )
             cumRegret[t] =  val
+
+        for c in range(compteur,self.horizon):
+            cumRegret[c] = np.nan
 
         print('dump {}'.format(jobid))
         result = np.cumsum( cumRegret)

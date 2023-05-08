@@ -1,6 +1,12 @@
 import numpy as np
 from polyagamma import random_polyagamma
 from scipy.special import expit
+import time
+import signal 
+
+# Define the handler function to stop the computation
+def timeout_handler(signum, frame):
+    raise TimeoutError("Computation timed out")
 
 class PGIDSratio():
     def __init__(self, game, d):
@@ -60,34 +66,42 @@ class PGIDSratio():
             self.initial_sample = self.pmean
 
         else:
-            # Gibbs sampling
-            self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
-            self.initial_sample = self.thetasamples[-1]
-            # print('samples', self.thetasamples)
-            # Compute gap estimates
-            delta0 = np.zeros(self.gibbsits)
-            delta1 = np.zeros(self.gibbsits)
-            for j in range(self.gibbsits):
-                action0 = self.rewfunc( 0, self.thetasamples[j], X)
-                action1 = self.rewfunc( 1, self.thetasamples[j], X)
-                minimum = min( action0, action1 )
-                delta0[j] =  action0 - minimum
-                delta1[j] =  action1 - minimum
-                # print('action0',action0,'action1', action1,'minimum', minimum)
-                
-            # print('delta0s',delta0)
-            # print('delta1s',delta1)
-            deltaone = np.mean(delta1)
-            deltazero = np.mean(delta0)
-            # print('delta0', deltazero, 'delta1', deltaone)
+            # Gibbs sampling, Start the timer
+            allowed_time = 60 #(in seconds)
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(allowed_time)
 
-            #Compute expected information gain
-            tuneidsparam2 = min(1, deltazero / ( abs(deltaone-deltazero) ) ) 
-            # print(tuneidsparam2)
-            p= max(0, tuneidsparam2 )
+            try:
+                self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
+                self.initial_sample = self.thetasamples[-1]
+                # print('samples', self.thetasamples)
+                # Compute gap estimates
+                delta0 = np.zeros(self.gibbsits)
+                delta1 = np.zeros(self.gibbsits)
+                for j in range(self.gibbsits):
+                    action0 = self.rewfunc( 0, self.thetasamples[j], X)
+                    action1 = self.rewfunc( 1, self.thetasamples[j], X)
+                    minimum = min( action0, action1 )
+                    delta0[j] =  action0 - minimum
+                    delta1[j] =  action1 - minimum
+                    # print('action0',action0,'action1', action1,'minimum', minimum)
+                    
+                # print('delta0s',delta0)
+                # print('delta1s',delta1)
+                deltaone = np.mean(delta1)
+                deltazero = np.mean(delta0)
+                # print('delta0', deltazero, 'delta1', deltaone)
 
-            action = np.random.choice( [0, 1], p=[1-p, p] )
-            # print('t',t, 'action', action, 'proba', max(0, min(1,tuneidsparam2) ), 'idsparam', tuneidsparam2, 'delta0', deltazero / ( abs(deltazero-deltaone) ) )
+                #Compute expected information gain
+                tuneidsparam2 = min(1, deltazero / ( abs(deltaone-deltazero) ) ) 
+                # print(tuneidsparam2)
+                p= max(0, tuneidsparam2 )
+
+                action = np.random.choice( [0, 1], p=[1-p, p] )
+                # print('t',t, 'action', action, 'proba', max(0, min(1,tuneidsparam2) ), 'idsparam', tuneidsparam2, 'delta0', deltazero / ( abs(deltazero-deltaone) ) )
+            except TimeoutError:
+                # Handle the timeout error
+                action = None 
 
         return action
 
