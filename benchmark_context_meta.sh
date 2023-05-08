@@ -12,7 +12,7 @@ for context_type in 'linear' #'quintic'
 
         do 
 
-            for task in 'imbalanced' 'balanced'
+            for task in 'balanced' #'imbalanced'
 
                 do
                 for alg in 'CBPside005'

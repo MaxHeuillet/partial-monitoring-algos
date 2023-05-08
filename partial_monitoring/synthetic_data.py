@@ -40,13 +40,10 @@ class PolynomialContexts:
     #             return self.context_B
 
 class LinearContexts:
-    def __init__(self, w, b, d, margin):
-        self.d = d #number of features
-        self.margin = margin #np.random.uniform(0,0.5) # decision boundary
-        self.b = b #np.random.uniform(-1,1)
+    def __init__(self, w):
+        self.d = len(w) #number of features
         self.w = w
         self.type = 'linear'
-        self.d_context = 2
 
     def get_context(self, ):
         context = np.random.uniform(0, 1,  self.d )

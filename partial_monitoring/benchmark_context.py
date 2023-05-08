@@ -37,13 +37,16 @@ def evaluate_parallel( evaluator, alg, game):
 
     np.random.seed(1)
     context_generators = []
+    w = np.random.uniform(0,0.1)
+    w = w / w.sum()
 
-    for jobid in range(evaluator.n_folds):
+    for seed in range(evaluator.n_folds):
         
         if evaluator.context_type == 'linear':
-            d = 2
+            d = 10
             margin = 0.01
-            contexts = synthetic_data.LinearContexts( np.array([0,1]), 0, d, margin) 
+            
+            contexts = synthetic_data.LinearContexts( w ) 
             context_generators.append( contexts )
 
         elif evaluator.context_type == 'quintic':
@@ -92,7 +95,6 @@ class Evaluation:
             contexts = contexts.tolist()
             dim = len(contexts[0])
             contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
-            # contexts.reshape( shape[0], shape[1],1 )
              
         cumRegret =  np.zeros(self.horizon, dtype =float)
 
