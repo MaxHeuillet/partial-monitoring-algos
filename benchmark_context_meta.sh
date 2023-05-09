@@ -1,6 +1,6 @@
 #!/bin/bash
 
-horizon=20000
+horizon=5000
 nfolds=96
 var=1
 
@@ -8,7 +8,7 @@ for context_type in 'linear' #'quintic'
 
     do
 
-    for game in 'LE' 'AT' 
+    for game in  'AT' #'LE' 
 
         do 
 

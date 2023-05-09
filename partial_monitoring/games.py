@@ -66,10 +66,10 @@ def apple_tasting( restructure_game ):
 
     mathcal_N = [ [0, 1], [1, 0] ]
 
-    if restructure_game:
-        FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
-    else:
-        FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
+    # if restructure_game:
+    #     FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
+    # else:
+    FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
 
     v = {0: {1: [np.array([0]), np.array([-1.,  1.])]}, 1: {0: [np.array([0]), np.array([ 1., -1.])]}}
     #collections.defaultdict(dict)

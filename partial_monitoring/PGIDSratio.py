@@ -24,29 +24,25 @@ class PGIDSratio():
         self.contexts = {'features':[], 'labels':[] } 
         self.current_thetamat = np.zeros( ( self.gibbsits, self.d ) )
 
-    def renew_cache(self, t):
-      return (t<500) or ( (t%10)==0 )
-
     def thetagibbs(self, contexts, outcomes,t):
 
-        if self.renew_cache(t): 
-            thetamat = np.zeros( ( self.gibbsits, self.d ) )
-            thetamat[0] = self.initial_sample
-            kappa = np.array(outcomes) - 0.5
-            features = np.array(contexts)
-            features = np.squeeze(features, 2)
 
-            for m in range(1,self.gibbsits):
-                comp =  features @ thetamat[m-1]
-                omega = random_polyagamma( 1 , comp )
-                Omegamat = np.diag( omega ) 
-                matrix = features.T @ Omegamat @ features + self.pcovar
-                Vomega   = np.linalg.inv( matrix ) #variance
-                momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
-                thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
-            self.current_thetamat = thetamat
+        thetamat = np.zeros( ( self.gibbsits, self.d ) )
+        thetamat[0] = self.initial_sample
+        kappa = np.array(outcomes) - 0.5
+        features = np.array(contexts)
+        features = np.squeeze(features, 2)
 
-        return self.current_thetamat
+        for m in range(1,self.gibbsits):
+            comp =  features @ thetamat[m-1]
+            omega = random_polyagamma( 1 , comp )
+            Omegamat = np.diag( omega ) 
+            matrix = features.T @ Omegamat @ features + self.pcovar
+            Vomega   = np.linalg.inv( matrix ) #variance
+            momega   = Vomega @ ( features.T @ kappa + self.pcovar_inv @ self.pmean ) #mean
+            thetamat[m] = np.random.multivariate_normal(momega, Vomega, 1)  #np.array([[0,1]]) # 
+
+        return thetamat
 
     def rewfunc(self, action, param, context):
         # print('estimation', param.T @ context, 'sampled param', param, 'context', context, 'logit', expit( param.T @ context )  )
@@ -96,11 +92,12 @@ class PGIDSratio():
                 tuneidsparam2 = min(1, deltazero / ( abs(deltaone-deltazero) ) ) 
                 # print(tuneidsparam2)
                 p= max(0, tuneidsparam2 )
-
+                print(p)
                 action = np.random.choice( [0, 1], p=[1-p, p] )
                 # print('t',t, 'action', action, 'proba', max(0, min(1,tuneidsparam2) ), 'idsparam', tuneidsparam2, 'delta0', deltazero / ( abs(deltazero-deltaone) ) )
             except TimeoutError:
                 # Handle the timeout error
+                print('hey')
                 action = None 
 
         return action
