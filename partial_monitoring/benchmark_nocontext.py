@@ -23,6 +23,7 @@ import subprocess
 def evaluate_parallel(n_folds, horizon, alg, game, task, label):
 
     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    print(ncpus)
     pool = mp.Pool( processes = ncpus ) 
     ev = Evaluation(horizon, task)
 
