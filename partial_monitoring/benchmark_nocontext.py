@@ -146,7 +146,7 @@ alpha = 1.01
 alg =  randcbp.RandCBP(  game, alpha, sigma, K, epsilon)  
 
 result = evaluate_parallel(n_folds, horizon, alg, game, args.task , args.algo_name )
-
+print('finished processing')
 with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task) , horizon, n_folds,  args.algo_name) ,'wb') as g:
 
     for jobid in range(n_folds):
