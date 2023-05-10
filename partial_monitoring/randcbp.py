@@ -44,18 +44,16 @@ class RandCBP():
         self.memory_neighbors = {}
         self.alpha = alpha
 
-    def obtain_probability(self,t):
-
+    def obtain_probability(self,  t):
+    
         U = np.sqrt( self.alpha  * np.log(t) ) 
-          
-        rhos = list( np.arange(0, U, U / (self.K-1) ) )
-        p_m_hat =  np.array( [ 1/np.sqrt(2*np.pi )*np.exp( -(rho**2) / (2*self.sigma**2)  ) for rho in rhos ] )
-        rhos.append(U)
+        rhos = np.arange(0, U, U/self.K )
+        p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / 2*(self.sigma**2)  )  for i in range(len(rhos)-1) ] )
 
         p_m = (1 - self.epsilon) * p_m_hat / p_m_hat.sum()
         p_m = p_m.tolist()
         p_m.append(self.epsilon)
-
+            
         Z = np.random.choice(rhos, p= p_m)
 
         return Z
@@ -74,9 +72,9 @@ class RandCBP():
 
         else:
             halfspace = []
-            Z = self.obtain_probability(t)
 
             for pair in self.mathcal_N:
+                Z = self.obtain_probability(t)
                 tdelta = 0
                 c = 0
                 # print('pair', pair, 'N_plus', self.N_plus[ pair[0] ][ pair[1] ] )
