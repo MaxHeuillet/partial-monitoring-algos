@@ -91,7 +91,7 @@ class CBPside():
                 X_it = np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
                 # print('new Xit', X_it)
 
-                factor = self.d * (  np.sqrt( (self.d+1) * np.log(t) ) + len(self.SignalMatrices[i]) )
+                factor = self.d * (  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  ) + len(self.SignalMatrices[i]) )
                 width = X.T @ self.contexts[i]['V_it_inv'] @ X 
                 formule = factor * width
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 

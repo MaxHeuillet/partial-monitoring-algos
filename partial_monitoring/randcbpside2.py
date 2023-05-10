@@ -76,7 +76,7 @@ class RandCPBside():
     def obtain_probability(self,  t):
     
         # U = np.sqrt( self.alpha  * np.log(t) ) 
-        U = self.d * np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  )
+        U =  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  )
         rhos = np.arange(0, U, U/self.K )
         p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / 2*(self.sigma**2)  )  for i in range(len(rhos)-1) ] )
 
