@@ -100,9 +100,11 @@ class RandCPBside():
             halfspace = []
             q = []
             w = []
-            Z = self.obtain_probability(t)
+            
             
             for i in range(self.N):
+
+                Z = self.obtain_probability(t)
                 # # print( self.contexts[i]['weights'] )
                 # print('context shape', X.shape)
                 # print('weights shape', self.contexts[i]['weights'].shape)
