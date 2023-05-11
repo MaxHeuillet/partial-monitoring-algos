@@ -40,11 +40,11 @@ class TSPM_alg:
         lower = np.zeros(self.M)
         upper = np.ones(self.M)
         # print(self.b.squeeze(), self.B)
-        mvn = multivariate_normal(mean=np.zeros(self.M), cov=self.lbd * np.identity(self.M) ) #(mean=self.b.squeeze(), cov=self.B )
-        lower_cdf = mvn.cdf(lower)
-        upper_cdf = mvn.cdf(upper)
-        normalization_constant = upper_cdf - lower_cdf
-        density = mvn.pdf(x) / normalization_constant
+        mvn = multivariate_normal( mean=np.zeros(self.M), cov=self.lbd * np.identity(self.M) ) #(mean=self.b.squeeze(), cov=self.B )
+        # lower_cdf = mvn.cdf(lower)
+        # upper_cdf = mvn.cdf(upper)
+        # normalization_constant = upper_cdf - lower_cdf
+        density = mvn.pdf(x) #/ normalization_constant
         # Return the density value
         return density
 
@@ -94,7 +94,7 @@ class TSPM_alg:
             threshold += 1
             F = self.F( p_tilde )
             G = self.G( p_tilde )
-            # print('F', F, 'G', G)
+            # print('F', F, 'G', G, 'F/G', F/G)
             if self.R * u_tilde <  F / G :
                 #print('rejects', threshold)
                 return p_tilde
@@ -103,7 +103,9 @@ class TSPM_alg:
                 return [0.5] * self.M
 
     def F(self, p):
-
+        # mean_vec = np.linalg.inv( self.B ) @ self.b
+        # inv = np.linalg.inv( self.B )
+        # result = multivariate_normal(mean=  mean_vec[:,0], cov= inv ).pdf( p ) 
         result = self.truncated_multivariate_gaussian_density(p)
         # print('density', result)
 
@@ -114,7 +116,12 @@ class TSPM_alg:
 
     def G(self,p):
         
+        # result = self.truncated_multivariate_gaussian_density(p)
+        # mean_vec = np.linalg.inv( self.B ) @ self.b
+        # inv = np.linalg.inv( self.B )
+        # result = multivariate_normal(mean=  mean_vec[:,0], cov= inv ).pdf( p ) 
         result = self.truncated_multivariate_gaussian_density(p)
+        
 
         for i in range(self.N):
             result *= np.exp( -1/2 * self.n[i].sum() * np.linalg.norm( self.q[i]  - self.SignalMatrices[i] @ p ) ** 2  )
@@ -127,6 +134,7 @@ class TSPM_alg:
             action = t
         else:
             p_tilde = self.accept_reject(t)
+            # print(p_tilde)
             action = np.argmin(  self.game.LossMatrix @ p_tilde  ) 
         # print('action', action, p_tilde)
 

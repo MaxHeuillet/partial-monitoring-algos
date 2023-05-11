@@ -5,10 +5,9 @@ import collections
 
 class CBP():
 
-    def __init__(self, game, horizon, alpha ):
+    def __init__(self, game, alpha ):
 
         self.game = game
-        self.horizon = horizon
 
         self.N = game.n_actions
         self.M = game.n_outcomes
@@ -48,9 +47,9 @@ class CBP():
  
     def get_action(self, t, context = None):
 
-        if(t< 1* self.N):
+        if(t< self.N):
 
-            action = t #// 10
+            action = t 
 
         else:
 
@@ -63,11 +62,12 @@ class CBP():
                 for k in  self.V[ pair[0] ][ pair[1] ]:
                     # print( 'pair ', pair, 'action ', k, 'proba ', self.nu[k]  / self.n[k]  )
                     # print('k', k, 'pair ', pair, 'v ', self.v[ pair[0] ][ pair[1] ][k] , 'nu ', self.nu[k]  )
+                    # print('action', k, 'symbol estimation', self.nu[k]  / self.n[k] )
                     tdelta += self.v[ pair[0] ][ pair[1] ][k].T @ ( self.nu[k]  / self.n[k] )
                     c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * np.sqrt( self.alpha * np.log(t) / self.n[k]  )
                 # print('pair', pair, 'tdelta', tdelta, 'confidence', c)
                 #print('pair', pair,  'tdelta', tdelta, 'c', c, 'sign', np.sign(tdelta)  )
-                if( abs(tdelta) >= 0 ):
+                if( abs(tdelta) >= c ):
                     #print('hey')
                     halfspace.append( ( pair, np.sign(tdelta)[0] ) ) #[0]
                 # else:
@@ -122,6 +122,7 @@ class CBP():
         Y_t =  self.game.SignalMatrices[action] @ e_y 
         #print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
         self.nu[action] += Y_t
+        # print(self.nu[1]  / self.n[1], self.nu[1], self.n[1])
 
         
 

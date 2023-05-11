@@ -67,7 +67,7 @@ class RandCBP():
  
     def get_action(self, t,  context = None):
 
-        if t <  1 * self.N:
+        if t <  self.N:
             action = t 
 
         else:
