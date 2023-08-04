@@ -4,11 +4,7 @@ from scipy.special import expit
 import time
 import signal 
 
-# Define the handler function to stop the computation
-def timeout_handler(signum, frame):
-    raise TimeoutError("Computation timed out")
-
-class PGIDSratio():
+class PGTS():
     def __init__(self, game, d):
 
         self.game = game
@@ -68,32 +64,21 @@ class PGIDSratio():
             signal.alarm(allowed_time)
 
             try:
+                # Gibbs sampling, Start the timer
                 self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
                 self.initial_sample = self.thetasamples[-1]
                 # print('samples', self.thetasamples)
                 # Compute gap estimates
-                delta0 = np.zeros(self.gibbsits)
-                delta1 = np.zeros(self.gibbsits)
-                for j in range(self.gibbsits):
-                    action0 = self.rewfunc( 0, self.thetasamples[j], X)
-                    action1 = self.rewfunc( 1, self.thetasamples[j], X)
-                    minimum = min( action0, action1 )
-                    delta0[j] =  action0 - minimum
-                    delta1[j] =  action1 - minimum
-                    # print('action0',action0,'action1', action1,'minimum', minimum)
-                    
-                # print('delta0s',delta0)
-                # print('delta1s',delta1)
-                deltaone = np.mean(delta1)
-                deltazero = np.mean(delta0)
-                # print('delta0', deltazero, 'delta1', deltaone)
-                #Compute expected information gain
-                tuneidsparam2 = min(1, deltazero / ( abs(deltaone-deltazero) ) ) 
-                # print(tuneidsparam2)
-                p= max(0, tuneidsparam2 )
-                print(p)
-                action = np.random.choice( [0, 1], p=[1-p, p] )
-                # print('t',t, 'action', action, 'proba', max(0, min(1,tuneidsparam2) ), 'idsparam', tuneidsparam2, 'delta0', deltazero / ( abs(deltazero-deltaone) ) )
+
+                #Step 3) Calculate optimal action wrt final sample
+                rew1  = self.rewfunc(1, self.thetasamples[-1], X)
+                rew0  = self.rewfunc(0, self.thetasamples[-1], X)
+                if rew0 > rew1:
+                    action = 1
+                else:
+                    action = 0
+
+                # print('t',t, 'action', action, rew0, rew1  )
             except TimeoutError:
                 # Handle the timeout error
                 print('hey')

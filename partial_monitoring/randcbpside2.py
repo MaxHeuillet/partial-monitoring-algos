@@ -42,7 +42,7 @@ class RandCPBside():
         self.alpha = alpha
         self.lbd = lbd
 
-        self.eta =  self.W **2/3 
+        self.eta = self.W **(2/3) 
 
         self.memory_pareto = {}
         self.memory_neighbors = {}

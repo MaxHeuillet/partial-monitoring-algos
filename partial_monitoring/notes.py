@@ -1,3 +1,54 @@
+
+class XYZContexts:
+    def __init__(self, w,):
+        self.d = len(w) #number of features
+        self.w = w
+        self.imbalance = generate_nonuniform_vectors(4)
+        # print(self.imbalance)
+    def get_context(self,t):
+
+        c = np.random.choice([0,1,2,3],p=self.imbalance  ) #[1,0,0]  #generate_nonuniform_vectors()
+        while True:
+            if c == 0:
+                context = np.random.uniform(0, 1,  self.d )
+                return np.array(context).reshape(self.d,1),c
+            elif c == 1:
+                center = (0.1, 0.1, 0.1)
+                radius = 0.025
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+            elif c == 2:
+                center = (0.6, 0.6, 0.9)
+                radius = 0.025
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+            elif c == 3:
+                center = (0.3, 0.2, 0.65)
+                radius = 0.1
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+
+
+    def get_distribution(self,cont):
+        val = self.w @ cont
+        return [ val[0], 1-val[0] ]
+
+
 n_cores = 8
 n_folds = 8
 horizon = 20000

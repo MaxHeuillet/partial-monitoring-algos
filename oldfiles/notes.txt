@@ -1,0 +1,84 @@
+
+def generate_nonuniform_vectors(size):
+    while True:
+        alpha = [ np.random.randint(2,10) ] * size # shape parameter
+        sample = np.random.dirichlet(alpha, size=1)
+        if sample[0][0] < 0.1:
+            return sample[0]
+
+class XYZContexts:
+    def __init__(self, w,):
+        self.d = len(w) #number of features
+        self.w = w
+        self.imbalance = generate_nonuniform_vectors(4)
+        # print(self.imbalance)
+    def get_context(self,t):
+
+        c = np.random.choice([0,1,2,3],p=self.imbalance  ) #[1,0,0]  #generate_nonuniform_vectors()
+        while True:
+            if c == 0:
+                context = np.random.uniform(0, 1,  self.d )
+                return np.array(context).reshape(self.d,1),c
+            elif c == 1:
+                center = (0.1, 0.1, 0.1)
+                radius = 0.025
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+            elif c == 2:
+                center = (0.6, 0.6, 0.9)
+                radius = 0.025
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+            elif c == 3:
+                center = (0.3, 0.2, 0.65)
+                radius = 0.1
+                x = np.random.uniform(center[0]-radius, center[0]+radius)
+                y = np.random.uniform(center[1]-radius, center[1]+radius)
+                z = np.random.uniform(center[2]-radius, center[2]+radius)
+                distance = math.sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+                if distance <= radius:
+                    context = [x,y,z]
+                    return np.array(context).reshape(self.d,1),c
+
+
+    def get_distribution(self,cont):
+        val = self.w @ cont
+        return [ val[0], 1-val[0] ]
+
+
+class LinearContexts:
+    def __init__(self, w, b, d, margin):
+        self.d = d #number of features
+        self.margin = margin #np.random.uniform(0,0.5) # decision boundary
+        self.b = b #np.random.uniform(-1,1)
+        self.w = w
+        self.type = 'linear'
+        self.d_context = 2
+
+    def get_context(self,):
+        c= np.random.choice([0,1,2,3],p=[1,0,0,0]  ) #[1,0,0]  #generate_nonuniform_vectors(4)
+        while True:
+            context = np.random.uniform(0, 1,  self.d )
+            if c == 0:
+                return np.array(context).reshape(self.d,1),c
+            elif context[0]<0.25 and context[1]>=0.25 and c == 1:
+                return np.array(context).reshape(self.d,1)
+            elif context[0]>=0.25 and context[1]<0.25 and c == 2:
+                return np.array(context).reshape(self.d,1)
+            elif context[0]>=0.25 and context[1]>=0.25 and c == 3:
+                return np.array(context).reshape(self.d,1)
+
+
+    def get_distribution(self,cont):
+        val = self.w @ cont
+        return [ val[0], 1-val[0] ]

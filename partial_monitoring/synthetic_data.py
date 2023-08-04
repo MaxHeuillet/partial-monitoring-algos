@@ -44,14 +44,39 @@ class LinearContexts:
         self.d = len(w) #number of features
         self.w = w
         self.type = 'linear'
+        self.normalize()
 
-    def get_context(self, ):
+    def normalize(self,):
+        all = []
+        for _ in range(1000000):
+            c,d = self.get_context(False)
+            all.append( c )
+        all = np.array(all)
+        self.mean = np.mean(all,0)
+        self.std = np.std(all,0 )
+
+    def get_context(self, normalize):
         context = np.random.uniform(0, 1,  self.d )
-        return np.array(context).reshape(self.d,1)
+        context = np.array(context).reshape(self.d,1)
+        val = self.w @ context
+        distribution = [ val[0], 1-val[0] ]
+        if normalize:
+            context = ( context - self.mean ) / self.std
+        return context, distribution
+
+# class LinearContexts:
+#     def __init__(self, w):
+#         self.d = len(w) #number of features
+#         self.w = w
+#         self.type = 'linear'
+
+#     def get_context(self, ):
+#         context = np.random.uniform(0, 1,  self.d )
+#         return np.array(context).reshape(self.d,1)
     
-    def get_distribution(self,cont):
-        val = self.w @ cont
-        return [ val[0], 1-val[0] ]
+#     def get_distribution(self,cont):
+#         val = self.w @ cont
+#         return [ val[0], 1-val[0] ]
     
     # while True:
     # if   self.w.T @ context + self.b > self.margin and label == 0:

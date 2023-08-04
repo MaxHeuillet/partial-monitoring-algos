@@ -15,8 +15,8 @@ import games
 
 import cbpside
 import randcbpside2
-import randcbpside
 import PGIDSratio
+import PGTS
 
 import synthetic_data
 
@@ -38,7 +38,7 @@ def evaluate_parallel( evaluator, alg, game):
 
     np.random.seed(1)
     context_generators = []
-    w = np.random.uniform(0,0.1, 10)
+    w = np.random.uniform(0, 0.1, 10)
     w = w / w.sum()
 
     for seed in range(evaluator.n_folds):
@@ -87,15 +87,6 @@ class Evaluation:
         context_generator, jobid = job
 
         np.random.seed(jobid)
-
-        contexts = [ context_generator.get_context() for _ in range(self.horizon) ]
-
-        if self.context_type == 'quintic':
-            contexts = np.array(contexts).squeeze()
-            contexts = PolynomialFeatures(6).fit_transform( contexts)
-            contexts = contexts.tolist()
-            dim = len(contexts[0])
-            contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
              
         cumRegret =  np.zeros(self.horizon, dtype =float)
         compteur = None
@@ -104,8 +95,7 @@ class Evaluation:
             if t % 1000 == 0 :
                 print(t)
 
-            context = contexts[t]
-            distribution = context_generator.get_distribution(context)
+            context, distribution = context_generator.get_context(True)
             outcome = np.random.choice( 2 , p = distribution )
 
             action = alg.get_action(t, context)
@@ -183,98 +173,37 @@ horizon = int(args.horizon)
 n_folds = int(args.n_folds)
 
 
-games = {'LE': games.label_efficient(  ),'AT':games.apple_tasting(False)}
+games = {'LE': games.label_efficient(  ), 'AT':games.apple_tasting(False)}
 game = games[args.game]
 
-dim = 10 #28 if args.context_type == 'quintic' else 2
-
+dim = 10 
 
 algos_dico = {
 
           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
+          'PGTS': PGTS.PGTS(game, dim) ,
           
-          'CBPside005':cbpside.CBPside(game, dim, 1.01, 0.05),
+          'CBPside':cbpside.CBPside(game, dim, 1.01, 1),
 
-          'RandCBPside2005_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, 10e-7),
-          'RandCBPside2005_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 5,  10e-7),
-          'RandCBPside2005_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 5,   10e-7),
-          'RandCBPside2005_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 5,   10e-7), 
+          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 5, 10e-7),
+          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 5,  10e-7),
+          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 5,   10e-7),
+          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 5,   10e-7), 
 
-          'RandCBPside2005_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   10e-7),
-          'RandCBPside2005_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 10,  10e-7),
-          'RandCBPside2005_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 10,   10e-7),
-          'RandCBPside2005_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 10,   10e-7), 
+          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 10,   10e-7),
+          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 10,  10e-7),
+          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 10,   10e-7),
+          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 10,   10e-7), 
 
-          'RandCBPside2005_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   10e-7),
-          'RandCBPside2005_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 20,   10e-7),
-          'RandCBPside2005_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 20,   10e-7),
-          'RandCBPside2005_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 20,  10e-7), 
+          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 20,   10e-7),
+          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 20,   10e-7),
+          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 20,   10e-7),
+          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 20,  10e-7), 
 
-          'RandCBPside2005_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 100,  10e-7),
-          'RandCBPside2005_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 100,   10e-7),
-          'RandCBPside2005_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 100,   10e-7),
-          'RandCBPside2005_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 100,  10e-7), 
-
-          'RandCBPside2005_1_5_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5,  0.1),
-          'RandCBPside2005_18_5_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 5,   0.1),
-          'RandCBPside2005_116_5_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 5,   0.1),
-          'RandCBPside2005_132_5_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 5,   0.1), 
-
-          'RandCBPside2005_1_10_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   0.1),
-          'RandCBPside2005_18_10_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 10,   0.1),
-          'RandCBPside2005_116_10_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 10,  0.1),
-          'RandCBPside2005_132_10_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 10,   0.1), 
-
-          'RandCBPside2005_1_20_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   0.1),
-          'RandCBPside2005_18_20_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 20,   0.1),
-          'RandCBPside2005_116_20_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 20,  0.1),
-          'RandCBPside2005_132_20_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 20,   0.1), 
-
-          'RandCBPside2005_1_100_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 100,  0.1),
-          'RandCBPside2005_18_100_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 100,  0.1),
-          'RandCBPside2005_116_100_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 100, 0.1),
-          'RandCBPside2005_132_100_01':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 100,  0.1), 
-           
-          
-          'RandCBPside005_1_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 5,   10e-7),
-          'RandCBPside005_18_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 5,  10e-7),
-          'RandCBPside005_116_5_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 5,   10e-7),
-          'RandCBPside005_132_5_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 5,   10e-7), 
-
-          'RandCBPside005_1_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 10,  10e-7),
-          'RandCBPside005_18_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 10,   10e-7),
-          'RandCBPside005_116_10_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 10,   10e-7),
-          'RandCBPside005_132_10_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 10,   10e-7), 
-
-          'RandCBPside005_1_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 20,   10e-7),
-          'RandCBPside005_18_20_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 20,   10e-7),
-          'RandCBPside005_116_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 20,   10e-7),
-          'RandCBPside005_132_20_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 20,   10e-7), 
-
-          'RandCBPside005_1_100_07':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1, 100,   10e-7),
-          'RandCBPside005_18_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 100,  10e-7),
-          'RandCBPside005_116_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 100,   10e-7),
-          'RandCBPside005_132_100_07':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 100,   10e-7), 
-
-          'RandCBPside005_1_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 5,   0.1),
-          'RandCBPside005_18_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 5,   0.1),
-          'RandCBPside005_116_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 5,   0.1),
-          'RandCBPside005_132_5_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 5,   0.1), 
-
-          'RandCBPside005_1_10_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 10,   0.1),
-          'RandCBPside005_18_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 10,   0.1),
-          'RandCBPside005_116_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/16, 10,   0.1),
-          'RandCBPside005_132_10_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/32, 10,  0.1), 
-
-          'RandCBPside005_1_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1, 20,   0.1),
-          'RandCBPside005_18_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/8, 20,   0.1),
-          'RandCBPside005_116_20_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 20,   0.1),
-          'RandCBPside005_132_20_01':randcbpside.RandCPBside(game, dim,  1.01, 0.05, 1/32, 20,   0.1), 
-
-          'RandCBPside005_1_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1, 100,   0.1),
-          'RandCBPside005_18_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/8, 100,   0.1),
-          'RandCBPside005_116_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/16, 100,   0.1),
-          'RandCBPside005_132_100_01':randcbpside.RandCPBside(game, dim,   1.01, 0.05, 1/32, 100,   0.1) }
+          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 100,  10e-7),
+          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 100,   10e-7),
+          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 100,   10e-7),
+          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 
