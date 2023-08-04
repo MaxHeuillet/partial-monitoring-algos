@@ -92,7 +92,7 @@ class CBPside():
                 # print('new Xit', X_it)
 
                 factor = self.d * (  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  ) + len(self.SignalMatrices[i]) )
-                width = X.T @ self.contexts[i]['V_it_inv'] @ X 
+                width = np.sqrt( X.T @ self.contexts[i]['V_it_inv'] @ X )
                 formule = factor * width
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 #print('action {}, first component {}, second component, {}'.format(i, a, b  ) )

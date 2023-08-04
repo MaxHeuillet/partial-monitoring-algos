@@ -38,7 +38,7 @@ class RandCBP():
         # print('weights', self.W)
         #self.alpha = alpha #1.01
 
-        self.eta = self.W ** 2/3 
+        self.eta = self.W**(2/3) 
 
         self.memory_pareto = {}
         self.memory_neighbors = {}

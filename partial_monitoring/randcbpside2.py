@@ -42,7 +42,7 @@ class RandCPBside():
         self.alpha = alpha
         self.lbd = lbd
 
-        self.eta = self.W **(2/3) 
+        self.eta = self.W**(2/3) 
 
         self.memory_pareto = {}
         self.memory_neighbors = {}
@@ -118,7 +118,7 @@ class RandCPBside():
                 # print('new Xit', X_it)
 
                 factor = self.d * (  Z + len(self.SignalMatrices[i]) )
-                width = X.T @ self.contexts[i]['V_it_inv'] @ X 
+                width = np.sqrt( X.T @ self.contexts[i]['V_it_inv'] @ X )
                 formule = factor * width
 
                 w.append( formule )

@@ -34,7 +34,7 @@ class CBP():
         self.W = geometry_v3.getConfidenceWidth(self.mathcal_N, self.V, self.v, self.N)
         self.alpha = alpha 
 
-        self.eta =  self.W **2/3 
+        self.eta =  self.W**(2/3) 
 
         self.memory_pareto = {}
         self.memory_neighbors = {}
