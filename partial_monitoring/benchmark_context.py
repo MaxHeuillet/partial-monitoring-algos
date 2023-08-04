@@ -95,7 +95,7 @@ class Evaluation:
             if t % 1000 == 0 :
                 print(t)
 
-            context, distribution = context_generator.get_context(True)
+            context, distribution = context_generator.get_context(False)
             outcome = np.random.choice( 2 , p = distribution )
 
             action = alg.get_action(t, context)
