@@ -4,6 +4,10 @@ from scipy.special import expit
 import time
 import signal 
 
+# Define the handler function to stop the computation
+def timeout_handler(signum, frame):
+    raise TimeoutError("Computation timed out")
+
 class PGTS():
     def __init__(self, game, d):
 
