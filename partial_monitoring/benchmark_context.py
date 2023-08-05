@@ -206,10 +206,22 @@ dim = 10
 #           'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
 
 
-algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
-               'PGTS': PGTS.PGTS(game, dim)  }
+# algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
+#                'PGTS': PGTS.PGTS(game, dim)  }
 
-algos = [ algos_dico[ args.algo ] ]
-labels = [  args.algo ] 
+# algos = [ algos_dico[ args.algo ] ]
+# labels = [  args.algo ] 
 
-run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
+# run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
+
+
+dim = 10
+w = np.random.uniform(0, 0.1, 10)
+w = w / w.sum()
+context_generator = synthetic_data.LinearContexts( w )
+
+alg = PGTS.PGTS(game, dim,)
+
+eval = Evaluation(horizon)
+
+res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
