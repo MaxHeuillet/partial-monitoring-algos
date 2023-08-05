@@ -8,7 +8,7 @@ for context_type in 'linear' #'quintic'
 
     do
 
-    for game in  'AT' #'LE' 
+    for game in  'LE' #'AT' # 
 
         do 
 
