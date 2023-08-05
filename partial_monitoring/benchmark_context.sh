@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --mail-user=maxime.heuillet.france@gmail.com
-#SBATCH --mail-type=ALL
+
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=48
 #SBATCH --time=00:30:00
-#SBATCH --mem-per-cpu=600M
+#SBATCH --mem-per-cpu=300M
 
-
+#SBATCH --mail-user=maxime.heuillet.france@gmail.com
+#SBATCH --mail-type=ALL
 
 echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAME' ${GAME} 'TASK' ${TASK} 'ALG' ${ALG} 
 
