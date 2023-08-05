@@ -3,8 +3,8 @@ import numpy as np
 # from multiprocess import Pool
 import os
 # from functools import partial
-# import pickle as pkl
-# import gzip
+import pickle as pkl
+import gzip
 
 import games
 
@@ -42,67 +42,67 @@ import argparse
 
 #     return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(context_generators, range(n_folds) ) ) 
 
-# class Evaluation:
+class Evaluation:
 
-#     def __init__(self, game_name, task, n_folds, horizon, game, label, context_type):
-#         self.game_name = game_name
-#         self.task = task
-#         self.n_folds = n_folds
-#         self.horizon = horizon
-#         self.game = game
-#         self.label =  label
-#         self.context_type = context_type
+    def __init__(self, game_name, task, n_folds, horizon, game, label, context_type):
+        self.game_name = game_name
+        self.task = task
+        self.n_folds = n_folds
+        self.horizon = horizon
+        self.game = game
+        self.label =  label
+        self.context_type = context_type
         
 
-#     def get_outcomes(self, game, ):
-#         outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
-#         return outcomes
+    def get_outcomes(self, game, ):
+        outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
+        return outcomes
 
-#     def get_feedback(self, game, action, outcome):
-#         return game.FeedbackMatrix[ action ][ outcome ]
+    def get_feedback(self, game, action, outcome):
+        return game.FeedbackMatrix[ action ][ outcome ]
 
-#     def eval_policy_once(self, alg, game, job):
+    def eval_policy_once(self, alg, game, job):
 
-#         alg.reset()
+        alg.reset()
 
-#         context_generator, jobid = job
+        context_generator, jobid = job
 
-#         np.random.seed(jobid)
-#         print('start experiment')
+        np.random.seed(jobid)
+        print('start experiment')
              
-#         cumRegret =  np.zeros(self.horizon, dtype =float)
-#         compteur = None
-#         for t in range(self.horizon):
-#             compteur = t
-#             if t % 1000 == 0 :
-#                 print(t)
+        cumRegret =  np.zeros(self.horizon, dtype =float)
+        compteur = None
+        for t in range(self.horizon):
+            compteur = t
+            if t % 1000 == 0 :
+                print(t)
 
-#             context, distribution = context_generator.get_context(False)
-#             outcome = np.random.choice( 2 , p = distribution )
+            context, distribution = context_generator.get_context(False)
+            outcome = np.random.choice( 2 , p = distribution )
 
-#             action = alg.get_action(t, context)
-#             if action == None:
-#                 break
+            action = alg.get_action(t, context)
+            if action == None:
+                break
 
-#             # print('t', t, 'action', action, 'outcome', outcome, )
-#             feedback =  self.get_feedback( game, action, outcome )
+            # print('t', t, 'action', action, 'outcome', outcome, )
+            feedback =  self.get_feedback( game, action, outcome )
 
-#             alg.update(action, feedback, outcome, t, context )
+            alg.update(action, feedback, outcome, t, context )
 
-#             i_star = np.argmin(  [ game.LossMatrix[i,...] @ np.array( distribution ) for i in range(alg.N) ]  )
-#             loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
-#             val = loss_diff @ np.array( distribution )
-#             cumRegret[t] =  val
+            i_star = np.argmin(  [ game.LossMatrix[i,...] @ np.array( distribution ) for i in range(alg.N) ]  )
+            loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
+            val = loss_diff @ np.array( distribution )
+            cumRegret[t] =  val
 
-#         for c in range(compteur,self.horizon):
-#             cumRegret[c] = np.nan
+        for c in range(compteur,self.horizon):
+            cumRegret[c] = np.nan
 
-#         print('dump {}'.format(jobid))
-#         result = np.cumsum( cumRegret)
-#         with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
-#             pkl.dump(result,f)
+        print('dump {}'.format(jobid))
+        result = np.cumsum( cumRegret)
+        with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
+            pkl.dump(result,f)
 
-#         return True
+        return True
 
 # def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, context_type):
 
@@ -203,6 +203,6 @@ print('step2')
 alg = PGTS.PGTS(game, dim,)
 print('step3')
 # # eval = Evaluation(horizon)
-# eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
-# print('step4')
+eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
+print('step4')
 # res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
