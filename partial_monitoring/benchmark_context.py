@@ -35,7 +35,7 @@ def evaluate_parallel( evaluator, alg, game):
     print('ncpus',ncpus)
     
     pool = Pool(processes=ncpus)
-
+    print('test')
     np.random.seed(1)
     context_generators = []
     w = np.random.uniform(0, 0.1, 10)
@@ -58,7 +58,7 @@ def evaluate_parallel( evaluator, alg, game):
         else: 
             contexts = synthetic_data.ToyContexts( )
             context_generators.append( contexts )
-        
+        print('before')
     return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(context_generators, range(n_folds) ) ) 
 
 class Evaluation:

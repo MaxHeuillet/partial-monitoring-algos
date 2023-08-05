@@ -1,12 +1,7 @@
 import numpy as np
 from polyagamma import random_polyagamma
 from scipy.special import expit
-import time
-import signal 
 
-# Define the handler function to stop the computation
-def timeout_handler(signum, frame):
-    raise TimeoutError("Computation timed out")
 
 class PGTS():
     def __init__(self, game, d):
@@ -63,30 +58,18 @@ class PGTS():
 
         else:
             # Gibbs sampling, Start the timer
-            allowed_time = 10 #(in seconds)
-            signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(allowed_time)
+            self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
+            self.initial_sample = self.thetasamples[-1]
+            # print('samples', self.thetasamples)
+            # Compute gap estimates
 
-            try:
-                # Gibbs sampling, Start the timer
-                self.thetasamples = self.thetagibbs( self.contexts['features'], self.contexts['labels'],t )
-                self.initial_sample = self.thetasamples[-1]
-                # print('samples', self.thetasamples)
-                # Compute gap estimates
-
-                #Step 3) Calculate optimal action wrt final sample
-                rew1  = self.rewfunc(1, self.thetasamples[-1], X)
-                rew0  = self.rewfunc(0, self.thetasamples[-1], X)
-                if rew0 > rew1:
-                    action = 1
-                else:
-                    action = 0
-
-                # print('t',t, 'action', action, rew0, rew1  )
-            except TimeoutError:
-                # Handle the timeout error
-                print('hey')
-                action = None 
+            #Step 3) Calculate optimal action wrt final sample
+            rew1  = self.rewfunc(1, self.thetasamples[-1], X)
+            rew0  = self.rewfunc(0, self.thetasamples[-1], X)
+            if rew0 > rew1:
+                action = 1
+            else:
+                action = 0
 
         return action
 
