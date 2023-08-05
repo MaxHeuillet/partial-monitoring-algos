@@ -87,6 +87,7 @@ class Evaluation:
         context_generator, jobid = job
 
         np.random.seed(jobid)
+        print('start experiment')
              
         cumRegret =  np.zeros(self.horizon, dtype =float)
         compteur = None
