@@ -6,14 +6,14 @@ import os
 # import pickle as pkl
 # import gzip
 
-# import games
+import games
 
 # import cbpside
 # import randcbpside2
 # import PGIDSratio
 # import PGTS
 
-# import synthetic_data
+import synthetic_data
 # import subprocess
 
 import argparse
@@ -148,18 +148,15 @@ parser.add_argument("--context_type", required=True, help="context type")
 parser.add_argument("--algo", required=True, help="algorithme")
 
 
-for i in range(100):
-    print('hey')
+args = parser.parse_args()
 
-# args = parser.parse_args()
+horizon = int(args.horizon)
+n_folds = int(args.n_folds)
 
-# horizon = int(args.horizon)
-# n_folds = int(args.n_folds)
+games = {'LE': games.label_efficient(  ), 'AT':games.apple_tasting(False)}
+game = games[args.game]
 
-# games = {'LE': games.label_efficient(  ), 'AT':games.apple_tasting(False)}
-# game = games[args.game]
-
-# dim = 10 
+dim = 10 
 
 # algos_dico = {
 
@@ -197,12 +194,12 @@ for i in range(100):
 
 # run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
 
-# print('step1')
-# dim = 10
-# w = np.random.uniform(0, 0.1, 10)
-# w = w / w.sum()
-# context_generator = synthetic_data.LinearContexts( w )
-# print('step2')
+print('step1')
+dim = 10
+w = np.random.uniform(0, 0.1, 10)
+w = w / w.sum()
+context_generator = synthetic_data.LinearContexts( w )
+print('step2')
 # alg = PGTS.PGTS(game, dim,)
 # print('step3')
 # # eval = Evaluation(horizon)
