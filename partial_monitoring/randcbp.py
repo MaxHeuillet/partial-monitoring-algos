@@ -44,10 +44,16 @@ class RandCBP():
         self.memory_neighbors = {}
         self.alpha = alpha
 
+    
+
     def obtain_probability(self,  t):
+
+        def divide_interval(start, end, k):
+            intervals = np.linspace(start, end, k).tolist()
+            return intervals
     
         U = np.sqrt( self.alpha  * np.log(t) ) 
-        rhos = np.arange(0, U, U/self.K )
+        rhos = divide_interval(0, U, self.K)
         p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / 2*(self.sigma**2)  )  for i in range(len(rhos)-1) ] )
 
         p_m = (1 - self.epsilon) * p_m_hat / p_m_hat.sum()
