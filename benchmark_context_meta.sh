@@ -8,7 +8,7 @@ for context_type in 'linear' #'quintic'
 
     do
 
-    for game in  'AT' #'LE' 
+    for game in  'AT' 'LE' 
 
         do 
 
@@ -16,7 +16,8 @@ for context_type in 'linear' #'quintic'
 
                 do
                 #'PGIDSratio' 'PGTS'
-                for alg in 'PGTS' #'CBPside' 'RandCBPside2_1_5_07' 'RandCBPside2_18_5_07' 'RandCBPside2_116_5_07' 'RandCBPside2_132_5_07' 'RandCBPside2_1_10_07' 'RandCBPside2_18_10_07' 'RandCBPside2_116_10_07' 'RandCBPside2_132_10_07' 'RandCBPside2_1_20_07' 'RandCBPside2_18_20_07' 'RandCBPside2_116_20_07' 'RandCBPside2_132_20_07' 'RandCBPside2_1_100_07' 'RandCBPside2_18_100_07' 'RandCBPside2_116_100_07' 'RandCBPside2_132_100_07' 'RandCBPside_1_5_07' 'RandCBPside_18_5_07' 'RandCBPside_116_5_07' 'RandCBPside_132_5_07' 'RandCBPside_1_10_07' 'RandCBPside_18_10_07' 'RandCBPside_116_10_07' 'RandCBPside_132_10_07' 'RandCBPside_1_20_07' 'RandCBPside_18_20_07' 'RandCBPside_116_20_07' 'RandCBPside_132_20_07' 'RandCBPside_1_100_07' 'RandCBPside_18_100_07' 'RandCBPside_116_100_07' 'RandCBPside_132_100_07'  
+                # for alg in 'PGTS' #'CBPside' 'RandCBPside2_1_5_07' 'RandCBPside2_18_5_07' 'RandCBPside2_116_5_07' 'RandCBPside2_132_5_07' 'RandCBPside2_1_10_07' 'RandCBPside2_18_10_07' 'RandCBPside2_116_10_07' 'RandCBPside2_132_10_07' 'RandCBPside2_1_20_07' 'RandCBPside2_18_20_07' 'RandCBPside2_116_20_07' 'RandCBPside2_132_20_07' 'RandCBPside2_1_100_07' 'RandCBPside2_18_100_07' 'RandCBPside2_116_100_07' 'RandCBPside2_132_100_07' 'RandCBPside_1_5_07' 'RandCBPside_18_5_07' 'RandCBPside_116_5_07' 'RandCBPside_132_5_07' 'RandCBPside_1_10_07' 'RandCBPside_18_10_07' 'RandCBPside_116_10_07' 'RandCBPside_132_10_07' 'RandCBPside_1_20_07' 'RandCBPside_18_20_07' 'RandCBPside_116_20_07' 'RandCBPside_132_20_07' 'RandCBPside_1_100_07' 'RandCBPside_18_100_07' 'RandCBPside_116_100_07' 'RandCBPside_132_100_07'  
+                for alg in 'CBPside' 'RandCBPside2_1_5_07' 'RandCBPside2_18_5_07' 'RandCBPside2_116_5_07' 'RandCBPside2_132_5_07' 'RandCBPside2_1_10_07' 'RandCBPside2_18_10_07' 'RandCBPside2_116_10_07' 'RandCBPside2_132_10_07' 'RandCBPside2_1_20_07' 'RandCBPside2_18_20_07' 'RandCBPside2_116_20_07' 'RandCBPside2_132_20_07' 'RandCBPside2_1_100_07' 'RandCBPside2_18_100_07' 'RandCBPside2_116_100_07' 'RandCBPside2_132_100_07' 'RandCBPside_1_5_07' 'RandCBPside_18_5_07' 'RandCBPside_116_5_07' 'RandCBPside_132_5_07' 'RandCBPside_1_10_07' 'RandCBPside_18_10_07' 'RandCBPside_116_10_07' 'RandCBPside_132_10_07' 'RandCBPside_1_20_07' 'RandCBPside_18_20_07' 'RandCBPside_116_20_07' 'RandCBPside_132_20_07' 'RandCBPside_1_100_07' 'RandCBPside_18_100_07' 'RandCBPside_116_100_07' 'RandCBPside_132_100_07'  
                     
                     do
 		            echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg 'VAR' $var
