@@ -33,7 +33,6 @@ def evaluate_parallel( evaluator, alg, game):
 
     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
     print('ncpus',ncpus)
-    
     pool = Pool(processes=ncpus)
     print('test')
     np.random.seed(1)
