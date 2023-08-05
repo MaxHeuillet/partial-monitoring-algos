@@ -48,7 +48,7 @@ class LinearContexts:
 
     def normalize(self,):
         all = []
-        for _ in range(1000000):
+        for _ in range(10000):
             c,d = self.get_context(False)
             all.append( c )
         all = np.array(all)
