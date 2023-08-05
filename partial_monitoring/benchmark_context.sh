@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
+#SBATCH --mail-user=maxime.heuillet.france@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --account=def-adurand
 #SBATCH --ntasks-per-node=1

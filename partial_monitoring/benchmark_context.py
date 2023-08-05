@@ -1,15 +1,10 @@
 
 import numpy as np
-
-
 from multiprocess import Pool
-#import multiprocessing as mp
 import os
-
 from functools import partial
 import pickle as pkl
 import gzip
-# import plotly.graph_objects as go
 
 import games
 
@@ -19,12 +14,7 @@ import PGIDSratio
 import PGTS
 
 import synthetic_data
-
-import gzip
-import pickle as pkl
-
 import subprocess
-from sklearn.preprocessing import PolynomialFeatures
 
 ######################
 ######################
@@ -42,22 +32,11 @@ def evaluate_parallel( evaluator, alg, game):
 
     for seed in range(evaluator.n_folds):
         
-        if evaluator.context_type == 'linear':
-            d = 10
-            margin = 0.01
-            
-            contexts = synthetic_data.LinearContexts( w ) 
-            context_generators.append( contexts )
+        d = 10
+        margin = 0.01     
+        contexts = synthetic_data.LinearContexts( w ) 
+        context_generators.append( contexts )
 
-        elif evaluator.context_type == 'quintic':
-            d = 2
-            contexts = synthetic_data.PolynomialContexts( d, 0.01)
-            context_generators.append( contexts )
-
-        else: 
-            contexts = synthetic_data.ToyContexts( )
-            context_generators.append( contexts )
-        print('before')
     return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(context_generators, range(n_folds) ) ) 
 
 class Evaluation:
