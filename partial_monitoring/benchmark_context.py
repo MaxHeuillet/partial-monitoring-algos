@@ -77,30 +77,30 @@ class Evaluation:
             if t % 1000 == 0 :
                 print(t)
 
-            context, distribution = context_generator.get_context(False)
-            outcome = np.random.choice( 2 , p = distribution )
+        #     context, distribution = context_generator.get_context(False)
+        #     outcome = np.random.choice( 2 , p = distribution )
 
-            action = alg.get_action(t, context)
-            if action == None:
-                break
+        #     action = alg.get_action(t, context)
+        #     if action == None:
+        #         break
 
-            # print('t', t, 'action', action, 'outcome', outcome, )
-            feedback =  self.get_feedback( game, action, outcome )
+        #     # print('t', t, 'action', action, 'outcome', outcome, )
+        #     feedback =  self.get_feedback( game, action, outcome )
 
-            alg.update(action, feedback, outcome, t, context )
+        #     alg.update(action, feedback, outcome, t, context )
 
-            i_star = np.argmin(  [ game.LossMatrix[i,...] @ np.array( distribution ) for i in range(alg.N) ]  )
-            loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
-            val = loss_diff @ np.array( distribution )
-            cumRegret[t] =  val
+        #     i_star = np.argmin(  [ game.LossMatrix[i,...] @ np.array( distribution ) for i in range(alg.N) ]  )
+        #     loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
+        #     val = loss_diff @ np.array( distribution )
+        #     cumRegret[t] =  val
 
-        for c in range(compteur,self.horizon):
-            cumRegret[c] = np.nan
+        # for c in range(compteur,self.horizon):
+        #     cumRegret[c] = np.nan
 
-        print('dump {}'.format(jobid))
-        result = np.cumsum( cumRegret)
-        with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
-            pkl.dump(result,f)
+        # print('dump {}'.format(jobid))
+        # result = np.cumsum( cumRegret)
+        # with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
+        #     pkl.dump(result,f)
 
         return True
 
@@ -205,4 +205,4 @@ print('step3')
 # # eval = Evaluation(horizon)
 eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
 print('step4')
-# res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
+res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
