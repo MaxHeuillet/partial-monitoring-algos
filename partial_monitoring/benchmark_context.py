@@ -193,15 +193,15 @@ dim = 10
 
 # run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
 
-
+print('step1')
 dim = 10
 w = np.random.uniform(0, 0.1, 10)
 w = w / w.sum()
 context_generator = synthetic_data.LinearContexts( w )
-
+print('step2')
 alg = PGTS.PGTS(game, dim,)
-
+print('step3')
 # eval = Evaluation(horizon)
 eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
-
+print('step4')
 res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
