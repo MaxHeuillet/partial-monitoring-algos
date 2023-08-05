@@ -4,6 +4,7 @@ from scipy.special import expit
 
 
 class PGTS():
+    
     def __init__(self, game, d):
 
         self.game = game
