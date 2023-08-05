@@ -158,36 +158,36 @@ game = games[args.game]
 
 dim = 10 
 
-# algos_dico = {
+algos_dico = {
 
-#           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
-#           'PGTS': PGTS.PGTS(game, dim) ,
+          'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
+          'PGTS': PGTS.PGTS(game, dim) ,
           
-#           'CBPside':cbpside.CBPside(game, dim, 1.01, 1),
+          'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
 
-#           'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 5, 10e-7),
-#           'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 5,  10e-7),
-#           'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 5,   10e-7),
-#           'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 5,   10e-7), 
+          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, 10e-7),
+          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 5,  10e-7),
+          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 5,   10e-7),
+          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 5,   10e-7), 
 
-#           'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 10,   10e-7),
-#           'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 10,  10e-7),
-#           'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 10,   10e-7),
-#           'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 10,   10e-7), 
+          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   10e-7),
+          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 10,  10e-7),
+          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 10,   10e-7),
+          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 10,   10e-7), 
 
-#           'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 20,   10e-7),
-#           'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 20,   10e-7),
-#           'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 20,   10e-7),
-#           'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 20,  10e-7), 
+          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   10e-7),
+          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 20,   10e-7),
+          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 20,   10e-7),
+          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 20,  10e-7), 
 
-#           'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 100,  10e-7),
-#           'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 100,   10e-7),
-#           'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 100,   10e-7),
-#           'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
+          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 100,  10e-7),
+          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 100,   10e-7),
+          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 100,   10e-7),
+          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 100,  10e-7)  }
 
 
-algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
-               'PGTS': PGTS.PGTS(game, dim)  }
+# algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
+#                'PGTS': PGTS.PGTS(game, dim)  }
 
 algos = [ algos_dico[ args.algo ] ]
 labels = [  args.algo ] 
