@@ -222,6 +222,7 @@ context_generator = synthetic_data.LinearContexts( w )
 
 alg = PGTS.PGTS(game, dim,)
 
-eval = Evaluation(horizon)
+# eval = Evaluation(horizon)
+eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
 
 res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
