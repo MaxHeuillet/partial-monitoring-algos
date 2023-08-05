@@ -1,6 +1,6 @@
 #!/bin/bash
 
-horizon=20000
+horizon=100
 nfolds=1
 var=1
 
