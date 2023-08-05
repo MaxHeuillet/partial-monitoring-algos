@@ -1,20 +1,20 @@
 
 import numpy as np
-# from multiprocess import Pool
+from multiprocess import Pool
 import os
-# from functools import partial
+from functools import partial
 import pickle as pkl
 import gzip
 
 import games
 
-# import cbpside
-# import randcbpside2
-# import PGIDSratio
+import cbpside
+import randcbpside2
+import PGIDSratio
 import PGTS
 
 import synthetic_data
-# import subprocess
+import subprocess
 
 import argparse
 
@@ -22,25 +22,25 @@ import argparse
 ######################
 ######################
 
-# def evaluate_parallel( evaluator, alg, game):
+def evaluate_parallel( evaluator, alg, game):
 
-#     ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
-#     print('ncpus',ncpus)
-#     pool = Pool(processes=ncpus)
-#     print('test')
-#     np.random.seed(1)
-#     context_generators = []
-#     w = np.random.uniform(0, 0.1, 10)
-#     w = w / w.sum()
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    print('ncpus',ncpus)
+    pool = Pool(processes=ncpus)
+    print('test')
+    np.random.seed(1)
+    context_generators = []
+    w = np.random.uniform(0, 0.1, 10)
+    w = w / w.sum()
 
-#     for seed in range(evaluator.n_folds):
+    for seed in range(evaluator.n_folds):
         
-#         d = 10
-#         margin = 0.01     
-#         contexts = synthetic_data.LinearContexts( w ) 
-#         context_generators.append( contexts )
+        d = 10
+        margin = 0.01     
+        contexts = synthetic_data.LinearContexts( w ) 
+        context_generators.append( contexts )
 
-#     return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(context_generators, range(n_folds) ) ) 
+    return  pool.map( partial( evaluator.eval_policy_once, alg, game ), zip(context_generators, range(n_folds) ) ) 
 
 class Evaluation:
 
@@ -104,29 +104,29 @@ class Evaluation:
 
         return True
 
-# def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, context_type):
+def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, context_type):
 
-#     for alg, label in zip( algos, labels):
+    for alg, label in zip( algos, labels):
 
-#         print(label)
-#         evaluator = Evaluation(game_name, '{}'.format(task), n_folds, horizon, game, label, context_type)
+        print(label)
+        evaluator = Evaluation(game_name, '{}'.format(task), n_folds, horizon, game, label, context_type)
 
-#         result = evaluate_parallel(evaluator, alg, game)
+        result = evaluate_parallel(evaluator, alg, game)
         
-#         with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
+        with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
 
-#             for jobid in range(n_folds):
+            for jobid in range(n_folds):
 
-#                 with gzip.open(  './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
-#                     r = pkl.load(f)
+                with gzip.open(  './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
+                    r = pkl.load(f)
 
-#                 pkl.dump( r, g)
+                pkl.dump( r, g)
                 
-#                 bashCommand = 'rm ./partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
-#                 process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-#                 output, error = process.communicate()
+                bashCommand = 'rm ./partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
+                process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+                output, error = process.communicate()
     
-#     return True
+    return True
 
 
 ###################################
@@ -186,23 +186,23 @@ dim = 10
 #           'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
 
 
-# algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
-#                'PGTS': PGTS.PGTS(game, dim)  }
+algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
+               'PGTS': PGTS.PGTS(game, dim)  }
 
-# algos = [ algos_dico[ args.algo ] ]
-# labels = [  args.algo ] 
+algos = [ algos_dico[ args.algo ] ]
+labels = [  args.algo ] 
 
-# run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
+run_experiment(args.game, args.task, n_folds, horizon, game, algos, labels, args.context_type)
 
-print('step1')
-dim = 10
-w = np.random.uniform(0, 0.1, 10)
-w = w / w.sum()
-context_generator = synthetic_data.LinearContexts( w )
-print('step2')
-alg = PGTS.PGTS(game, dim,)
-print('step3')
-# # eval = Evaluation(horizon)
-eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
-print('step4')
-res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
+# print('step1')
+# dim = 10
+# w = np.random.uniform(0, 0.1, 10)
+# w = w / w.sum()
+# context_generator = synthetic_data.LinearContexts( w )
+# print('step2')
+# alg = PGTS.PGTS(game, dim,)
+# print('step3')
+# # # eval = Evaluation(horizon)
+# eval =  Evaluation(args.game, args.task, n_folds, horizon, game, args.algo, args.context_type)
+# print('step4')
+# res = eval.eval_policy_once(alg, game, [ context_generator , 0  ] )
