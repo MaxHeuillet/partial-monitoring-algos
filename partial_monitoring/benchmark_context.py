@@ -101,6 +101,7 @@ class Evaluation:
         result = np.cumsum( cumRegret)
         with gzip.open( './partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
             pkl.dump(result,f)
+        print('successfully dumped {}'.format(jobid))
 
         return True
 
@@ -108,7 +109,7 @@ def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, conte
 
     for alg, label in zip( algos, labels):
 
-        print(label)
+        print(label, n_folds)
         evaluator = Evaluation(game_name, '{}'.format(task), n_folds, horizon, game, label, context_type)
 
         result = evaluate_parallel(evaluator, alg, game)
@@ -120,7 +121,7 @@ def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, conte
                 with gzip.open(  './partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
                     r = pkl.load(f)
 
-                pkl.dump( r, g)
+                pkl.dump(r, g)
                 
                 bashCommand = 'rm ./partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
                 process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
@@ -152,6 +153,7 @@ args = parser.parse_args()
 
 horizon = int(args.horizon)
 n_folds = int(args.n_folds)
+print('nfolds', n_folds)
 
 games = {'LE': games.label_efficient(  ), 'AT':games.apple_tasting(False)}
 game = games[args.game]
