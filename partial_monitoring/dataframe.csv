@@ -1,0 +1,9 @@
+Game,AT,AT,AT,AT,AT,AT,AT,AT,LE,LE,LE,LE,LE,LE,LE,LE
+Case,imbalanced,imbalanced,imbalanced,imbalanced,balanced,balanced,balanced,balanced,imbalanced,imbalanced,imbalanced,imbalanced,balanced,balanced,balanced,balanced
+Metric,mean,std,pvalue,win count,mean,std,pvalue,win count,mean,std,pvalue,win count,mean,std,pvalue,win count
+RandCBP,5.382,7.173,1.0,47,35.653,53.163,1.0,27,10.847,7.767,1.0,79.0,338.293,372.221,1.0,63.0
+CBP,8.672,8.532,0.004,7,72.748,138.279,0.016,36,16.47,8.173,0.0,15.0,726.877,643.233,0.0,15.0
+PM-DMED,13.915,13.155,0.0,0,113.5,138.047,0.0,3,1489.217,2887.675,0.0,2.0,1253.432,1048.542,0.0,18.0
+TSPM,9.359,9.007,0.001,2,43.117,45.53,0.297,13,,,,,,,,
+TSPM Gaussian,19.417,15.925,0.0,0,67.658,56.203,0.0,4,,,,,,,,
+BPM-Least,15.125,8.063,0.0,0,165.04,111.969,0.0,2,,,,,,,,

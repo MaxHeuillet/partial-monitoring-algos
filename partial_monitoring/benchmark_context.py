@@ -77,7 +77,7 @@ class Evaluation:
             if t % 1000 == 0 :
                 print(t)
 
-            context, distribution = context_generator.get_context(False)
+            context, distribution = context_generator.get_context(True)
             outcome = np.random.choice( 2 , p = distribution )
 
             action = alg.get_action(t, context)
@@ -99,7 +99,7 @@ class Evaluation:
 
         print('dump {}'.format(jobid))
         result = np.cumsum( cumRegret)
-        with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
+        with gzip.open( './partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(self.game_name, self.task, self.context_type, self.horizon, self.n_folds, self.label, jobid) ,'wb') as f:
             pkl.dump(result,f)
 
         return True
@@ -113,16 +113,16 @@ def run_experiment(game_name, task, n_folds, horizon, game, algos, labels, conte
 
         result = evaluate_parallel(evaluator, alg, game)
         
-        with gzip.open( './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
+        with gzip.open( './partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label) ,'wb') as g:
 
             for jobid in range(n_folds):
 
-                with gzip.open(  './partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
+                with gzip.open(  './partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid) ,'rb') as f:
                     r = pkl.load(f)
 
                 pkl.dump( r, g)
                 
-                bashCommand = 'rm ./partial_monitoring/contextual_results/{}/reb_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
+                bashCommand = 'rm ./partial_monitoring/contextual_results/{}/cr_benchmark_{}_{}_{}_{}_{}_{}.pkl.gz'.format(game_name, task, context_type, horizon, n_folds, label, jobid)
                 process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
                 output, error = process.communicate()
     
@@ -163,27 +163,27 @@ algos_dico = {
           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
           'PGTS': PGTS.PGTS(game, dim) ,
           
-          'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
+          'CBPside':cbpside.CBPside(game, dim, 1.01, 1),
 
-          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, 10e-7),
-          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 5,  10e-7),
-          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 5,   10e-7),
-          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 5,   10e-7), 
+          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 5, 10e-7),
+          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 5,  10e-7),
+          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 5,   10e-7),
+          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 5,   10e-7), 
 
-          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   10e-7),
-          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 10,  10e-7),
-          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 10,   10e-7),
-          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 10,   10e-7), 
+          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 10,   10e-7),
+          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 10,  10e-7),
+          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 10,   10e-7),
+          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 10,   10e-7), 
 
-          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   10e-7),
-          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 20,   10e-7),
-          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 20,   10e-7),
-          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 20,  10e-7), 
+          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 20,   10e-7),
+          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 20,   10e-7),
+          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 20,   10e-7),
+          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 20,  10e-7), 
 
-          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 100,  10e-7),
-          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 100,   10e-7),
-          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 100,   10e-7),
-          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 100,  10e-7)  }
+          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 100,  10e-7),
+          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 100,   10e-7),
+          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 100,   10e-7),
+          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
 
 
 # algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
