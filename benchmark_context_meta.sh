@@ -1,6 +1,6 @@
 #!/bin/bash
 
-horizon=20000
+horizon=7500
 nfolds=96
 var=1
 
@@ -16,8 +16,8 @@ for context_type in 'linear' #'quintic'
 
                 do
 
-                for alg in 'STAP'
-                # for alg in 'PGTS' 'PGIDSratio'
+                # for alg in 'STAP'
+                for alg in 'PGTS' 'PGIDSratio'
                 # for alg in 'random' 'CBPside' 'RandCBPside2_10_5_07' 'RandCBPside2_1_5_07' 'RandCBPside2_18_5_07' 'RandCBPside2_116_5_07' 'RandCBPside2_132_5_07' 'RandCBPside2_10_10_07' 'RandCBPside2_1_10_07' 'RandCBPside2_18_10_07' 'RandCBPside2_116_10_07' 'RandCBPside2_132_10_07' 'RandCBPside2_10_20_07' 'RandCBPside2_1_20_07' 'RandCBPside2_18_20_07' 'RandCBPside2_116_20_07' 'RandCBPside2_132_20_07' 'RandCBPside2_10_100_07' 'RandCBPside2_1_100_07' 'RandCBPside2_18_100_07' 'RandCBPside2_116_100_07' 'RandCBPside2_132_100_07'        
             
                     do
