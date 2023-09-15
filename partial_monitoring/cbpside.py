@@ -42,7 +42,7 @@ class CBPside():
 
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
 
 
     def getConfidenceWidth(self, ):
@@ -62,7 +62,7 @@ class CBPside():
         self.memory_neighbors = {}
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
 
  
     def get_action(self, t, X):
@@ -90,17 +90,18 @@ class CBPside():
                 # n, d, _ = X_it.shape
                 X_it = np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
                 # print('new Xit', X_it)
-
-                factor = self.d * (  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  ) + len(self.SignalMatrices[i]) )
+                sigma_i = len(self.SignalMatrices[i])
+                factor = sigma_i * (  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  ) + self.lbd * sigma_i )
                 width = np.sqrt( X.T @ self.contexts[i]['V_it_inv'] @ X )
                 formule = factor * width
+                print(factor, width)
                 # b = X.T @ np.linalg.inv( self.lbd * np.identity(D) + X_it @ X_it.T  ) @ X 
                 #print('action {}, first component {}, second component, {}'.format(i, a, b  ) )
                 #print('Xit', X_it.shape  )
                 w.append( formule )
             # print()    
-            # print( 'q   ', q )
-            # print('conf   ', w )
+            print( 'q   ', q )
+            print('conf   ', w )
 
             for pair in self.mathcal_N:
                 tdelta = np.zeros( (1,) )
@@ -154,7 +155,7 @@ class CBPside():
 
             union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)
-            # print('union1', union1)
+            print('union1', union1)
             S =  np.union1d(  union1  , R_t )
             S = np.array( S, dtype = int)
             # print('S', S)

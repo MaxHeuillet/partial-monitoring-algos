@@ -78,7 +78,9 @@ class Evaluation:
                 print(t)
 
             context, distribution = context_generator.get_context(True)
-            outcome = np.random.choice( 2 , p = distribution )
+            # outcome = np.random.choice( 2 , p = distribution )
+            outcome = 0 if distribution[0]<0.5 else 1
+            distribution = np.array([1-outcome,outcome])
 
             action = alg.get_action(t, context)
             if action == None:
@@ -165,27 +167,31 @@ algos_dico = {
           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
           'PGTS': PGTS.PGTS(game, dim) ,
           
-          'CBPside':cbpside.CBPside(game, dim, 1.01, 1),
+          'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
 
-          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 5, 10e-7),
-          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 5,  10e-7),
-          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 5,   10e-7),
-          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 5,   10e-7), 
+          'RandCBPside2_10_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 5, 10e-7),
+          'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, 10e-7),
+          'RandCBPside2_18_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 5,  10e-7),
+          'RandCBPside2_116_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 5,   10e-7),
+          'RandCBPside2_132_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 5,   10e-7), 
 
-          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 10,   10e-7),
-          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 10,  10e-7),
-          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 10,   10e-7),
-          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 10,   10e-7), 
+          'RandCBPside2_10_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 10,   10e-7),
+          'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   10e-7),
+          'RandCBPside2_18_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 10,  10e-7),
+          'RandCBPside2_116_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 10,   10e-7),
+          'RandCBPside2_132_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 10,   10e-7), 
 
-          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 20,   10e-7),
-          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 20,   10e-7),
-          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 20,   10e-7),
-          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 20,  10e-7), 
+          'RandCBPside2_10_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 20,   10e-7),
+          'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   10e-7),
+          'RandCBPside2_18_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 20,   10e-7),
+          'RandCBPside2_116_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 20,   10e-7),
+          'RandCBPside2_132_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 20,  10e-7), 
 
-          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1, 100,  10e-7),
-          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/8, 100,   10e-7),
-          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/16, 100,   10e-7),
-          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 1, 1/32, 100,  10e-7)  }
+          'RandCBPside2_10_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 100,  10e-7),
+          'RandCBPside2_1_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 100,  10e-7),
+          'RandCBPside2_18_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/8, 100,   10e-7),
+          'RandCBPside2_116_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/16, 100,   10e-7),
+          'RandCBPside2_132_100_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/32, 100,  10e-7)  }
 
 
 # algos_dico = { 'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,

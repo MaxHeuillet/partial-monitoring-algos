@@ -120,15 +120,16 @@ class RandCPBside():
                 # n, d, _ = X_it.shape
                 X_it = np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
                 # print('new Xit', X_it)
-
-                factor = self.d * (  Z + len(self.SignalMatrices[i]) )
+                sigma_i = len(self.SignalMatrices[i])
+                # factor = sigma_i * (  np.sqrt( 2 * ( self.d  * np.log( 1 + t * np.log(self.N * 1)/self.lbd_reg ) +  np.log(1/t**2) ) ) + np.sqrt(self.lbd_reg) * sigma_i )
+                factor = sigma_i * ( Z + np.sqrt(self.lbd) * sigma_i )
                 width = np.sqrt( X.T @ self.contexts[i]['V_it_inv'] @ X )
                 formule = factor * width
 
                 w.append( formule )
-            # print()    
-            # print( 'q   ', q )
-            # print('conf   ', w )
+            print()    
+            print( 'q   ', q )
+            print('conf   ', w )
 
             for pair in self.mathcal_N:
                 tdelta = np.zeros( (1,) )
@@ -180,7 +181,7 @@ class RandCPBside():
     
             union1= np.union1d(  P_t, Nplus_t )
             union1 = np.array(union1, dtype=int)
-            # print('union1', union1)
+            print('union1', union1)
             S =  np.union1d(  union1  , R_t )
             S = np.array( S, dtype = int)
             # print('S', S)

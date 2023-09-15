@@ -64,26 +64,24 @@ def apple_tasting( restructure_game ):
     A = geometry_v3.alphabet_size(FeedbackMatrix_PMDMED,  len(FeedbackMatrix_PMDMED),len(FeedbackMatrix_PMDMED[0]) )
     signal_matrices_Adim =  [ np.array( [ [1,1],[0,0],[0,0] ] ), np.array( [ [0,0],[1,0],[0,1] ] ) ]
 
-    mathcal_N = [ [0, 1], [1, 0] ]
+    mathcal_N = [ [0, 1] ]
 
     # if restructure_game:
     #     FeedbackMatrix, LossMatrix = general_algorithm( init_FeedbackMatrix, init_LossMatrix )
     # else:
     FeedbackMatrix, LossMatrix = init_FeedbackMatrix, init_LossMatrix
 
-    v = {0: {1: [np.array([0]), np.array([-1.,  1.])]}, 1: {0: [np.array([0]), np.array([ 1., -1.])]}}
+    v = {0: {1: [np.array([0]), np.array([-1.,  1.])]} }
     #collections.defaultdict(dict)
     #v[0][1] = [  np.array([[0.5]]), np.array([[-1.5, 0.5]])  ]
     #v[1][0] = [  np.array([[0.5]]), np.array([[0.5, -1.5]])  ]
 
     N_plus =  collections.defaultdict(dict)
     N_plus[0][1] = [ 0, 1 ]
-    N_plus[1][0] = [ 0, 1 ]
 
     V = collections.defaultdict(dict)
     V[0][1] = [ 0,1 ]
-    V[1][0] = [ 0,1 ]
-
+    
     LinkMatrix = np.linalg.inv( init_FeedbackMatrix ) @ LossMatrix 
 
     game = Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix, LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )

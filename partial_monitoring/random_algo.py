@@ -9,6 +9,7 @@ class Random():
 
         self.game = game
         self.horizon = horizon
+        self.N = game.n_actions
 
     def get_action(self, t, context = None ):
         
