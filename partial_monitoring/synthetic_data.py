@@ -44,16 +44,16 @@ class LinearContexts:
         self.d = len(w) #number of features
         self.w = w
         self.type = 'linear'
-    #     self.normalize()
+        self.normalize()
 
-    # def normalize(self,):
-    #     all = []
-    #     for _ in range(10000):
-    #         c,d = self.get_context(False)
-    #         all.append( c )
-    #     all = np.array(all)
-    #     self.mean = np.mean(all,0)
-    #     self.std = np.std(all,0 )
+    def normalize(self,):
+        all = []
+        for _ in range(10000):
+            c,d = self.get_context(False)
+            all.append( c )
+        all = np.array(all)
+        self.mean = np.mean(all,0)
+        self.std = np.std(all,0 )
 
     def get_context(self, normalize):
         context = np.random.uniform(0, 1,  self.d )
@@ -61,7 +61,7 @@ class LinearContexts:
         val = self.w @ context
         distribution = [ val[0], 1-val[0] ]
         if normalize:
-            context = context #( context - self.mean ) / self.std
+            context = ( context - self.mean ) / self.std
         return context, distribution
 
 # class LinearContexts:
