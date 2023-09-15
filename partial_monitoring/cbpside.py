@@ -145,7 +145,7 @@ class CBPside():
               val =  X.T @ self.contexts[k]['V_it_inv'] @ X
               t_prime = t
               with np.errstate(divide='ignore'): 
-                rate = self.eta[k] * (t_prime**(2/3) ) * ( self.alpha * np.log(t_prime) )**(1/3) ) 
+                rate = self.eta[k] * (t_prime**(2/3) ) * ( self.alpha * np.log(t_prime) )**(1/3) #* self.N**2 * 4 * self.d**2 
                 # print(k, val[0][0], 1/rate)
                 if val[0][0] > 1/rate : 
                     # print('append action ', k)
