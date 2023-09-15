@@ -6,7 +6,7 @@
 #SBATCH --time=02:00:00
 
 
-#SBATCH --mail-user=maxime.heuillet.france@gmail.com
+#SBATCH --mail-user=maxime.heuillet.1@ulaval.ca
 #SBATCH --mail-type=ALL
 
 echo 'horizon' ${HORIZON} 'nfolds' ${NFOLDS} 'CONTEXT_TYPE' ${CONTEXT_TYPE} 'GAME' ${GAME} 'TASK' ${TASK} 'ALG' ${ALG} 
