@@ -17,6 +17,8 @@ import synthetic_data
 import subprocess
 
 import argparse
+import STAP_Helmbolt
+import random_algo
 
 
 ######################
@@ -164,8 +166,11 @@ dim = 10
 
 algos_dico = {
 
+          'random':random_algo.Random(game,horizon),
+
           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
           'PGTS': PGTS.PGTS(game, dim) ,
+          'STAP': STAP_Helmbolt.STAP_Helmbolt(game, dim,),
           
           'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
 

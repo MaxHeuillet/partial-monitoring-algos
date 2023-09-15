@@ -1,26 +1,22 @@
 import numpy as np
-
 import pickle
-
 from scipy.special import logit, expit
     
 
 
 class STAP_Helmbolt():
 
-    def __init__(self, game, budget,):
+    def __init__(self, game, d):
 
         self.name = 'helmbolt'
-
+        self.d = d
         self.game = game
         self.N = game.n_actions
 
         self.nb_mistakes = 0
 
 
-    def reset(self, d):
-
-        self.d = d
+    def reset(self, ):
 
         self.nb_mistakes = 0
 
