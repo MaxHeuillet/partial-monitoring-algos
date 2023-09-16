@@ -37,6 +37,7 @@ class CesaBianchi():
             print('prediction', prediction, probability, self.pred_action)
         else:
             self.pred_action = 1
+            probability = 1
 
 
         b = self.beta * np.sqrt(1+self.K) 
