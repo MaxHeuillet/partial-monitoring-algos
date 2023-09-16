@@ -100,7 +100,7 @@ class Evaluation:
             
             result = np.array( [ game.delta(i) for i in range(game.n_actions) ]).T @ action_counter
             
-            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/reb_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.task,  self.horizon, nfolds, label, jobid) ,'wb') as f:
+            with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/cr_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, self.task,  self.horizon, nfolds, label, jobid) ,'wb') as f:
                 pkl.dump(result,f)
 
         return  True 
@@ -153,15 +153,15 @@ alg =  randcbp.RandCBP(  game, alpha, sigma, K, epsilon)
 
 result = evaluate_parallel(n_folds, horizon, alg, game, args.task , args.algo_name )
 print('finished processing')
-with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/reb_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task) , horizon, n_folds,  args.algo_name) ,'wb') as g:
+with gzip.open( './partial_monitoring/results/benchmark_randcbp/{}/cr_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task) , horizon, n_folds,  args.algo_name) ,'wb') as g:
 
     for jobid in range(n_folds):
 
-        with gzip.open(  './partial_monitoring/results/benchmark_randcbp/{}/reb_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
+        with gzip.open(  './partial_monitoring/results/benchmark_randcbp/{}/cr_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid) ,'rb') as f:
             r = pkl.load(f)
 
         pkl.dump( r, g)
                 
-        bashCommand = 'rm ./partial_monitoring/results/benchmark_randcbp/{}/reb_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid)
+        bashCommand = 'rm ./partial_monitoring/results/benchmark_randcbp/{}/cr_{}_{}_{}_{}_{}.pkl.gz'.format(game.name, '{}'.format(args.task), horizon, n_folds,  args.algo_name, jobid)
         process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
