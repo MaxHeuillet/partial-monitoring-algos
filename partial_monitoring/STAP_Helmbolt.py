@@ -14,6 +14,7 @@ class STAP_Helmbolt():
         self.N = game.n_actions
 
         self.nb_mistakes = 0
+        self.lbd = 0.05
 
 
     def reset(self, ):
@@ -22,7 +23,7 @@ class STAP_Helmbolt():
 
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
 
     def get_action(self, t, X,):
 

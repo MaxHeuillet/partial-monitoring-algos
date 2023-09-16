@@ -15,6 +15,7 @@ class CesaBianchi():
 
         self.K = 0
         self.beta = 1
+        self.lbd = 0.05
 
 
     def reset(self, ):
@@ -23,7 +24,7 @@ class CesaBianchi():
 
         self.contexts = []
         for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': np.identity(self.d) } )
+            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
 
     def get_action(self, t, X,):
 
