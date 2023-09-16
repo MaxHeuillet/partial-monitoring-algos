@@ -128,7 +128,9 @@ game = games.label_efficient(  ) if args.game == 'LE' else games.apple_tasting(F
 
 algo_name = args.algo_name.split('_')
 
-if algo_name[1] == '1':
+if algo_name[1] == '10':
+    sigma = 10
+elif algo_name[1] == '1':
     sigma = 1
 elif algo_name[1] == '18':
     sigma = 1/8
