@@ -19,6 +19,7 @@ import subprocess
 import argparse
 import STAP_Helmbolt
 import random_algo
+import CesaBianchi
 
 
 ######################
@@ -171,6 +172,7 @@ algos_dico = {
           'PGIDSratio': PGIDSratio.PGIDSratio(game, dim) ,
           'PGTS': PGTS.PGTS(game, dim) ,
           'STAP': STAP_Helmbolt.STAP_Helmbolt(game, dim,),
+          'CesaBianchi': CesaBianchi.CesaBianchi(game, dim,),
           
           'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
 
