@@ -3,7 +3,7 @@
 horizon=20000
 nfolds=96
 
-for game in  'AT' 'LE' 
+for game in  'AT' #'LE' 
 
     do 
 

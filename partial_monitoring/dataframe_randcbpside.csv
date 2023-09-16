@@ -1,0 +1,7 @@
+Game,AT,AT,AT,AT,LE,LE,LE,LE
+Case,balanced,balanced,balanced,balanced,balanced,balanced,balanced,balanced
+Metric,mean,std,pvalue,win count,mean,std,pvalue,win count
+RandCBPside2_10_5_07,648.938,80.02,1.0,86,1173.281,86.249,1.0,79
+RandCBPside2_10_10_07,648.938,80.02,1.0,86,1173.281,86.249,1.0,79
+RandCBPside2_10_20_07,650.344,79.621,0.903,43,1183.792,86.212,0.399,31
+RandCBPside2_10_100_07,725.083,81.373,0.0,0,1286.427,88.123,0.0,0
