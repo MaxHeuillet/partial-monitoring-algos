@@ -14,6 +14,7 @@ class CesaBianchi():
         self.N = game.n_actions
 
         self.K = 0
+        self.beta = 1
 
 
     def reset(self, ):
