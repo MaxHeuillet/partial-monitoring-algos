@@ -1,0 +1,10 @@
+Game,AT,AT,AT,AT,LE,LE,LE,LE
+Case,balanced,balanced,balanced,balanced,balanced,balanced,balanced,balanced
+Metric,mean,std,pvalue,win count,mean,std,pvalue,win count
+RandCBPside,648.938,80.02,1.0,0.0,1173.281,86.249,1.0,96.0
+CBPside,6109.521,86.325,0.0,0.0,11071.333,86.779,0.0,0.0
+PGIDSratio,129.5,12.758,0.0,96.0,,,,
+PGTS,179.156,15.318,0.0,0.0,,,,
+STAP,1565.917,127.488,0.0,0.0,,,,
+CESA,,,,,10502.031,76.486,0.0,0.0
+random,10006.229,72.909,0.0,0.0,13328.688,71.928,0.0,0.0
