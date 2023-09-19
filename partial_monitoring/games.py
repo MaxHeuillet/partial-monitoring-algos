@@ -93,27 +93,26 @@ def label_efficient(  ):
 
     name = 'LE'
     LossMatrix = np.array( [ [1, 1],[1, 0],[0, 1] ] )
-    FeedbackMatrix = np.array(  [ [1, 1/2], [1/4, 1/4], [1/4, 1/4] ] )
-    LinkMatrix = np.array( [ [0, 2, 2],[2, -2, -2],[-2, 4, 4] ] )
-    signal_matrices = [ np.array( [ [0,1],[1,0] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
+    FeedbackMatrix = np.array(  [ [0, 1], [2, 2], [3, 3] ] )
 
-    bandit_LossMatrix = np.array( [ [1, 1], [1, 0], [0, 1] ] )
-    bandit_FeedbackMatrix =  np.array([ [1,-1], [0,0], [0, 0] ])
+    signal_matrices = [ np.array( [ [1,0],[0,1] ]), np.array( [ [1,1] ] ), np.array( [ [1,1] ] ) ] 
+
+    bandit_LossMatrix = None
+    bandit_FeedbackMatrix =  None
+    LinkMatrix = None
 
     FeedbackMatrix_PMDMED =  np.array([ [0, 1],[2, 2],[2,2] ])
     A = geometry_v3.alphabet_size(FeedbackMatrix_PMDMED,  len(FeedbackMatrix_PMDMED),len(FeedbackMatrix_PMDMED[0]) )
     signal_matrices_Adim =  [ np.array( [ [1,0],[0,1],[0,0] ] ), np.array( [ [0,0],[0,0],[1,1] ] ), np.array( [ [0,0],[0,0],[1,1] ] ) ]
     
-    mathcal_N = [  [1,2],  [2,1] ] 
+    mathcal_N = [  [1,2], ] 
 
-    v = {1: {2: [ np.array([-1.,  1.]), np.array([0]), np.array([0])]}, 2: {1: [np.array([ 1., -1.]), np.array([0.]), np.array([0.])]}}
+    v = {1: {2: [ np.array([1.,  -1.]), np.array([0]), np.array([0])]} }
     
     N_plus =  collections.defaultdict(dict)
-    N_plus[2][1] = [ 1, 2 ]
     N_plus[1][2] = [ 1, 2 ]
 
     V = collections.defaultdict(dict)
-    V[2][1] = [ 0, 1, 2 ]
     V[1][2] = [ 0, 1, 2 ]
 
     return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )

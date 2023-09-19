@@ -22,31 +22,31 @@ class CesaBianchi():
 
         self.K = 0
 
-        self.contexts = []
-        for i in range(self.N):
-            self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
+        self.contexts = {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } 
 
     def get_action(self, t, X,):
 
         
         if t>0:
-            prediction = self.contexts[1]['weights'] @ X
+            # print(X.shape,  self.contexts['weights'])
+            prediction = self.contexts['weights'] @ X
             probability = expit(prediction)
-            self.pred_action = 1 if probability < 0.5 else 0
-            print(self.contexts[1]['weights'], X, self.contexts[1]['weights'].shape, X.shape)
-            print('prediction', prediction, probability, self.pred_action)
+            self.pred_action = 1 if probability < 0.5 else 2
+            # print(self.contexts['weights'], X, self.contexts['weights'].shape, X.shape)
+            print('prediction', prediction, 'proba',probability, 'pred action', self.pred_action)
         else:
-            self.pred_action = 1
+            self.pred_action = 0
             probability = 1
 
 
         b = self.beta * np.sqrt(1+self.K) 
         p = b / ( b + abs( probability ) )
 
-        Z = np.random.binomial(1, p)
+        self.Z = np.random.binomial(1, p)
+        self.Z = 1-self.Z
 
-        if Z == 1:
-            action = 1
+        if self.Z == 1:
+            action = 0
         else:
             action = self.pred_action
 
@@ -54,26 +54,26 @@ class CesaBianchi():
 
     def update(self, action, feedback, outcome, t, X):
 
-        if action == 1:
+        if self.Z == 1 or t ==0:
 
-            if outcome == self.pred_action:
+            if (self.pred_action == 1 and outcome == 0) or (self.pred_action == 2 and outcome ==1):
                 self.K += 1
 
-            y_t = -1 if outcome==0 else 1
+            y_t = 1 if outcome==0 else -1
 
-            self.contexts[action]['labels'].append( y_t )
-            self.contexts[action]['features'].append( X )
+            self.contexts['labels'].append( y_t )
+            self.contexts['features'].append( X )
 
-            Y_it = np.array( self.contexts[action]['labels'] )
-            X_it =  np.array( self.contexts[action]['features'] )
+            Y_it = np.array( self.contexts['labels'] )
+            X_it =  np.array( self.contexts['features'] )
             
 
             Y_it =  Y_it.reshape(-1, 1).T
             X_it =  np.squeeze(X_it, 2).T
             print(Y_it.shape, X_it.shape)
 
-            V_it_inv = self.contexts[action]['V_it_inv']
-            self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
-            weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
-            self.contexts[action]['weights'] = weights
+            V_it_inv = self.contexts['V_it_inv']
+            self.contexts['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
+            weights = Y_it @ X_it.T @ self.contexts['V_it_inv']
+            self.contexts['weights'] = weights
         
