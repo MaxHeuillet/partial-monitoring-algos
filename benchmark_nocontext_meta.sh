@@ -7,7 +7,7 @@ for game in  'LE' 'AT'
 
     do 
 
-        for task in 'all' #'balanced' 'imbalanced'
+        for task in 'balanced' 'imbalanced' #'all' #
 
             do
             for alg in 'RandCBP_1_5' 'RandCBP_2_5' 'RandCBP_10_5' 'RandCBP_1_10' 'RandCBP_2_10' 'RandCBP_10_10'  'RandCBP_1_20' 'RandCBP_2_20' 'RandCBP_10_20'  
