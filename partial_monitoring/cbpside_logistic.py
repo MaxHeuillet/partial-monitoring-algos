@@ -22,9 +22,6 @@ from torch.optim.lr_scheduler import StepLR
 import multiprocessing
 import os
 
-# import geometry_gurobi
-# import geometry_pulp
-
 import statsmodels.api as sm
 
 
@@ -103,16 +100,16 @@ class CBPside():
         self.memory_pareto = {}
         self.memory_neighbors = {}
 
-        self.X1_train, self.X2_train, self.y1, self.y2 = [], [], [], []
+        self.X1_train, self.y1, = [], []
 
         self.contexts = []
         for i in range(self.N):
             self.contexts.append( {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } )
 
     def encode_context(self, X):
-        X = torch.from_numpy(X).to(self.device)
-        ci = torch.zeros(1, self.d).to(self.device)
-        x_list = {}
+
+        ci = np.zeros(1, self.d)
+        x_list = []
         for a in range(self.A):
             inputs = []
             for l in range(a):
@@ -122,41 +119,25 @@ class CBPside():
                 inputs.append(ci)
             inputs = torch.cat(inputs, dim=1).to(torch.float32)
             x_list[a] = inputs
-
-        x_list_action = {}
-        for k in range(self.N):
-            x_list_action[k] = []
-            for a in np.unique(self.game.FeedbackMatrix[k]) :
-                x_list_action[k].append( x_list[a] )
-       
-        return x_list, x_list_action
+        return x_list
 
 
     def get_action(self, t, X):
 
         self.X = X
         halfspace = []
-        self.x_list, self.x_list_action = self.encode_context(X)
+        self.x_list = self.encode_context(X)
 
-        self.f1_list, self.f2_list, self.dc_list, self.index = {}, {}, {}, {}
+        q = []
+        w = []
+
         for a in range(self.N):
-            self.f1_list[a] = []
-            self.f2_list[a] = [] 
-            self.dc_list[a] = []
+            pred = model( self.x_list, self.contexts[a]['labels'])
+            q.append(pred)
 
-            for x in self.x_list_action[a]:
-                f1_k, f2_k, dc_k = EE_forward(self.net1, self.net2, x )
-                self.f1_list[a].append(f1_k)
-                self.f2_list[a].append(f2_k)
-                self.dc_list[a].append(dc_k)    
-                # q[k] = f1_k 
-                # w[k] = f2_k
 
-            self.index[a] = np.argmax( self.f2_list[a] ) if len( np.unique(self.game.FeedbackMatrix[a]) ) > 1 else None
         
-        q = [ np.array(value) for value in self.f1_list.values()]
-        w = [ np.array( max(value) ) for value in self.f2_list.values()]
-        print( 'estimate', q )
+        # print( 'estimate', q )
         # print('conf   ', w )
         # print('index', self.index)
 
@@ -164,7 +145,6 @@ class CBPside():
         for pair in self.mathcal_N:
             tdelta, c = 0, 0
             for k in  self.V[ pair[0] ][ pair[1] ]:
-                #print('k', k, 'pair ', pair, 'v ', self.v[ pair[0] ][ pair[1] ][k].T.shape , 'q[k] ', q[k].shape  )
                 tdelta += self.v[ pair[0] ][ pair[1] ][k].T @ q[k]
                 c += np.linalg.norm( self.v[ pair[0] ][ pair[1] ][k], np.inf ) * w[k] #* np.sqrt( (self.d+1) * np.log(t) ) * self.d
             #print('pair', pair, 'tdelta', tdelta, 'confidence', c)
@@ -244,120 +224,26 @@ class CBPside():
 
 
     def update(self, action, feedback, outcome, t, X):
+
         
+        feedbacks = np.zeros( (self.A, self.A) )
+        feedbacks[feedback] = 1
 
-        # print('### Update the Gram matrix:')
-        #print('convert to numpy')
-        if len( np.unique(self.game.FeedbackMatrix[action]) ) > 1:
-            indx = self.index[action]
-            feature = self.dc_list[action][indx]
-        else:
-            feature =  self.dc_list[action][0]
+        self.contexts[action]['labels'].append( Y_t )
+        self.contexts[action]['features'].append( self.x_list )
 
-        # Usage
-        if self.eta[action]>0:
-            V_it_inv = self.contexts[action]['V_it_inv']
-            V_it_inv = V_it_inv.to(self.device)
-            self.contexts[action]['V_it_inv'] = sherman_morrison_update(V_it_inv, feature)
-            V_it_inv = V_it_inv.cpu()
-            del V_it_inv
-            torch.cuda.empty_cache()
-
-        # print('implement the formula')
-        # V_it_inv = self.contexts[action]['V_it_inv']
-        # self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ feature.T @ feature @ V_it_inv ) / ( 1 + feature @ V_it_inv @ feature.T ) 
-        
-        # print('### Update the parameters of the model:')
-        sigma_k = len(np.unique(self.game.FeedbackMatrix[action]))
-        #print('sigma_k', sigma_k)
-        if sigma_k > 1:
-            feedbacks = np.zeros( sigma_k )
-            feedbacks[feedback] = 1
-        else:
-            feedbacks = np.ones(1)
-        
-        x_features = torch.cat( self.x_list_action[action] )
-        self.X1_train.append( x_features.cpu() )
-        self.y1.append( torch.Tensor(feedbacks).cpu()  )
-
-        grad_features = torch.cat( self.dc_list[action] )
-        self.X2_train.append( grad_features.cpu() )
-        self.y2.append( torch.Tensor(feedbacks - self.f1_list[action] ).cpu() )
-            
-        global_loss = []
-        global_losses = []
+        V_it_inv = self.contexts[action]['V_it_inv']
+        self.contexts[action]['V_it_inv'] = V_it_inv - ( V_it_inv @ X @ X.T @ V_it_inv ) / ( 1 + X.T @ V_it_inv @ X ) 
+        weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
+        self.contexts[action]['weights'] = weights
 
         if (t>self.N):
 
-            if (t<=50) or (t % 50 == 0 and t<1000 and t>50) or (t % 500 == 0 and t>=1000): #
+            if (t<=50) or (t % 50 == 0 and t<1000 and t>50) or (t % 500 == 0 and t>=1000): 
 
-                self.train_NN_batch1(self.net1, self.X1_train, self.y1)
-                self.train_NN_batch2(self.net2, self.X2_train, self.y2)
+                pass
 
         return global_loss, global_losses
-
-
-    def train_NN_batch1(self, model, X, y, num_epochs=10, lr=0.001, batch_size=64):
-        model.train()
-        X = torch.cat(X).float().to(self.device)
-        y = torch.cat(y).float().to(self.device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-        dataset = TensorDataset(X, y)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        num = X.size(0)
-        criterion = nn.BCELoss()
-
-        for i in range(num_epochs):
-            # print('epoch {}'.format(i))
-            batch_loss = 0.0
-            
-            for x, y in dataloader:
-                # x, y = x.to(self.device), y.to(self.device)
-                pred = model(x).view(-1)
-
-                loss = criterion(pred, y)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-                batch_loss += loss.item()
-            
-            if batch_loss / num <= 1e-3:
-                return batch_loss / num
-
-        return batch_loss / num
-
-
-
-
-    def train_NN_batch2(self, model, X, y, num_epochs=10, lr=0.001, batch_size=64):
-        model.train()
-        X = torch.cat(X).float().to(self.device)
-        y = torch.cat(y).float().to(self.device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-        dataset = TensorDataset(X, y)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        num = X.size(0)
-
-        for i in range(num_epochs):
-            # print('epoch {}'.format(i))
-            batch_loss = 0.0
-            
-            for x, y in dataloader:
-                # x, y = x.to(self.device), y.to(self.device)
-                pred = model(x).view(-1)
-
-                loss = torch.mean((pred - y) ** 2)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-                batch_loss += loss.item()
-            
-            if batch_loss / num <= 1e-3:
-                return batch_loss / num
-
-        return batch_loss / num
 
 
 

@@ -96,8 +96,6 @@ class RandCPBside():
 
         if t < self.N:
             action = t
-            # self.d = len(X)
-            # self.contexts[t]['weights'] = self.SignalMatrices[t] @ np.array( [ [0,1],[1,-1] ])
 
         else: 
 
