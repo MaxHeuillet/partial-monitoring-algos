@@ -21,7 +21,7 @@ class CesaBianchi():
     def reset(self, ):
 
         self.K = 0
-
+        self.norm_hist = 0
         self.contexts = {'features':[], 'labels':[], 'weights': None, 'V_it_inv': self.lbd * np.identity(self.d) } 
 
     def get_action(self, t, X,):
