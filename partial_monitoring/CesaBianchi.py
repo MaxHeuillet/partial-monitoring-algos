@@ -26,7 +26,9 @@ class CesaBianchi():
 
     def get_action(self, t, X,):
 
-        
+        norm = np.linalg.norm( X )
+        self.X_prime = max( self.norm_hist, norm  )
+
         if t>0:
             # print(X.shape,  self.contexts['weights'])
             prediction = self.contexts['weights'] @ X
@@ -38,8 +40,8 @@ class CesaBianchi():
             self.pred_action = 0
             probability = 1
 
-
-        b = self.beta * np.sqrt(1+self.K) 
+        b = self.beta * np.sqrt(self.K+1) * self.X_prime**2
+        # b = self.beta * np.sqrt(1+self.K) 
         p = b / ( b + abs( probability ) )
 
         self.Z = np.random.binomial(1, p)
@@ -54,10 +56,11 @@ class CesaBianchi():
 
     def update(self, action, feedback, outcome, t, X):
 
-        if self.Z == 1 or t ==0:
+        if action==0:
 
             if (self.pred_action == 1 and outcome == 0) or (self.pred_action == 2 and outcome ==1):
                 self.K += 1
+                self.norm_hist = self.X_prime**2
 
             y_t = 1 if outcome==0 else -1
 

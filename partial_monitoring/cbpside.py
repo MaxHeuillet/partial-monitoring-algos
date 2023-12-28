@@ -184,17 +184,11 @@ class CBPside():
 
         self.contexts[action]['labels'].append( Y_t )
         self.contexts[action]['features'].append( X )
-        #print(self.contexts[action]['labels']) 
+
         
         Y_it = np.array( self.contexts[action]['labels'] )
         X_it =  np.array( self.contexts[action]['features'] )
-        # print(X_it)
-        # print(X_it.shape)
-        
-        # print(Y_it.shape)
 
-        # n, d, _ = X_it.shape
-        # n, sigma, _ = Y_it.shape
         Y_it =  np.squeeze(Y_it, 2).T # Y_it.reshape( (sigma, n) )
         X_it =  np.squeeze(X_it, 2).T #X_it.reshape( (d, n) )
 

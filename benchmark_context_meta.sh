@@ -8,17 +8,17 @@ for context_type in 'linear' #'quintic'
 
     do
 
-    for game in 'LE' 'AT' 
+    for game in 'LE' #'AT' 
 
         do 
 
             for task in 'balanced' #'imbalanced'
 
                 do
-                # for alg in 'CesaBianchi'
+                for alg in 'CesaBianchi'
                 # for alg in 'STAP'
                 # for alg in 'PGTS' 'PGIDSratio' 'random'
-                for alg in 'CBPside' 'RandCBPside2_1_5_07' 'RandCBPside2_2_5_07' 'RandCBPside2_10_5_07' 'RandCBPside2_1_10_07' 'RandCBPside2_2_10_07' 'RandCBPside2_10_10_07' 'RandCBPside2_1_20_07' 'RandCBPside2_2_20_07' 'RandCBPside2_10_20_07' 
+                # for alg in 'CBPside' 'RandCBPside2_1_5_07' 'RandCBPside2_2_5_07' 'RandCBPside2_10_5_07' 'RandCBPside2_1_10_07' 'RandCBPside2_2_10_07' 'RandCBPside2_10_10_07' 'RandCBPside2_1_20_07' 'RandCBPside2_2_20_07' 'RandCBPside2_10_20_07' 
             
                     do
 		            echo 'horizon' $horizon 'nfolds' $nfolds 'CONTEXT_TYPE' $context_type 'GAME' $game 'TASK' $task 'ALG' $alg 'VAR' $var
