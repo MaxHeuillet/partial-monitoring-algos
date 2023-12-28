@@ -151,6 +151,8 @@ algo_name = args.algo_name.split('_')
 
 if algo_name[1] == '10':
     sigma = 10
+elif algo_name[1] == '12':
+    sigma = 1/2
 elif algo_name[1] == '2':
     sigma = 2
 elif algo_name[1] == '1':

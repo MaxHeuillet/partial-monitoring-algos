@@ -18,7 +18,7 @@ for context_type in 'linear' #'quintic'
                 # for alg in 'CesaBianchi'
                 # for alg in 'STAP'
                 # for alg in 'PGTS' 'PGIDSratio' 'random'
-                
+
                 for alg in 'CBPside' 'RandCBPside2_12_5_07' 'RandCBPside2_1_5_07' 'RandCBPside2_2_5_07' 'RandCBPside2_10_5_07' 'RandCBPside2_12_10_07' 'RandCBPside2_1_10_07' 'RandCBPside2_2_10_07' 'RandCBPside2_10_10_07' 'RandCBPside2_12_20_07' 'RandCBPside2_1_20_07' 'RandCBPside2_2_20_07' 'RandCBPside2_10_20_07' 
             
                     do

@@ -10,7 +10,7 @@ for game in  'LE' 'AT'
         for task in 'all' 'balanced' 'imbalanced' 
 
             do
-            for alg in 'RandCBP_1_5' 'RandCBP_2_5' 'RandCBP_10_5' 'RandCBP_1_10' 'RandCBP_2_10' 'RandCBP_10_10'  'RandCBP_1_20' 'RandCBP_2_20' 'RandCBP_10_20'  
+            for alg in 'RandCBP_12_5' 'RandCBP_1_5' 'RandCBP_2_5' 'RandCBP_12_10' 'RandCBP_10_5' 'RandCBP_1_10' 'RandCBP_2_10' 'RandCBP_10_10'  'RandCBP_12_20' 'RandCBP_1_20' 'RandCBP_2_20' 'RandCBP_10_20'  
                     
                 do 
 		        echo 'horizon' $horizon 'nfolds' $nfolds 'GAME' $game 'TASK' $task 'ALG' $alg 

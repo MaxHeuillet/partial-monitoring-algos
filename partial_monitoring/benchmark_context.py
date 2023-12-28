@@ -176,14 +176,17 @@ algos_dico = {
           
           'CBPside':cbpside.CBPside(game, dim, 1.01, 0.05),
 
+          'RandCBPside2_12_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/2, 5, 10e-7),
           'RandCBPside2_1_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 5, 10e-7),
           'RandCBPside2_2_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 2, 5,  10e-7),
           'RandCBPside2_10_5_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 5,   10e-7),
 
+          'RandCBPside2_12_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/2, 10, 10e-7),
           'RandCBPside2_1_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 10,   10e-7),
           'RandCBPside2_2_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 2, 10,  10e-7),
           'RandCBPside2_10_10_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 10,   10e-7),
 
+          'RandCBPside2_12_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1/2, 20, 10e-7),
           'RandCBPside2_1_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 1, 20,   10e-7),
           'RandCBPside2_2_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 2, 20,   10e-7),
           'RandCBPside2_10_20_07':randcbpside2.RandCPBside(game, dim, 1.01, 0.05, 10, 20,   10e-7), }
