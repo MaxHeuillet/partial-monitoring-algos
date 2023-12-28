@@ -82,7 +82,7 @@ class RandCPBside():
         # U = np.sqrt( self.alpha  * np.log(t) ) 
         U =  np.sqrt( self.d * np.log(t) + 2 * np.log(1/t**2)  )
         rhos = divide_interval(0, U, self.K)
-        p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / 2*(self.sigma**2)  )  for i in range(len(rhos)-1) ] )
+        p_m_hat =  np.array([ np.exp( -(rhos[i]**2) / (2*self.sigma**2)  )  for i in range(len(rhos)-1) ] )
 
         p_m = (1 - self.epsilon) * p_m_hat / p_m_hat.sum()
         p_m = p_m.tolist()
