@@ -16,10 +16,6 @@ class CBPside():
         self.SignalMatrices = game.SignalMatrices
         # print('signalmatrices', self.SignalMatrices)
 
-        self.n = np.zeros( self.N )
-        self.nu = [ np.zeros(   ( len( set(self.game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)]  #[ np.zeros(   ( len( set(game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)] 
-        # print('nu', self.nu)
-
         self.pareto_actions = geometry_v3.getParetoOptimalActions(game.LossMatrix, self.N, self.M, [])
         self.mathcal_N = game.mathcal_N
         # print('mathcal_N', self.mathcal_N)
@@ -56,8 +52,6 @@ class CBPside():
         return W
 
     def reset(self,):
-        self.n = np.zeros( self.N )
-        self.nu = [ np.zeros(   ( len( set(self.game.FeedbackMatrix[i]) ),1)  ) for i in range(self.N)]  #[ np.zeros(    len( np.unique(self.game.FeedbackMatrix[i] ) )  ) for i in range(self.N)] 
         self.memory_pareto = {}
         self.memory_neighbors = {}
         self.contexts = []
