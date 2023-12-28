@@ -127,6 +127,10 @@ def execute_experiment(n_folds,horizon,alg,game, task, algo_name):
 # Synthetic Experiments
 ###################################
 
+os.environ["MKL_NUM_THREADS"] = "1" 
+os.environ["NUMEXPR_NUM_THREADS"] = "1" 
+os.environ["OMP_NUM_THREADS"] = "1" 
+
 import argparse
 parser = argparse.ArgumentParser()
 
