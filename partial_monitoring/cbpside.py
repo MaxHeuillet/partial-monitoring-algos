@@ -167,7 +167,7 @@ class CBPside():
 
     def update(self, action, feedback, outcome, t, X):
 
-        self.n[action] += 1
+        # self.n[action] += 1
         e_y = np.zeros( (self.M, 1) )
         e_y[outcome] = 1
         Y_t =  self.game.SignalMatrices[action] @ e_y 
