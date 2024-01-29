@@ -33,6 +33,7 @@ Follow these steps to set up your environment and run the experiments:
 
 - **Non-contextual Experiments**: To run non-contextual experiments, use the Jupyter notebook experiment_noncontextual.ipynb.
 - **Contextual Experiments**: For contextual experiments, refer to the experiment_contextual.ipynb notebook.
+- **Use case Experiments**: For the use case, refer to the Use_case folder, approaches C-CBP, C-RandCBP  and ExploreFully are in the utils.py file. 
 
 ### Acknowledgements
 
