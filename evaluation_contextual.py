@@ -2,84 +2,47 @@ from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
 
 
-
-# def evaluate_parallel(nbCores, n_folds, horizon, alg, game, type, context_type):
-#     print("nbCores:", nbCores, "nbFolds:", n_folds, "Horizon:", horizon)
-#     pool = Pool(processes = nbCores) 
-#     task = Evaluation(horizon, type)
-
-#     np.random.seed(1)
-#     distributions = []
-#     context_generators = []
-
-#     for jobid in range(n_folds):
-        
-#         p = np.random.uniform(0, 0.2) if type == 'easy' else np.random.uniform(0.4,0.5)
-#         distributions.append( [p, 1-p] )
-
-#         contexts = synthetic_data.QuinticContexts( 2, 0.01)
-#         context_generators.append( contexts )
-
-#         # d = 2
-#         # margin =0.01
-#         # contexts = synthetic_data.LinearContexts( np.array([0.5,0.5]), 0, d, margin) #synthetic_data.ToyContexts( )
-
-#     return np.asarray(  pool.map( partial( task.eval_policy_once, alg, game ), zip(distributions , context_generators ,range(n_folds)) ) ) 
-
-
-
 class Evaluation_contextual:
 
-    def __init__(self, horizon, ):
-        self.horizon = horizon
+    def __init__(self, horizon ):
 
-    def get_outcomes(self, game, ):
-        outcomes = np.random.choice( game.n_outcomes , p= list( game.outcome_dist.values() ), size= self.horizon) 
-        return outcomes
+        self.horizon = horizon
 
     def get_feedback(self, game, action, outcome):
         return game.FeedbackMatrix[ action ][ outcome ]
 
-    def get_bandit_feedback(self, game, action, outcome):
-        return game.banditFeedbackMatrix[ action ][ outcome ]
-
-    def eval_policy_once(self, alg, game, job):
-
-        distribution, context_generator, jobid = job
-
-        np.random.seed(jobid)
-        outcome_distribution =  {'spam':distribution[0],'ham':distribution[1]}
-        game.set_outcome_distribution( outcome_distribution,jobid )
-
-        outcomes = self.get_outcomes(game, )
-        contexts = [ context_generator.get_context(outcome) for outcome in outcomes ]
-        # context_generator.generate_unique_context()
-        # contexts = [ context_generator.get_same_context(outcome) for outcome in outcomes ]
+    def eval_policy_once(self, alg, game, job):#jobid
+        context_generator, seed = job
+        np.random.seed(seed)
         
-        if context_generator.type == 'polynomial':
-            contexts = np.array(contexts).squeeze()
-            contexts = PolynomialFeatures(6).fit_transform( contexts)
-            contexts = contexts.tolist()
-            dim = len(contexts[0])
-            contexts = [ np.array(elmt).reshape( (dim,1) ) for elmt in contexts]
-
+    
         cumRegret =  np.zeros(self.horizon, dtype =float)
+        actions = np.zeros(self.horizon, dtype =float)
 
-        alg.reset()
 
         for t in range(self.horizon):
-
-            outcome = outcomes[t]
-            context = contexts[t]
+            print(t)
+            context, distribution = context_generator.get_context(True)
+            print(distribution)
+            # distribution = context_generator.get_distribution(context)
+            # outcome = np.random.choice( 2 , p = distribution )
+            outcome = 0 if distribution[0]<0.5 else 1
+            distribution = np.array([1-outcome,outcome])
 
             action = alg.get_action(t, context)
             
             feedback =  self.get_feedback( game, action, outcome )
 
             alg.update(action, feedback, outcome, t, context )
-            
-            regret = game.LossMatrix[action, outcome] - np.min( game.LossMatrix[...,outcome] )
+            print('t', t, 'action', action, 'outcome', outcome,  )
 
-            cumRegret[t] =  regret
+            i_star = np.argmin(  [ game.LossMatrix[i,...] @ np.array( distribution ) for i in range(alg.N) ]  )
+            loss_diff = game.LossMatrix[action,...] - game.LossMatrix[i_star,...]
+            val = loss_diff @ np.array( distribution )
+            
+            print(action, outcome, val)
+
+            cumRegret[t] =  val
+            actions[t] = action
 
         return  np.cumsum( cumRegret ) 
