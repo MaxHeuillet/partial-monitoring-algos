@@ -37,6 +37,6 @@ Follow these steps to set up your environment and run the experiments:
 
 ### Acknowledgements
 
-Special thanks to Junpei Komiyama, Hastagiri P. Vanchinathan, Taira Tsuchiya, and Tanguy Urvoy for their contributions. The codebase also leveraged and adapted game environments from Tanguy Urvoy's pmlib (https://github.com/TanguyUrvoy/pmlib).
+TBD
 
 
