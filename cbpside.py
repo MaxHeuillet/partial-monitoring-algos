@@ -197,7 +197,8 @@ class CBPside():
         # print('action', action, 'Y_t', Y_t, 'shape', Y_t.shape, 'nu[action]', self.nu[action], 'shape', self.nu[action].shape)
         # self.nu[action] += Y_t
 
-        
+ ################### BUFFERING D(T) to save compute
+       
 
     def halfspace_code(self, halfspace):
         string = ''

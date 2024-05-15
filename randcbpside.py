@@ -220,7 +220,7 @@ class RandCPBside():
         weights = Y_it @ X_it.T @ self.contexts[action]['V_it_inv']
         self.contexts[action]['weights'] = weights
 
-
+################### BUFFERING D(T) to save compute
         
 
     def halfspace_code(self, halfspace):

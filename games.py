@@ -118,6 +118,7 @@ def label_efficient(  ):
     return Game( name, LossMatrix, FeedbackMatrix, FeedbackMatrix_PMDMED, bandit_LossMatrix, bandit_FeedbackMatrix,  LinkMatrix, signal_matrices, signal_matrices_Adim, mathcal_N, v, N_plus, V )
 
 
+################### tau detection game:
 
 
 def objective_fn(b, a, T):

@@ -124,6 +124,7 @@ class CBP():
         self.nu[action] += Y_t
         # print(self.nu[1]  / self.n[1], self.nu[1], self.n[1])
 
+################### BUFFERING D(T) to save compute
         
 
     def halfspace_code(self, halfspace):
